@@ -10,13 +10,13 @@
   action="<%= addDocumentsURL %>"
   method="post"
   name="fm"
-  cssClass="ml-5 w-100"
+  cssClass="mx-3"
 >
-  <aui:row>
+  <aui:row cssClass="ml-2">
     <h1>Documents</h1>
   </aui:row>
-  <aui:row>
-    <div class="mr-3">
+  <aui:col>
+    <div>
       <aui:input name="name" label="Name" type="text" required="true">
         <aui:validator
           name="maxLength"
@@ -25,7 +25,7 @@
         >
       </aui:input>
     </div>
-    <div class="mr-3">
+    <div>
       <aui:input
         name="link"
         label="Link"
@@ -39,7 +39,7 @@
         >
       </aui:input>
     </div>
-    <div class="mr-3">
+    <div>
       <aui:input
         name="description"
         label="Description"
@@ -53,21 +53,21 @@
         >
       </aui:input>
     </div>
-  </aui:row>
-  <aui:button-row>
+  </aui:col>
+  <aui:row cssClass="justify-content-end">
     <aui:button
-      cssClass="btn-lg"
+      cssClass="btn-lg mr-3"
       name="saveButton"
       primary="true"
       type="submit"
       value="Register"
     />
     <aui:button
-      cssClass="btn-lg"
+      cssClass="btn-lg mr-4"
       href="#"
       name="cancelButton"
       type="cancel"
       value="Cancel"
     />
-  </aui:button-row>
+  </aui:row>
 </aui:form>
