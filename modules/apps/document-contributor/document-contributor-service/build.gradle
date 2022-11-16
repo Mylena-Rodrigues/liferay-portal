@@ -1,6 +1,5 @@
 buildService {
 	apiDir = "../document-contributor-api/src/main/java"
-	testDir = "../document-contributor-test/src/testIntegration/java"
 }
 
 dependencies {
