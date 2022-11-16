@@ -13,7 +13,7 @@ import java.util.Locale;
 
 @Component(
         immediate = true,
-        property = "indexer.class.name=com.liferay.document.model.Documents",
+        property = "indexer.class.name=com.liferay.dc.model.Documents",
         service = ModelSummaryContributor.class
 )
 

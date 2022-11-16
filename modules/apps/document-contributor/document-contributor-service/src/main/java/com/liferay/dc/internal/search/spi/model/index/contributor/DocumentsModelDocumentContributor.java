@@ -2,6 +2,8 @@ package com.liferay.dc.internal.search.spi.model.index.contributor;
 
 import com.liferay.dc.model.Documents;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.HtmlParserUtil;
@@ -14,12 +16,15 @@ import java.util.Locale;
 
 @Component(
         immediate = true,
-        property = "indexer.class.name=com.liferay.training.gradebook.model.Documents",
+        property = "indexer.class.name=com.liferay.dc.model.Documents",
         service = ModelDocumentContributor.class
 )
 public class DocumentsModelDocumentContributor implements ModelDocumentContributor<Documents> {
     @Override
     public void contribute(Document document, Documents documents) {
+        if (_log.isDebugEnabled()) {
+            _log.debug("Indexing article " + documents);
+        }
 
 // Strip HTML.
         String name = HtmlParserUtil.extractText(documents.getName());
@@ -31,18 +36,18 @@ public class DocumentsModelDocumentContributor implements ModelDocumentContribut
         document.addDate(Field.MODIFIED_DATE, documents.getModifiedDate());
 
 // Handle localized fields.
-        for (Locale locale : LanguageUtil.getAvailableLocales(
-                documents.getGroupId())) {
+        for (Locale locale : LanguageUtil.getAvailableLocales(documents.getGroupId())) {
             String languageId = LocaleUtil.toLanguageId(locale);
-            document.addText(
-                    LocalizationUtil.getLocalizedName(Field.NAME, languageId),
-                    name);
-            document.addText(
-                    LocalizationUtil.getLocalizedName(Field.DESCRIPTION, languageId),
-                    description);
-            document.addText(
-                LocalizationUtil.getLocalizedName(Field.URL, languageId),
-                link);
+            document.addText(LocalizationUtil.getLocalizedName(Field.NAME, languageId), name);
+            document.addText(LocalizationUtil.getLocalizedName(Field.DESCRIPTION, languageId),description);
+            document.addText(LocalizationUtil.getLocalizedName(Field.URL, languageId), link);
+        }
+
+        if (_log.isDebugEnabled()) {
+            _log.debug("Document " + documents + " indexed successfully");
         }
     }
+
+    private static final Log _log = LogFactoryUtil.getLog(
+       DocumentsModelDocumentContributor.class);
 }

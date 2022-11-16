@@ -38,14 +38,14 @@ public class DocumentsSearchRegistrar {
         _serviceRegistration.unregister();
     }
     @Reference(
-            target = "(indexer.class.name=com.liferay.document.model.Documents)"
+            target = "(indexer.class.name=com.liferay.dc.model.Documents)"
     )
     protected ModelIndexerWriterContributor<Documents>
             modelIndexWriterContributor;
     @Reference
     protected ModelSearchRegistrarHelper modelSearchRegistrarHelper;
     @Reference(
-            target = "(indexer.class.name=com.liferay.training.document.model.Documents)"
+            target = "(indexer.class.name=com.liferay.dc.model.Documents)"
     )
     protected ModelSummaryContributor modelSummaryContributor;
     private ServiceRegistration<?> _serviceRegistration;
