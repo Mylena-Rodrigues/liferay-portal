@@ -52,7 +52,7 @@ public class DocumentsLocalServiceImpl extends DocumentsLocalServiceBaseImpl {
 
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
-	public Documents updateDocument(long documentId, String name, String description, String link) {
+	public Documents updateDocument(long documentId, String name, String description, String link) throws PortalException {
 
 		Documents documents = fetchDocuments(documentId);
 

@@ -290,7 +290,8 @@ public class DocumentsLocalServiceUtil {
 	}
 
 	public static Documents updateDocument(
-		long documentId, String name, String description, String link) {
+			long documentId, String name, String description, String link)
+		throws PortalException {
 
 		return getService().updateDocument(documentId, name, description, link);
 	}

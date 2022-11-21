@@ -233,4 +233,8 @@ public interface DocumentsModel
 	@Override
 	public Documents cloneWithOriginalValues();
 
+	public default String toXmlString() {
+		return null;
+	}
+
 }

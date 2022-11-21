@@ -370,6 +370,11 @@ public class DocumentsWrapper
 	}
 
 	@Override
+	public String toXmlString() {
+		return model.toXmlString();
+	}
+
+	@Override
 	protected DocumentsWrapper wrap(Documents documents) {
 		return new DocumentsWrapper(documents);
 	}

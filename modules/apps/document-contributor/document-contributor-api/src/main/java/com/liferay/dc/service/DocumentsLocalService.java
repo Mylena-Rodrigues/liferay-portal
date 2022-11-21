@@ -260,7 +260,8 @@ public interface DocumentsLocalService
 
 	@Indexable(type = IndexableType.REINDEX)
 	public Documents updateDocument(
-		long documentId, String name, String description, String link);
+			long documentId, String name, String description, String link)
+		throws PortalException;
 
 	/**
 	 * Updates the documents in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.

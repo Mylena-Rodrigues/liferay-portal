@@ -322,7 +322,8 @@ public class DocumentsLocalServiceWrapper
 
 	@Override
 	public com.liferay.dc.model.Documents updateDocument(
-		long documentId, String name, String description, String link) {
+			long documentId, String name, String description, String link)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _documentsLocalService.updateDocument(
 			documentId, name, description, link);
