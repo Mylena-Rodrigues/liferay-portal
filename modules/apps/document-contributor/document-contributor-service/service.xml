@@ -26,6 +26,10 @@
         <column name="name" type="String" />
         <column name="description" type="String" />
         <column name="link" type="String" />
+        <column name="status" type="int" />
+        <column name="statusByUserId" type="long" />
+        <column name="statusByUserName" type="String" />
+        <column name="statusDate" type="Date" />
 
         <!-- Order -->
 
@@ -45,6 +49,16 @@
             <finder-column name="documentId" />
             <finder-column name="description" />
             <finder-column name="name" />
+        </finder>
+
+        <!--    Status Finders    -->
+        <finder name="Status" return-type="Collection">
+            <finder-column name="status" />
+        </finder>
+
+        <finder name="G_S" return-type="Collection">
+            <finder-column name="groupId" />
+            <finder-column name="status" />
         </finder>
 
         <!-- References -->

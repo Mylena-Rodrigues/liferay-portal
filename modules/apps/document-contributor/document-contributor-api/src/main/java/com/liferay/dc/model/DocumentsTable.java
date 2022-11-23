@@ -52,6 +52,14 @@ public class DocumentsTable extends BaseTable<DocumentsTable> {
 		"description", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
 	public final Column<DocumentsTable, String> link = createColumn(
 		"link", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+	public final Column<DocumentsTable, Integer> status = createColumn(
+		"status", Integer.class, Types.INTEGER, Column.FLAG_DEFAULT);
+	public final Column<DocumentsTable, Long> statusByUserId = createColumn(
+		"statusByUserId", Long.class, Types.BIGINT, Column.FLAG_DEFAULT);
+	public final Column<DocumentsTable, String> statusByUserName = createColumn(
+		"statusByUserName", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+	public final Column<DocumentsTable, Date> statusDate = createColumn(
+		"statusDate", Date.class, Types.TIMESTAMP, Column.FLAG_DEFAULT);
 
 	private DocumentsTable() {
 		super("Documents_Documents", DocumentsTable::new);

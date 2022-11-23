@@ -61,7 +61,7 @@ public class DocumentsCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(21);
+		StringBundler sb = new StringBundler(29);
 
 		sb.append("{documentId=");
 		sb.append(documentId);
@@ -83,6 +83,14 @@ public class DocumentsCacheModel
 		sb.append(description);
 		sb.append(", link=");
 		sb.append(link);
+		sb.append(", status=");
+		sb.append(status);
+		sb.append(", statusByUserId=");
+		sb.append(statusByUserId);
+		sb.append(", statusByUserName=");
+		sb.append(statusByUserName);
+		sb.append(", statusDate=");
+		sb.append(statusDate);
 		sb.append("}");
 
 		return sb.toString();
@@ -139,6 +147,23 @@ public class DocumentsCacheModel
 			documentsImpl.setLink(link);
 		}
 
+		documentsImpl.setStatus(status);
+		documentsImpl.setStatusByUserId(statusByUserId);
+
+		if (statusByUserName == null) {
+			documentsImpl.setStatusByUserName("");
+		}
+		else {
+			documentsImpl.setStatusByUserName(statusByUserName);
+		}
+
+		if (statusDate == Long.MIN_VALUE) {
+			documentsImpl.setStatusDate(null);
+		}
+		else {
+			documentsImpl.setStatusDate(new Date(statusDate));
+		}
+
 		documentsImpl.resetOriginalValues();
 
 		return documentsImpl;
@@ -159,6 +184,12 @@ public class DocumentsCacheModel
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 		link = objectInput.readUTF();
+
+		status = objectInput.readInt();
+
+		statusByUserId = objectInput.readLong();
+		statusByUserName = objectInput.readUTF();
+		statusDate = objectInput.readLong();
 	}
 
 	@Override
@@ -201,6 +232,19 @@ public class DocumentsCacheModel
 		else {
 			objectOutput.writeUTF(link);
 		}
+
+		objectOutput.writeInt(status);
+
+		objectOutput.writeLong(statusByUserId);
+
+		if (statusByUserName == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(statusByUserName);
+		}
+
+		objectOutput.writeLong(statusDate);
 	}
 
 	public long documentId;
@@ -213,5 +257,9 @@ public class DocumentsCacheModel
 	public String name;
 	public String description;
 	public String link;
+	public int status;
+	public long statusByUserId;
+	public String statusByUserName;
+	public long statusDate;
 
 }

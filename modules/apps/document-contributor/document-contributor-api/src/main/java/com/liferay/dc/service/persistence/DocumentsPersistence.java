@@ -371,6 +371,303 @@ public interface DocumentsPersistence extends BasePersistence<Documents> {
 	public int countByD_D_N(long documentId, String description, String name);
 
 	/**
+	 * Returns all the documentses where status = &#63;.
+	 *
+	 * @param status the status
+	 * @return the matching documentses
+	 */
+	public java.util.List<Documents> findByStatus(int status);
+
+	/**
+	 * Returns a range of all the documentses where status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DocumentsModelImpl</code>.
+	 * </p>
+	 *
+	 * @param status the status
+	 * @param start the lower bound of the range of documentses
+	 * @param end the upper bound of the range of documentses (not inclusive)
+	 * @return the range of matching documentses
+	 */
+	public java.util.List<Documents> findByStatus(
+		int status, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the documentses where status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DocumentsModelImpl</code>.
+	 * </p>
+	 *
+	 * @param status the status
+	 * @param start the lower bound of the range of documentses
+	 * @param end the upper bound of the range of documentses (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching documentses
+	 */
+	public java.util.List<Documents> findByStatus(
+		int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator);
+
+	/**
+	 * Returns an ordered range of all the documentses where status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DocumentsModelImpl</code>.
+	 * </p>
+	 *
+	 * @param status the status
+	 * @param start the lower bound of the range of documentses
+	 * @param end the upper bound of the range of documentses (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching documentses
+	 */
+	public java.util.List<Documents> findByStatus(
+		int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator,
+		boolean useFinderCache);
+
+	/**
+	 * Returns the first documents in the ordered set where status = &#63;.
+	 *
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching documents
+	 * @throws NoSuchDocumentsException if a matching documents could not be found
+	 */
+	public Documents findByStatus_First(
+			int status,
+			com.liferay.portal.kernel.util.OrderByComparator<Documents>
+				orderByComparator)
+		throws NoSuchDocumentsException;
+
+	/**
+	 * Returns the first documents in the ordered set where status = &#63;.
+	 *
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching documents, or <code>null</code> if a matching documents could not be found
+	 */
+	public Documents fetchByStatus_First(
+		int status,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator);
+
+	/**
+	 * Returns the last documents in the ordered set where status = &#63;.
+	 *
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching documents
+	 * @throws NoSuchDocumentsException if a matching documents could not be found
+	 */
+	public Documents findByStatus_Last(
+			int status,
+			com.liferay.portal.kernel.util.OrderByComparator<Documents>
+				orderByComparator)
+		throws NoSuchDocumentsException;
+
+	/**
+	 * Returns the last documents in the ordered set where status = &#63;.
+	 *
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching documents, or <code>null</code> if a matching documents could not be found
+	 */
+	public Documents fetchByStatus_Last(
+		int status,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator);
+
+	/**
+	 * Returns the documentses before and after the current documents in the ordered set where status = &#63;.
+	 *
+	 * @param documentId the primary key of the current documents
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next documents
+	 * @throws NoSuchDocumentsException if a documents with the primary key could not be found
+	 */
+	public Documents[] findByStatus_PrevAndNext(
+			long documentId, int status,
+			com.liferay.portal.kernel.util.OrderByComparator<Documents>
+				orderByComparator)
+		throws NoSuchDocumentsException;
+
+	/**
+	 * Removes all the documentses where status = &#63; from the database.
+	 *
+	 * @param status the status
+	 */
+	public void removeByStatus(int status);
+
+	/**
+	 * Returns the number of documentses where status = &#63;.
+	 *
+	 * @param status the status
+	 * @return the number of matching documentses
+	 */
+	public int countByStatus(int status);
+
+	/**
+	 * Returns all the documentses where groupId = &#63; and status = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @return the matching documentses
+	 */
+	public java.util.List<Documents> findByG_S(long groupId, int status);
+
+	/**
+	 * Returns a range of all the documentses where groupId = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DocumentsModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param start the lower bound of the range of documentses
+	 * @param end the upper bound of the range of documentses (not inclusive)
+	 * @return the range of matching documentses
+	 */
+	public java.util.List<Documents> findByG_S(
+		long groupId, int status, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the documentses where groupId = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DocumentsModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param start the lower bound of the range of documentses
+	 * @param end the upper bound of the range of documentses (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching documentses
+	 */
+	public java.util.List<Documents> findByG_S(
+		long groupId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator);
+
+	/**
+	 * Returns an ordered range of all the documentses where groupId = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DocumentsModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param start the lower bound of the range of documentses
+	 * @param end the upper bound of the range of documentses (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching documentses
+	 */
+	public java.util.List<Documents> findByG_S(
+		long groupId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator,
+		boolean useFinderCache);
+
+	/**
+	 * Returns the first documents in the ordered set where groupId = &#63; and status = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching documents
+	 * @throws NoSuchDocumentsException if a matching documents could not be found
+	 */
+	public Documents findByG_S_First(
+			long groupId, int status,
+			com.liferay.portal.kernel.util.OrderByComparator<Documents>
+				orderByComparator)
+		throws NoSuchDocumentsException;
+
+	/**
+	 * Returns the first documents in the ordered set where groupId = &#63; and status = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching documents, or <code>null</code> if a matching documents could not be found
+	 */
+	public Documents fetchByG_S_First(
+		long groupId, int status,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator);
+
+	/**
+	 * Returns the last documents in the ordered set where groupId = &#63; and status = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching documents
+	 * @throws NoSuchDocumentsException if a matching documents could not be found
+	 */
+	public Documents findByG_S_Last(
+			long groupId, int status,
+			com.liferay.portal.kernel.util.OrderByComparator<Documents>
+				orderByComparator)
+		throws NoSuchDocumentsException;
+
+	/**
+	 * Returns the last documents in the ordered set where groupId = &#63; and status = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching documents, or <code>null</code> if a matching documents could not be found
+	 */
+	public Documents fetchByG_S_Last(
+		long groupId, int status,
+		com.liferay.portal.kernel.util.OrderByComparator<Documents>
+			orderByComparator);
+
+	/**
+	 * Returns the documentses before and after the current documents in the ordered set where groupId = &#63; and status = &#63;.
+	 *
+	 * @param documentId the primary key of the current documents
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next documents
+	 * @throws NoSuchDocumentsException if a documents with the primary key could not be found
+	 */
+	public Documents[] findByG_S_PrevAndNext(
+			long documentId, long groupId, int status,
+			com.liferay.portal.kernel.util.OrderByComparator<Documents>
+				orderByComparator)
+		throws NoSuchDocumentsException;
+
+	/**
+	 * Removes all the documentses where groupId = &#63; and status = &#63; from the database.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 */
+	public void removeByG_S(long groupId, int status);
+
+	/**
+	 * Returns the number of documentses where groupId = &#63; and status = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @return the number of matching documentses
+	 */
+	public int countByG_S(long groupId, int status);
+
+	/**
 	 * Caches the documents in the entity cache if it is enabled.
 	 *
 	 * @param documents the documents
