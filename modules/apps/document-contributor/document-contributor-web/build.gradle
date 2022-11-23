@@ -24,6 +24,13 @@ dependencies {
 		compileOnly project(":core:petra:petra-sql-dsl-api")
 		compileOnly project(":core:petra:petra-string")
 
+		compileOnly project(":apps:asset:asset-api")
+		compileOnly project(":apps:asset:asset-auto-tagger-api")
+		compileOnly project(":apps:asset:asset-display-page-api")
+		compileOnly project(":apps:asset:asset-info-api")
+		compileOnly project(":apps:asset:asset-info-display-api")
+		compileOnly project(":apps:asset:asset-taglib")
+
 	compileOnly project(":apps:document-contributor:document-contributor-api")
 	cssBuilder group: "com.liferay", name: "com.liferay.css.builder", version: "3.1.0"
 }

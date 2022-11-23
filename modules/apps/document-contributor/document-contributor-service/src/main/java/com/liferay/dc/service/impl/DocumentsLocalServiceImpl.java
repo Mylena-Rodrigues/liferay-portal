@@ -19,8 +19,13 @@ import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ContentTypes;
 import org.osgi.service.component.annotations.Component;
 import com.liferay.dc.model.Documents;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brian Wing Shun Chan
@@ -31,15 +36,32 @@ import com.liferay.dc.model.Documents;
 )
 public class DocumentsLocalServiceImpl extends DocumentsLocalServiceBaseImpl {
 
+	private void updateAsset(
+		Documents documents, ServiceContext serviceContext)
+		throws PortalException {
+		assetEntryLocalService.updateEntry(
+			serviceContext.getUserId(), serviceContext.getScopeGroupId(),
+			documents.getCreateDate(), documents.getModifiedDate(),
+			Documents.class.getName(), documents.getDocumentId(),
+			documents.getUserUuid(), 0, serviceContext.getAssetCategoryIds(),
+			serviceContext.getAssetTagNames(), true, true,
+			documents.getCreateDate(), null, null, null,
+			ContentTypes.TEXT_HTML,
+			documents.getName(),
+			documents.getDescription(), null, documents.getLink(), null, 0, 0,
+			serviceContext.getAssetPriority());
+	}
+
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
-	public Documents addDocument(String name, String description, String link) throws PortalException {
-		// long documentId = counterLocalService.increment(Documents.class.getName());
+	public Documents addDocument(String name, String description, String link, ServiceContext serviceContext) throws PortalException {
 		long documentId = counterLocalService.increment();
 		Documents documents = documentsPersistence.create(documentId);
 		documents.setName(name);
 		documents.setDescription(description);
 		documents.setLink(link);
+
+		updateAsset(documents, serviceContext);
 
 		return documentsPersistence.update(documents);
 	}
@@ -47,12 +69,13 @@ public class DocumentsLocalServiceImpl extends DocumentsLocalServiceBaseImpl {
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	public Documents deleteDocument(long documentId) throws PortalException {
+		assetEntryLocalService.deleteEntry(Documents.class.getName(), documentId);
 		return documentsPersistence.remove(documentId);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
-	public Documents updateDocument(long documentId, String name, String description, String link) throws PortalException {
+	public Documents updateDocument(long documentId, String name, String description, String link, ServiceContext serviceContext) throws PortalException {
 
 		Documents documents = fetchDocuments(documentId);
 
@@ -60,7 +83,13 @@ public class DocumentsLocalServiceImpl extends DocumentsLocalServiceBaseImpl {
 		documents.setDescription(description);
 		documents.setLink(link);
 
+		updateAsset(documents, serviceContext);
+
 		return documentsPersistence.update(documents);
 	}
 
+	public List<Documents> listDocuments(){
+		List<Documents> documents = documentsPersistence.findAll();
+		return documents;
+	}
 }

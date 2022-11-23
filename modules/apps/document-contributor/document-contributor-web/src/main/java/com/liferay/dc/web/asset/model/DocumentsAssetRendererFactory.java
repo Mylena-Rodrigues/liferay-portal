@@ -54,11 +54,15 @@ public class DocumentsAssetRendererFactory
 	public AssetRenderer<Documents> getAssetRenderer(long classPK, int type)
 		throws PortalException {
 		Documents documents = _documentsLocalService.getDocuments(classPK);
-		DocumentsAssetRenderer documentsAssetRenderer =
-			new DocumentsAssetRenderer(documents);
+
+		DocumentsAssetRenderer documentsAssetRenderer = new DocumentsAssetRenderer(documents);
+
 		documentsAssetRenderer.setAssetDisplayPageFriendlyURLProvider(_assetDisplayPageFriendlyURLProvider);
+
 		documentsAssetRenderer.setAssetRendererType(type);
+
 		documentsAssetRenderer.setServletContext(_servletContext);
+
 		return documentsAssetRenderer;
 	}
 
@@ -73,7 +77,7 @@ public class DocumentsAssetRendererFactory
 		LiferayPortletResponse liferayPortletResponse, long classTypeId) {
 		PortletURL portletURL = _portal.getControlPanelPortletURL(
 			liferayPortletRequest, getGroup(liferayPortletRequest), DocumentsPortletKeys.DOCUMENTS, 0, 0, PortletRequest.RENDER_PHASE);
-		portletURL.setParameter("mvcRenderCommandName", MVCCommandNames.EDIT_DOCUMENTS);
+		portletURL.setParameter("mvcRenderCommandName", MVCCommandNames.ADD_DOCUMENTS);
 		return portletURL;
 	}
 
@@ -83,7 +87,8 @@ public class DocumentsAssetRendererFactory
 		WindowState windowState) {
 		LiferayPortletURL liferayPortletURL =
 			liferayPortletResponse.createLiferayPortletURL(
-				DocumentsPortletKeys.DOCUMENTS, PortletRequest.RENDER_PHASE);try {
+				DocumentsPortletKeys.DOCUMENTS, PortletRequest.RENDER_PHASE);
+		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
 		catch (WindowStateException wse) {

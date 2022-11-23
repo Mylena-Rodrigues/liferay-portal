@@ -38,10 +38,12 @@ public class DocumentsLocalServiceWrapper
 
 	@Override
 	public com.liferay.dc.model.Documents addDocument(
-			String name, String description, String link)
+			String name, String description, String link,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _documentsLocalService.addDocument(name, description, link);
+		return _documentsLocalService.addDocument(
+			name, description, link, serviceContext);
 	}
 
 	/**
@@ -321,12 +323,18 @@ public class DocumentsLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.List<com.liferay.dc.model.Documents> listDocuments() {
+		return _documentsLocalService.listDocuments();
+	}
+
+	@Override
 	public com.liferay.dc.model.Documents updateDocument(
-			long documentId, String name, String description, String link)
+			long documentId, String name, String description, String link,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _documentsLocalService.updateDocument(
-			documentId, name, description, link);
+			documentId, name, description, link, serviceContext);
 	}
 
 	/**

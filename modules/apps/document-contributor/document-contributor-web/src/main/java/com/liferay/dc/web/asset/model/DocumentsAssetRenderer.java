@@ -8,19 +8,21 @@ import com.liferay.dc.web.constants.DocumentsPortletKeys;
 import com.liferay.dc.web.constants.MVCCommandNames;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
-//import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portlet.asset.util.AssetUtil;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -29,6 +31,7 @@ import javax.portlet.WindowState;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Asset renderer for documents.
@@ -36,8 +39,7 @@ import java.util.Locale;
  * @author Mylena Monte
  */
 public class DocumentsAssetRenderer extends BaseJSPAssetRenderer<Documents> {
-	public DocumentsAssetRenderer(
-		Documents documents) {
+	public DocumentsAssetRenderer(Documents documents) {
 		_documents = documents;
 	}
 	@Override
@@ -65,16 +67,14 @@ public class DocumentsAssetRenderer extends BaseJSPAssetRenderer<Documents> {
 	}
 
 	@Override
-	public String getSummary(
-		PortletRequest portletRequest, PortletResponse portletResponse) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-		int abstractLength = AssetHelper.ASSET_ENTRY_ABSTRACT_LENGTH;
-		String summary = HtmlUtil.stripHtml(
-			StringUtil.shorten(
-				_documents.getDescription(),abstractLength));
+	public String getSummary(PortletRequest portletRequest, PortletResponse portletResponse) {
+			int abstractLength = AssetHelper.ASSET_ENTRY_ABSTRACT_LENGTH;
+
+			String summary = HtmlUtil.stripHtml(StringUtil.shorten(_documents.getDescription(),abstractLength));
+
 		return summary;
 	}
+
 	@Override
 	public String getTitle(Locale locale) {
 		return _documents.getName();

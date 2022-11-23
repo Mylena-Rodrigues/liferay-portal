@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -62,7 +63,9 @@ public interface DocumentsLocalService
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.dc.service.impl.DocumentsLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the documents local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link DocumentsLocalServiceUtil} if injection and service tracking are not available.
 	 */
 	@Indexable(type = IndexableType.REINDEX)
-	public Documents addDocument(String name, String description, String link)
+	public Documents addDocument(
+			String name, String description, String link,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -258,9 +261,12 @@ public interface DocumentsLocalService
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException;
 
+	public List<Documents> listDocuments();
+
 	@Indexable(type = IndexableType.REINDEX)
 	public Documents updateDocument(
-			long documentId, String name, String description, String link)
+			long documentId, String name, String description, String link,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**

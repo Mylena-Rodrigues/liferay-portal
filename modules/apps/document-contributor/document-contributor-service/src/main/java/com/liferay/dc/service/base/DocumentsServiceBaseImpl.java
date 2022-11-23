@@ -171,6 +171,25 @@ public abstract class DocumentsServiceBaseImpl
 	@Reference
 	protected com.liferay.portal.kernel.service.UserService userService;
 
+	@Reference
+	protected com.liferay.asset.kernel.service.AssetEntryLocalService
+		assetEntryLocalService;
+
+	@Reference
+	protected com.liferay.asset.kernel.service.AssetEntryService
+		assetEntryService;
+
+	@Reference
+	protected com.liferay.asset.kernel.service.AssetLinkLocalService
+		assetLinkLocalService;
+
+	@Reference
+	protected com.liferay.asset.kernel.service.AssetTagLocalService
+		assetTagLocalService;
+
+	@Reference
+	protected com.liferay.asset.kernel.service.AssetTagService assetTagService;
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		DocumentsServiceBaseImpl.class);
 

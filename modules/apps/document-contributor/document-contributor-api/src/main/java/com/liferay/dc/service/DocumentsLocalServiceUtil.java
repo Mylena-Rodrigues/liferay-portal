@@ -45,10 +45,12 @@ public class DocumentsLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.dc.service.impl.DocumentsLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static Documents addDocument(
-			String name, String description, String link)
+			String name, String description, String link,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
-		return getService().addDocument(name, description, link);
+		return getService().addDocument(
+			name, description, link, serviceContext);
 	}
 
 	/**
@@ -289,11 +291,17 @@ public class DocumentsLocalServiceUtil {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
+	public static List<Documents> listDocuments() {
+		return getService().listDocuments();
+	}
+
 	public static Documents updateDocument(
-			long documentId, String name, String description, String link)
+			long documentId, String name, String description, String link,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
-		return getService().updateDocument(documentId, name, description, link);
+		return getService().updateDocument(
+			documentId, name, description, link, serviceContext);
 	}
 
 	/**
