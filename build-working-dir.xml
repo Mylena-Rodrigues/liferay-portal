@@ -143,9 +143,6 @@
 ##
 
 build.profile=dxp
-build.repository.private.password=${build.repository.private.password}
-build.repository.private.url=${build.repository.private.url}
-build.repository.private.username=${build.repository.private.username}
 
 git.working.branch.name=${git.working.branch.name}
 
@@ -228,12 +225,6 @@ testray.build.type=${testray.build.type[@{to.branch.name}]}</echo>
 			</loadproperties>
 
 			<delete file="working.dir.properties" />
-
-			<propertyfile file="build.${user.name}.properties">
-				<entry key="build.repository.private.password" value="${build.repository.private.password}" />
-				<entry key="build.repository.private.url" value="${build.repository.private.url}" />
-				<entry key="build.repository.private.username" value="${build.repository.private.username}" />
-			</propertyfile>
 		</sequential>
 	</macrodef>
 
