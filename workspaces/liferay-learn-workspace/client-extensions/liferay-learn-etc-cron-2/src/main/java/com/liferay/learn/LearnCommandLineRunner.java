@@ -8,11 +8,17 @@ package com.liferay.learn;
 import com.liferay.client.extension.util.spring.boot.BaseRestController;
 import com.liferay.client.extension.util.spring.boot.LiferayOAuth2AccessTokenManager;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -29,6 +35,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -55,75 +62,58 @@ public class LearnCommandLineRunner
 
 	@Override
 	public void run(String... args) throws Exception {
-		JSONObject jsonObject = new JSONObject(
-			_get(
-				_liferayOAuth2AccessTokenManager.getAuthorization(
-					"a7855d10-6a20-1f0e-7e21-53d8654a09d2"),
+		JSONObject devContent = new JSONObject(
+			_get(_liferayOAuth2AccessTokenManager.getAuthorization(
+							"external-reference-code-dev"),
 				"https://www-dev.liferay.com/o/headless-delivery/v1.0" +
-					"/content-structures/2354659" +
-						"/structured-contents?" +
-							"&filter=id eq '232319784'" +
-								"&sort=dateModified:asc&pageSize=-1"));
+					"/content-structures/2354659/structured-contents?pageSize=-1"
+					));
 
-		JSONArray jsonArray = jsonObject.getJSONArray("items");
+		JSONObject prodContent = new JSONObject(
+				_get(_getProdAuth(),
+						"https://www.liferay.com/o/headless-delivery/v1.0" +
+								"/content-structures/2354659/structured-contents" +
+								"?filter=dateModified le 2025-03-03T06:30:00Z&fields=id" +
+								"&sort=dateModified:desc&pageSize=-1"
+				));
 
-		int q = 0;
+		JSONArray devContentArray = devContent.getJSONArray("items");
+		JSONArray prodAllowedContentArray = prodContent.getJSONArray("items");
 
-		for (int i = 0; i < jsonArray.length(); i++) {
-			q++;
-			JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+		HashSet<Long> allowedids = new HashSet<>();
 
-			System.out.println("ID: " + jsonObject1.getLong("id"));
+		for(int i = 0; i < prodAllowedContentArray.length(); i++) {
+			JSONObject jsonObject = prodAllowedContentArray.getJSONObject(i);
 
-			JSONArray contentFieldsJSONArray = jsonObject1.getJSONArray(
-				"contentFields");
-
-			String content = "";
-			String additionalAboutContent = "";
-
-			for (int j = 0; j < contentFieldsJSONArray.length(); j++) {
-				JSONObject jsonObject2 = contentFieldsJSONArray.getJSONObject(
-					j);
-
-				JSONObject contentFieldValueJSONObject =
-					jsonObject2.getJSONObject("contentFieldValue");
-
-				String name = jsonObject2.getString("name");
-
-				if (name.equals("content")) {
-					content = contentFieldValueJSONObject.getString("data");
-				}
-
-				if (name.equals("additional_about_content")) {
-					additionalAboutContent =
-						contentFieldValueJSONObject.getString("data");
-				}
-			}
-
-			System.out.println("Content: " + content);
-			System.out.println(
-				"AdditionalAboutContent: " + additionalAboutContent);
-
-			_updateWebContent(
-				jsonObject1.getLong("id"), content, additionalAboutContent);
+			allowedids.add(jsonObject.getLong("id"));
 		}
 
-		System.out.println("Total: " + q);
+		JSONArray contentToBeUpdatedArray = new JSONArray();
 
-		//		String prd = get(
-		//			_getPRDOAuthAuthorization(),
-		//			"https://www.liferay.com/o/headless-delivery/v1.0" +
+		for(int i = 0; i < devContentArray.length(); i++) {
+			JSONObject current_content = devContentArray.getJSONObject(i);
+			if(allowedids.contains(current_content.getLong("id"))) {
+				contentToBeUpdatedArray.put(current_content);
+			}
+		}
 
-		// 				"/content-structures/2354659" +
+		int n = 0;
 
-		//					"/structured-contents?sort=dateModified:asc&pageSize=1");
-		//
-		//		System.out.println("prd: " + prd);
+		System.out.println("\n\n***PRD***\n\n");
+		for (int i = 0; i < contentToBeUpdatedArray.length(); i++) {
+			n++;
+			JSONObject jsonObject1 = contentToBeUpdatedArray.getJSONObject(i);
+
+			_updateWebContent(
+				jsonObject1.getLong("id"), jsonObject1);
+		}
+
+		System.out.println("\nTotal Count: " + n);
 	}
 
 	@Override
 	protected String getWebClientBaseURL() {
-		return "";
+		return "www-dev.liferay.com";
 	}
 
 	private String _get(String authorization, String path) {
@@ -178,20 +168,22 @@ public class LearnCommandLineRunner
 		};
 	}
 
-	private String _getPRDOAuthAuthorization() throws Exception {
-		HttpPost httpPost = new HttpPost(
-			"https://www.liferay.com/o/oauth2/token");
+	private String _getAuthAuthorization(
+			String client_id, String client_secret, String url) throws Exception {
+
+		HttpPost httpPost = new HttpPost(url);
 
 		httpPost.setEntity(
 			new UrlEncodedFormEntity(
 				Arrays.asList(
 					new BasicNameValuePair(
-						"client_id", "XXXXX"),
+						"client_id", client_id),
 					new BasicNameValuePair(
 						"client_secret",
-						"YYYYY"),
+						client_secret),
 					new BasicNameValuePair(
 						"grant_type", "client_credentials"))));
+
 		httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
 		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
@@ -208,9 +200,6 @@ public class LearnCommandLineRunner
 					EntityUtils.toString(
 						closeableHttpResponse.getEntity(),
 						Charset.defaultCharset()));
-
-				_oauthExpirationMillis =
-					jsonObject.getLong("expires_in") * 1000;
 
 				return jsonObject.getString("token_type") + " " +
 					jsonObject.getString("access_token");
@@ -258,64 +247,98 @@ public class LearnCommandLineRunner
 		).build();
 	}
 
-	private JSONObject _getWebContent(Long id) throws Exception {
-		return new JSONObject(
-			get(
-				_getPRDOAuthAuthorization(),
-				"https://www.liferay.com/o/headless-delivery/v1.0" +
-					"/structured-contents/" + id));
+	private String _getProdAuth() throws Exception {
+		return 	_getAuthAuthorization(
+				"id-credential",
+				"secret-credential",
+				"oauth-token-url");
+	}
+
+	private String _getUATAuth() throws Exception {
+		return 	_getAuthAuthorization(
+				"id-credential",
+				"secret-credential",
+				"oauth-token-url");
 	}
 
 	private void _updateWebContent(
-			Long id, String content, String additionalAboutContent)
+			Long id, JSONObject devWebContent)
 		throws Exception {
 
-		System.out.println("\n\n***PRD***\n\n");
+		devWebContent.remove("uuid");
 
-		String prdAuthorization = _getPRDOAuthAuthorization();
+		String contentTitle = devWebContent.getString("title");
+		JSONObject contentTitle_i18n = devWebContent.getJSONObject("title_i18n");
+		JSONArray availableLanguagesList = devWebContent.getJSONArray("availableLanguages");
+		String defaultLanguage = getDefaultLanguage(contentTitle, contentTitle_i18n, availableLanguagesList);
 
-		JSONObject jsonObject = new JSONObject(
-			get(
-				prdAuthorization,
-				"https://www.liferay.com/o/headless-delivery/v1.0" +
-					"/structured-contents/" + id));
+		JSONArray customFieldsArray = devWebContent.getJSONArray("customFields");
 
-		JSONArray jsonArray = jsonObject.getJSONArray("contentFields");
+		for (int i = 0; i < customFieldsArray.length(); i++) {
+			JSONObject customFieldJSONObject = customFieldsArray.getJSONObject(i);
+			JSONObject customFieldValue = customFieldJSONObject.getJSONObject("customValue");
+			JSONObject customFieldValue_i18n = customFieldValue.getJSONObject("data_i18n");
 
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject contentFieldJSONObject = jsonArray.getJSONObject(i);
+			if (!customFieldJSONObject.has("data") && !customFieldValue_i18n.isEmpty()){
+				String firstLanguageValue = null;
 
-			if (contentFieldJSONObject.getString(
-					"name"
-				).equals(
-					"rich_content"
-				)) {
+				for(int j = 0; j <= availableLanguagesList.length(); j++){
+					String cur_availableLanguage = availableLanguagesList.getString(j);
 
-				JSONObject contentFieldValueJSONObject =
-					contentFieldJSONObject.getJSONObject("contentFieldValue");
+					if(customFieldValue_i18n.has(cur_availableLanguage)){
+						firstLanguageValue = customFieldValue_i18n.getString(cur_availableLanguage);
 
-				contentFieldValueJSONObject.put("data", content);
-			}
+						break;
+					};
+				}
 
-			if (contentFieldJSONObject.getString(
-					"name"
-				).equals(
-					"additional_about_rich_content"
-				)) {
-
-				JSONObject contentFieldValueJSONObject =
-					contentFieldJSONObject.getJSONObject("contentFieldValue");
-
-				contentFieldValueJSONObject.put("data", additionalAboutContent);
+				customFieldValue.put("data", firstLanguageValue);
+				customFieldValue_i18n.put(defaultLanguage, firstLanguageValue);
 			}
 		}
 
-		put(
-			prdAuthorization, jsonObject.toString(),
-			"https://www.liferay.com/o/headless-delivery/v1.0/structured-contents/" +
-				id);
+		JSONArray contentFieldsArray = devWebContent.getJSONArray("contentFields");
 
-		System.out.println(jsonObject);
+		for (int i = 0; i < contentFieldsArray.length(); i++) {
+			JSONObject contentFieldJSONObject = contentFieldsArray.getJSONObject(i);
+
+			String name = contentFieldJSONObject.getString("name");
+
+
+			if (name.equals("content")) {
+				contentFieldJSONObject.remove("inputControl");
+
+				contentFieldJSONObject.put("name", "rich_content");
+			}
+
+			if (name.equals("additional_about_content")) {
+				contentFieldJSONObject.put("name", "additional_about_rich_content");
+
+				contentFieldJSONObject.remove("inputControl");
+			}
+		}
+
+		try {
+			put(
+				_getProdAuth(), devWebContent.toString(),
+				"https://www.liferay.com/o/headless-delivery/v1.0/structured-contents/" + id);
+
+			System.out.printf("\nUpdated %d ", devWebContent.getLong("id"));
+		} catch (Exception e) {
+			System.out.printf("\nNOT Updated %d ", devWebContent.getLong("id"));
+		}
+	}
+
+	private String getDefaultLanguage(String contentTitle, JSONObject contentTitle_i18n, JSONArray availableLanguagesList) {
+		String defaultLanguage = null;
+		for(int i = 0; i < availableLanguagesList.length(); i++) {
+			String contentTitle_i18nValue = contentTitle_i18n.getString(availableLanguagesList.getString(i));
+			if(contentTitle_i18nValue.equals(contentTitle)){
+				defaultLanguage = availableLanguagesList.getString(i);
+				break;
+			}
+		}
+		return defaultLanguage;
 	}
 
 	@Autowired
@@ -323,7 +346,5 @@ public class LearnCommandLineRunner
 
 	@Value("${liferay.oauth.application.external.reference.codes}")
 	private String _liferayOAuthApplicationExternalReferenceCodes;
-
-	private long _oauthExpirationMillis;
 
 }
