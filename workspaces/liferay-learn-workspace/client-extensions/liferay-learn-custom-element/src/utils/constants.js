@@ -4,7 +4,8 @@
  */
 
 export const endpoint = {
-	learningPath: '/o/c/learningpaths',
-
+	enrollment: '/o/c/enrollments/',
+	learningPathSteps: '/o/c/learningpathsteps/',
+	learningPaths: '/o/c/learningpaths/',
 	modules: '/o/c/modules/',
 };

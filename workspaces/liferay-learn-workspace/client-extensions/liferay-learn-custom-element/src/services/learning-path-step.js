@@ -1,0 +1,18 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import {endpoint} from '../utils/constants';
+import {request} from '../utils/request';
+
+export async function getLearningPathSteps(stepId, stepType) {
+	const data = await request({
+		params: {
+			nestedFields: stepType,
+		},
+		url: `${endpoint.learningPathSteps}${stepId}`,
+	});
+
+	return data;
+}

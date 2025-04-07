@@ -7,6 +7,17 @@ import {endpoint} from '../utils/constants';
 import {request} from '../utils/request';
 import {getCurrentSiteId} from '../utils/util';
 
+export async function getLearningPath(learningPathId) {
+	const data = await request({
+		params: {
+			nestedFields: 'learningPathSteps',
+		},
+		url: `${endpoint.learningPaths}${learningPathId}`,
+	});
+
+	return data;
+}
+
 export async function getLearningPaths(pageSize) {
 	const data = await request({
 		params: {
@@ -14,7 +25,7 @@ export async function getLearningPaths(pageSize) {
 			pageSize,
 			sort: 'position:asc',
 		},
-		url: `${endpoint.learningPath}/scopes/${getCurrentSiteId()}`,
+		url: `${endpoint.learningPaths}scopes/${getCurrentSiteId()}`,
 	});
 
 	return data.items;
