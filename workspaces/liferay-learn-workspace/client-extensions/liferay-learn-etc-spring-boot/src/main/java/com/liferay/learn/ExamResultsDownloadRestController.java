@@ -137,7 +137,4 @@ public class ExamResultsDownloadRestController extends BaseRestController {
 		}
 	}
 
-	@Value("${liferay.learn.dxp.site.group.id}")
-	private long _siteGroupId;
-
 }

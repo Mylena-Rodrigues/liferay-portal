@@ -119,7 +119,4 @@ public class ObjectActionCourseRestController extends BaseRestController {
 	private static final Log _log = LogFactory.getLog(
 		ObjectActionCourseRestController.class);
 
-	@Value("${liferay.learn.dxp.site.group.id}")
-	private long _siteGroupId;
-
 }
