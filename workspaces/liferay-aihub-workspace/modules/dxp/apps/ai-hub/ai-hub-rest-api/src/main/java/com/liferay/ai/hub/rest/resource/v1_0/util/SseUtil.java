@@ -16,11 +16,6 @@ import jakarta.ws.rs.sse.SseEventSink;
  */
 public class SseUtil {
 
-	public static final String EVENT_DATA_SUCCESSFULLY_SUBSCRIBED =
-		"successfully subscribed";
-
-	public static final String EVENT_NAME_SUBSCRIBE = "Subscribe";
-
 	public static void broadcast(String data, String id, String name, Sse sse) {
 		if (_sseBroadcaster == null) {
 			return;
@@ -62,9 +57,9 @@ public class SseUtil {
 		sseBroadcaster.broadcast(
 			sse.newEventBuilder(
 			).name(
-				EVENT_NAME_SUBSCRIBE
+				"Subscribe"
 			).data(
-				String.class, EVENT_DATA_SUCCESSFULLY_SUBSCRIBED
+				String.class, "successfully subscribed"
 			).build());
 	}
 
