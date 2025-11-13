@@ -176,7 +176,7 @@ public class LearnRestController extends BaseRestController {
 					UriComponentsBuilder.fromPath(
 						"/o/c/p2s3quizquestions"
 					).queryParam(
-						"filter", "quizId eq '" + quizId + "'"
+						"filter", "r_p2s3QuizToP2S3QuizQuestions_c_p2s3QuizId eq '" + quizId + "'"
 					).queryParam(
 						"fields",
 						StringBundler.concat(
