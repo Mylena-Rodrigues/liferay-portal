@@ -112,6 +112,23 @@
 			]
 			},
 			{
+			"#tag-name": "input-variables",
+			"#cdata-value": [
+					"[{\"name\":\"text\",\"type\":\"string\"},",
+					"{\"name\":\"tone\",\"type\":\"string\"}]"
+				]
+			},
+			{
+			"#tag-name": "output-variables",
+			"#cdata-value": [
+					"[{\"name\":\"rewrittenText\",\"type\":\"string\"}]"
+				]
+			},
+			{
+			"#tag-name": "prompt",
+			"#cdata-value": ["[$WORKFLOW_NODE_SETTING_PROMPT$]"]
+			},
+			{
 			"#tag-name": "transitions",
 			"#child-nodes": [
 				{
@@ -142,23 +159,6 @@
 				]
 				}
 			]
-			},
-			{
-			"#tag-name": "input-variables",
-			"#cdata-value": [
-					"[{\"name\":\"text\",\"type\":\"string\"},",
-					"{\"name\":\"tone\",\"type\":\"string\"}]"
-				]
-			},
-			{
-			"#tag-name": "output-variables",
-			"#cdata-value": [
-					"[{\"name\":\"rewrittenText\",\"type\":\"string\"}]"
-				]
-			},
-			{
-			"#tag-name": "prompt",
-			"#cdata-value": ["[$WORKFLOW_NODE_SETTING_PROMPT$]"]
 			},
 			{
 			"#tag-name": "user-message",
