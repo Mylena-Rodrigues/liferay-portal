@@ -31,14 +31,14 @@ public class InputVariablesUtil {
 		Map<String, String> inputVariables = _getInputVariables(
 			kaleoNodeSettingValues, executionContext.getWorkflowContext());
 
-		String message = kaleoNodeSettingValues.get(kaleoNodeSettingName);
+		String value = kaleoNodeSettingValues.get(kaleoNodeSettingName);
 
 		for (Map.Entry<String, String> entry : inputVariables.entrySet()) {
-			message = StringUtil.replace(
-				message, "{{" + entry.getKey() + "}}", entry.getValue());
+			value = StringUtil.replace(
+				value, "{{" + entry.getKey() + "}}", entry.getValue());
 		}
 
-		return message;
+		return value;
 	}
 
 	private static Map<String, String> _getInputVariables(
