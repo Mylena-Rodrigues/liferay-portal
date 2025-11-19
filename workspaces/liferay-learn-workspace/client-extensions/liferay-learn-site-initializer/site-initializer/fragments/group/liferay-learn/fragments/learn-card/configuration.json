@@ -55,21 +55,18 @@
 				},
 				{
 					"defaultValue": true,
-					"description": "Show Card Icon",
 					"label": "Show Icon",
 					"name": "showIcon",
 					"type": "checkbox"
 				},
 				{
 					"defaultValue": true,
-					"description": "Show Card Description",
 					"label": "Show Description",
 					"name": "showDescription",
 					"type": "checkbox"
 				},
 				{
 					"defaultValue": true,
-					"description": "Show Card CTA",
 					"label": "Show CTA",
 					"name": "showCTA",
 					"type": "checkbox"
