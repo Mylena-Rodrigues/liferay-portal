@@ -92,14 +92,14 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 			WritingAssistant.class
 		).systemMessageProvider(
 			object -> InputVariablesUtil.applyInputVariables(
-				executionContext, kaleoNodeSettingsMap, "prompt")
+				executionContext, "prompt", kaleoNodeSettingsMap)
 		).streamingChatModel(
 			vertexAiGeminiStreamingChatModel
 		).build();
 
 		writingAssistant.rewrite(
 			InputVariablesUtil.applyInputVariables(
-				executionContext, kaleoNodeSettingsMap, "userMessage")
+				executionContext, "userMessage", kaleoNodeSettingsMap)
 		).onCompleteResponse(
 			response -> _completeResponse(
 				response, executionContext, vertexAiGeminiStreamingChatModel)

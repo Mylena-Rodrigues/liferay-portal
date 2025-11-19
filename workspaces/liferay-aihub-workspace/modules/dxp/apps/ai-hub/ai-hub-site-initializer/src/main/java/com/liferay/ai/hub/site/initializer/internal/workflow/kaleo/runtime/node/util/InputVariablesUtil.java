@@ -26,7 +26,7 @@ public class InputVariablesUtil {
 
 	public static String applyInputVariables(
 		ExecutionContext executionContext,
-		Map<String, String> kaleoNodeSettingsMap, String kaleoNodeSettingName) {
+		String kaleoNodeSettingName, Map<String, String> kaleoNodeSettingsMap) {
 
 		Map<String, String> inputVariables = _getInputVariables(
 			kaleoNodeSettingsMap, executionContext.getWorkflowContext());

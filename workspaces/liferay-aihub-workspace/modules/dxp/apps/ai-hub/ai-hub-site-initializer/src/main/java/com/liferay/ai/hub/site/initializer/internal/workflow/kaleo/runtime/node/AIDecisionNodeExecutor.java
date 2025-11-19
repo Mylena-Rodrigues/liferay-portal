@@ -131,7 +131,7 @@ public class AIDecisionNodeExecutor extends BaseNodeExecutor {
 			DecisionAssistant.class
 		).systemMessageProvider(
 			object -> InputVariablesUtil.applyInputVariables(
-				executionContext, kaleoNodeSettingsMap, "prompt")
+				executionContext, "prompt", kaleoNodeSettingsMap)
 		).streamingChatModel(
 			vertexAiGeminiStreamingChatModel
 		).tools(
@@ -140,7 +140,7 @@ public class AIDecisionNodeExecutor extends BaseNodeExecutor {
 
 		decisionAssistant.decide(
 			InputVariablesUtil.applyInputVariables(
-				executionContext, kaleoNodeSettingsMap, "userMessage"),
+				executionContext, "userMessage", kaleoNodeSettingsMap),
 			InvocationParameters.from(
 				Map.of(
 					"executionContext", executionContext, "permissionChecker",
