@@ -33,12 +33,12 @@ public class ChatAssistantHandler implements AssistantHandler {
 			).id(
 				id
 			).build()
-		).toolProvider(
-			assistantHandlerContext.getToolProvider()
 		).systemMessageProvider(
 			assistantHandlerContext.getSystemMessageProvider()
 		).streamingChatModel(
 			assistantHandlerContext.getVertexAiGeminiStreamingChatModel()
+		).toolProvider(
+			assistantHandlerContext.getToolProvider()
 		).build();
 
 		chatAssistant.chat(

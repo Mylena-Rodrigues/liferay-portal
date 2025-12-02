@@ -27,7 +27,6 @@ import com.liferay.portal.vulcan.pagination.Page;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.mcp.client.DefaultMcpClient;
-import dev.langchain4j.mcp.client.McpClient;
 import dev.langchain4j.mcp.client.transport.McpTransport;
 import dev.langchain4j.mcp.client.transport.http.HttpMcpTransport;
 import dev.langchain4j.mcp.client.transport.http.StreamableHttpMcpTransport;
@@ -35,7 +34,6 @@ import dev.langchain4j.model.chat.request.json.JsonAnyOfSchema;
 import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
 import dev.langchain4j.model.chat.request.json.JsonSchemaElement;
 
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
@@ -54,26 +52,21 @@ public class MCPToolProviderFactoryImpl implements MCPToolProviderFactory {
 		long companyId, long groupId, Locale locale,
 		List<String> mcpServerExternalReferenceCodes, long userId) {
 
-		List<ObjectEntry> objectEntries = _getMCPServerObjectEntries(
-			companyId, groupId, locale, mcpServerExternalReferenceCodes,
-			userId);
-
-		List<McpClient> mcpClients = new ArrayList<>();
-
-		for (ObjectEntry objectEntry : objectEntries) {
-			McpTransport mcpTransport = _createMcpTransport(
-				objectEntry.getProperties());
-
-			mcpClients.add(
-				new DefaultMcpClient.Builder(
-				).transport(
-					mcpTransport
-				).build());
-		}
-
 		return McpToolProvider.builder(
 		).mcpClients(
-			mcpClients
+			TransformUtil.transform(
+				_getMCPServerObjectEntries(
+					companyId, groupId, locale, mcpServerExternalReferenceCodes,
+					userId),
+				objectEntry -> {
+					McpTransport mcpTransport = _createMcpTransport(
+						objectEntry.getProperties());
+
+					return new DefaultMcpClient.Builder(
+					).transport(
+						mcpTransport
+					).build();
+				})
 		).filter(
 			(mcpClient, toolSpecification) -> _filterToolSpecifications(
 				toolSpecification)
@@ -132,9 +125,9 @@ public class MCPToolProviderFactoryImpl implements MCPToolProviderFactory {
 		long companyId, long groupId, Locale locale,
 		List<String> mcpServerExternalReferenceCodes, long userId) {
 
-		Group group = _groupLocalService.fetchGroup(groupId);
-
 		try {
+			Group group = _groupLocalService.fetchGroup(groupId);
+
 			Page<ObjectEntry> page = _objectEntryManager.getObjectEntries(
 				companyId,
 				_objectDefinitionLocalService.
