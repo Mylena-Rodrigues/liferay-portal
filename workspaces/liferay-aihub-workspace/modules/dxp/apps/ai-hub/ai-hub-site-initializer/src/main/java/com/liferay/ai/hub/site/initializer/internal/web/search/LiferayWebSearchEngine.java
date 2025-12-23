@@ -6,7 +6,6 @@
 package com.liferay.ai.hub.site.initializer.internal.web.search;
 
 import com.liferay.petra.reflect.ReflectionUtil;
-import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -26,14 +25,11 @@ import dev.langchain4j.web.search.WebSearchOrganicResult;
 import dev.langchain4j.web.search.WebSearchRequest;
 import dev.langchain4j.web.search.WebSearchResults;
 
-import java.io.UnsupportedEncodingException;
-
 import java.net.URI;
 import java.net.URLEncoder;
 
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +71,9 @@ public class LiferayWebSearchEngine implements WebSearchEngine {
 	private WebSearchResults _search(WebSearchRequest webSearchRequest)
 		throws Exception {
 
+		List<WebSearchOrganicResult> webSearchOrganicResults =
+			new ArrayList<>();
+
 		Http.Options options = new Http.Options();
 
 		options.addHeader(HttpHeaders.AUTHORIZATION, _getAuthorization());
@@ -105,43 +104,29 @@ public class LiferayWebSearchEngine implements WebSearchEngine {
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			HttpUtil.URLtoString(options));
 
-		JSONArray jsonArray = jsonObject.getJSONArray("items");
+		for (JSONObject itemJSONObject :
+				(Iterable<JSONObject>)jsonObject.getJSONArray("items")) {
 
-		Iterator<JSONObject> iterator = jsonArray.iterator();
+			SearchResult searchResult = SearchResult.toDTO(
+				itemJSONObject.toString());
 
-		List<WebSearchOrganicResult> webSearchOrganicResults =
-			new ArrayList<>();
-
-		iterator.forEachRemaining(
-			itemJSONObject -> webSearchOrganicResults.add(
-				_toWebSearchOrganicResult(itemJSONObject)));
-
-		return WebSearchResults.from(
-			WebSearchInformationResult.from(jsonObject.getLong("totalCount")),
-			webSearchOrganicResults);
-	}
-
-	private WebSearchOrganicResult _toWebSearchOrganicResult(
-		JSONObject jsonObject) {
-
-		SearchResult searchResult = SearchResult.toDTO(jsonObject.toString());
-
-		try {
 			String url = "";
 
 			if (searchResult.getItemURL() != null) {
 				url = searchResult.getItemURL();
 			}
 
-			return WebSearchOrganicResult.from(
-				searchResult.getTitle(),
-				URI.create(URLEncoder.encode(url, "UTF-8")), null,
-				searchResult.getDescription(),
-				Map.of("score", String.valueOf(searchResult.getScore())));
+			webSearchOrganicResults.add(
+				WebSearchOrganicResult.from(
+					searchResult.getTitle(),
+					URI.create(URLEncoder.encode(url, "UTF-8")), null,
+					searchResult.getDescription(),
+					Map.of("score", String.valueOf(searchResult.getScore()))));
 		}
-		catch (UnsupportedEncodingException unsupportedEncodingException) {
-			throw new RuntimeException(unsupportedEncodingException);
-		}
+
+		return WebSearchResults.from(
+			WebSearchInformationResult.from(jsonObject.getLong("totalCount")),
+			webSearchOrganicResults);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
