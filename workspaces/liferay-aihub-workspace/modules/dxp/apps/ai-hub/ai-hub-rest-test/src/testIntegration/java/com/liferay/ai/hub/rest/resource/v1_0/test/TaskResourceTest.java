@@ -83,12 +83,10 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 		siteInitializer.initialize(TestPropsValues.getGroupId());
 
 		_group = GroupTestUtil.addGroup();
-
 		_mcpServerObjectDefinition =
 			_objectDefinitionLocalService.
 				getObjectDefinitionByExternalReferenceCode(
 					"L_MCP_SERVER", TestPropsValues.getCompanyId());
-
 		_objectDefinition = ObjectDefinitionTestUtil.publishObjectDefinition(
 			List.of(
 				new LongTextObjectFieldBuilder(
