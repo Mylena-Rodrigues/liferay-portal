@@ -60,6 +60,16 @@ public class TaskDefinitionSerDes {
 			sb.append("\"");
 		}
 
+		if (taskDefinition.getId() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"id\": ");
+
+			sb.append(taskDefinition.getId());
+		}
+
 		if (taskDefinition.getName() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -111,6 +121,13 @@ public class TaskDefinitionSerDes {
 				"description", String.valueOf(taskDefinition.getDescription()));
 		}
 
+		if (taskDefinition.getId() == null) {
+			map.put("id", null);
+		}
+		else {
+			map.put("id", String.valueOf(taskDefinition.getId()));
+		}
+
 		if (taskDefinition.getName() == null) {
 			map.put("name", null);
 		}
@@ -146,6 +163,9 @@ public class TaskDefinitionSerDes {
 			if (Objects.equals(jsonParserFieldName, "description")) {
 				return false;
 			}
+			else if (Objects.equals(jsonParserFieldName, "id")) {
+				return false;
+			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
 				return false;
 			}
@@ -164,6 +184,12 @@ public class TaskDefinitionSerDes {
 			if (Objects.equals(jsonParserFieldName, "description")) {
 				if (jsonParserFieldValue != null) {
 					taskDefinition.setDescription((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "id")) {
+				if (jsonParserFieldValue != null) {
+					taskDefinition.setId(
+						Long.valueOf((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {

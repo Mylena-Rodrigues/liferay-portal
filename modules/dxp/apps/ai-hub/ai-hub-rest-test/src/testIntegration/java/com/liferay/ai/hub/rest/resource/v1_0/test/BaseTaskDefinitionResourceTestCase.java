@@ -636,6 +636,10 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 	protected void assertValid(TaskDefinition taskDefinition) throws Exception {
 		boolean valid = true;
 
+		if (taskDefinition.getId() == null) {
+			valid = false;
+		}
+
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
 
@@ -721,6 +725,8 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 	protected List<GraphQLField> getGraphQLFields() throws Exception {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
+		graphQLFields.add(new GraphQLField("id"));
+
 		for (java.lang.reflect.Field field :
 				getDeclaredFields(
 					com.liferay.ai.hub.rest.dto.v1_0.TaskDefinition.class)) {
@@ -785,6 +791,16 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 				if (!Objects.deepEquals(
 						taskDefinition1.getDescription(),
 						taskDefinition2.getDescription())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("id", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						taskDefinition1.getId(), taskDefinition2.getId())) {
 
 					return false;
 				}
@@ -967,6 +983,11 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("id")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("name")) {
 			Object object = taskDefinition.getName();
 
@@ -1066,6 +1087,7 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 			{
 				description = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				id = RandomTestUtil.randomLong();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				version = RandomTestUtil.randomInt();
 			}
