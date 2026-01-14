@@ -73,7 +73,10 @@ public class TaskDefinitionDisplayContext {
 				HttpComponentsUtil.addParameter(
 					_getBaseURL(_themeDisplay.getCompany(), namespace),
 					namespace + "name", "{name}"),
-				"view", "view", "view", "get", null, null));
+				"view", "view", "view", "get", null, null),
+			new FDSActionDropdownItem(
+				"/o/headless-admin-workflow/v1.0/workflow-definitions/{id}",
+				"trash", "delete", "delete", "delete", null, "async"));
 	}
 
 	private String _getBaseURL(Company company, String namespace)
