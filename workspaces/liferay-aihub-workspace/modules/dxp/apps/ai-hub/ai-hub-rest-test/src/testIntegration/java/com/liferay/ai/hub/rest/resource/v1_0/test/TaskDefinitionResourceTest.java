@@ -42,13 +42,13 @@ public class TaskDefinitionResourceTest
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		_originalName = PrincipalThreadLocal.getName();
-
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
 		PermissionThreadLocal.setPermissionChecker(
 			PermissionCheckerFactoryUtil.create(TestPropsValues.getUser()));
+
+		_originalName = PrincipalThreadLocal.getName();
 
 		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
@@ -66,6 +66,7 @@ public class TaskDefinitionResourceTest
 	@AfterClass
 	public static void tearDownClass() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
+
 		PrincipalThreadLocal.setName(_originalName);
 
 		ServiceContextThreadLocal.popServiceContext();

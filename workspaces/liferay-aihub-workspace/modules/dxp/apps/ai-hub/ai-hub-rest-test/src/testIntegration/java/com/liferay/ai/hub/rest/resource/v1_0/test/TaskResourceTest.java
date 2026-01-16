@@ -77,13 +77,13 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 	public static void setUpClass() throws Exception {
 		_classNameLocalService.invalidate();
 
-		_originalName = PrincipalThreadLocal.getName();
-
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
 		PermissionThreadLocal.setPermissionChecker(
 			PermissionCheckerFactoryUtil.create(TestPropsValues.getUser()));
+
+		_originalName = PrincipalThreadLocal.getName();
 
 		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
