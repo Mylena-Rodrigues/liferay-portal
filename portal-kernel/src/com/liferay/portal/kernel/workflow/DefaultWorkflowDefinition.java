@@ -6,6 +6,7 @@
 package com.liferay.portal.kernel.workflow;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 
 import java.io.InputStream;
@@ -126,8 +127,17 @@ public class DefaultWorkflowDefinition
 		return _active;
 	}
 
+	@Override
+	public boolean isSystem() {
+		return _system;
+	}
+
 	public void setActive(boolean active) {
 		_active = active;
+	}
+
+	public void setSystem(boolean system) {
+		_system = system;
 	}
 
 	public void setCompanyId(long companyId) {
@@ -201,6 +211,7 @@ public class DefaultWorkflowDefinition
 	}
 
 	private boolean _active;
+	private boolean _system;
 	private long _companyId;
 	private String _content;
 	private String _contentAsXML;
