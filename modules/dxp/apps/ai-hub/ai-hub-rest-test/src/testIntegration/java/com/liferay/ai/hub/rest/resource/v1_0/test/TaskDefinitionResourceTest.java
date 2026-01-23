@@ -168,6 +168,29 @@ public class TaskDefinitionResourceTest
 		Assert.assertTrue(taskDefinition.getActive());
 	}
 
+	@Test
+	public void testPostTaskDefinitionCopy() throws Exception {
+		WorkflowDefinition workflowDefinition =
+			_workflowDefinitionManager.getLatestWorkflowDefinition(
+				TestPropsValues.getCompanyId(), "Single Approver");
+
+		TaskDefinition taskDefinition =
+			taskDefinitionResource.postTaskDefinitionCopy(
+				workflowDefinition.getWorkflowDefinitionId());
+
+		WorkflowDefinition workflowDefinitionFromCopy =
+			_workflowDefinitionManager.getWorkflowDefinition(
+				taskDefinition.getId());
+
+		Assert.assertEquals(
+			workflowDefinition.getDescription(),
+			workflowDefinitionFromCopy.getDescription());
+
+		Assert.assertEquals(
+			workflowDefinition.getContentAsXML(),
+			workflowDefinitionFromCopy.getContentAsXML());
+	}
+
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {"name", "version"};
