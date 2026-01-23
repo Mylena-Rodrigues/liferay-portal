@@ -81,11 +81,11 @@ public class JWTTokenUtil {
 			return 0;
 		}
 
-		Date expirationTime = jwtClaimsSet.getExpirationTime();
+		Date expirationDate = jwtClaimsSet.getExpirationTime();
 
-		if ((expirationTime == null) || expirationTime.before(new Date())) {
+		if ((expirationDate == null) || expirationDate.before(new Date())) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("The JWT token has been expired");
+				_log.debug("The JWT token is expired");
 			}
 
 			return 0;
