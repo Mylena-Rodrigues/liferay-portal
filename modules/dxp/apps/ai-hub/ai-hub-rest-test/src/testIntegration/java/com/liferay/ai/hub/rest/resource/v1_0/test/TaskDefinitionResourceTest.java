@@ -79,7 +79,7 @@ public class TaskDefinitionResourceTest
 
 	@Test
 	public void testDeleteTaskDefinition() throws Exception {
-		WorkflowDefinition workflowDefinition = _generateWorkflowDefinition();
+		WorkflowDefinition workflowDefinition = _deployWorkflowDefinition();
 
 		long workflowDefinitionId =
 			workflowDefinition.getWorkflowDefinitionId();
@@ -154,19 +154,16 @@ public class TaskDefinitionResourceTest
 
 	@Test
 	public void testPatchTaskDefinitionUpdateActive() throws Exception {
-		WorkflowDefinition workflowDefinition = _generateWorkflowDefinition();
-
-		long workflowDefinitionId =
-			workflowDefinition.getWorkflowDefinitionId();
+		WorkflowDefinition workflowDefinition = _deployWorkflowDefinition();
 
 		TaskDefinition taskDefinition =
 			taskDefinitionResource.patchTaskDefinitionUpdateActive(
-				workflowDefinitionId, false);
+				workflowDefinition.getWorkflowDefinitionId(), false);
 
 		Assert.assertFalse(taskDefinition.getActive());
 
 		taskDefinition = taskDefinitionResource.patchTaskDefinitionUpdateActive(
-			workflowDefinitionId, true);
+			workflowDefinition.getWorkflowDefinitionId(), true);
 
 		Assert.assertTrue(taskDefinition.getActive());
 	}
@@ -183,7 +180,7 @@ public class TaskDefinitionResourceTest
 		return taskDefinition;
 	}
 
-	private WorkflowDefinition _generateWorkflowDefinition() throws Exception {
+	private WorkflowDefinition _deployWorkflowDefinition() throws Exception {
 		WorkflowDefinition workflowDefinition =
 			_workflowDefinitionManager.getLatestWorkflowDefinition(
 				TestPropsValues.getCompanyId(), "Single Approver");
