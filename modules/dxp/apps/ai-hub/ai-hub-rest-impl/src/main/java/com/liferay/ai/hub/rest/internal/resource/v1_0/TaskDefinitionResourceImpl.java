@@ -112,9 +112,6 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 			WorkflowDefinition workflowDefinition)
 		throws PortalException {
 
-		Boolean isSystemWorkflowDefinition = ArrayUtil.contains(
-			WorkflowDefinitionConstants.SYSTEM_WORKFLOW_DEFINITION_NAMES,
-			workflowDefinition.getName());
 
 		return new TaskDefinition() {
 			{
@@ -122,7 +119,7 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 					() -> HashMapBuilder.put(
 						"delete",
 						() -> {
-							if (isSystemWorkflowDefinition) {
+							if (workflowDefinition.isSystem()) {
 								return null;
 							}
 
@@ -135,7 +132,7 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 					).put(
 						workflowDefinition.isActive() ? "disable" : "enable",
 						() -> {
-							if (isSystemWorkflowDefinition) {
+							if (workflowDefinition.isSystem()) {
 								return null;
 							}
 
