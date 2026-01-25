@@ -57,16 +57,16 @@ public class TaskResourceImpl extends BaseTaskResourceImpl {
 			throw new UnsupportedOperationException();
 		}
 
+		WorkflowDefinition workflowDefinition =
+			_workflowDefinitionManager.getLatestWorkflowDefinition(
+				contextCompany.getCompanyId(), task.getType());
+
 		Map<String, Serializable> workflowContext =
 			WorkflowContextUtil.toWorkflowContext(
 				task.getContext(), contextHttpServletRequest, _sse,
 				task.getSseEventSinkKey());
 
 		workflowContext.put("outBoundEventName", task.getType());
-
-		WorkflowDefinition workflowDefinition =
-			_workflowDefinitionManager.getLatestWorkflowDefinition(
-				contextCompany.getCompanyId(), task.getType());
 
 		WorkflowInstance workflowInstance =
 			_workflowInstanceManager.startWorkflowInstance(
