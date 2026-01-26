@@ -113,16 +113,16 @@ public class LiferayWebSearchEngine implements WebSearchEngine {
 			SearchResult searchResult = SearchResult.toDTO(
 				itemJSONObject.toString());
 
-			String url = "";
-
-			if (searchResult.getItemURL() != null) {
-				url = searchResult.getItemURL();
-			}
-
 			float score = searchResult.getScore();
 
 			if (score < 5) {
 				continue;
+			}
+
+			String url = "";
+
+			if (searchResult.getItemURL() != null) {
+				url = searchResult.getItemURL();
 			}
 
 			webSearchOrganicResults.add(
