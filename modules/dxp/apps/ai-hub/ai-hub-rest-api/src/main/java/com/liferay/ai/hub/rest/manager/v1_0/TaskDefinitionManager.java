@@ -8,11 +8,9 @@ package com.liferay.ai.hub.rest.manager.v1_0;
 import com.liferay.ai.hub.rest.dto.v1_0.TaskDefinition;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import jakarta.ws.rs.core.UriInfo;
 
 /**
  * @author Feliphe Marinho
@@ -21,7 +19,7 @@ import jakarta.ws.rs.core.UriInfo;
 public interface TaskDefinitionManager {
 
 	public void deleteTaskDefinition(
-		long taskDefinitionId, DTOConverterContext dtoConverterContext)
+			long taskDefinitionId, DTOConverterContext dtoConverterContext)
 		throws Exception;
 
 	public Page<TaskDefinition> getTaskDefinitions(
@@ -30,10 +28,12 @@ public interface TaskDefinitionManager {
 		throws Exception;
 
 	public TaskDefinition patchTaskDefinitionUpdateActive(
-		long taskDefinitionId, Boolean active, DTOConverterContext dtoConverterContext)
+			long taskDefinitionId, Boolean active,
+			DTOConverterContext dtoConverterContext)
 		throws Exception;
 
 	public TaskDefinition postTaskDefinitionCopy(
-		long taskDefinitionId, DTOConverterContext dtoConverterContext)
+			long taskDefinitionId, DTOConverterContext dtoConverterContext)
 		throws Exception;
+
 }

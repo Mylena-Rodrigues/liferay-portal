@@ -36,7 +36,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author João Victor Alves
@@ -90,8 +89,8 @@ public class TaskDefinitionResourceTest
 		AssertUtils.assertFailure(
 			NoSuchWorkflowDefinitionException.class,
 			NoSuchDefinitionException.class.getName() +
-			": No KaleoDefinition exists with the primary key " +
-			workflowDefinitionId,
+				": No KaleoDefinition exists with the primary key " +
+					workflowDefinitionId,
 			() -> _workflowDefinitionManager.getWorkflowDefinition(
 				workflowDefinitionId));
 	}
@@ -158,14 +157,12 @@ public class TaskDefinitionResourceTest
 			workflowDefinition2.getWorkflowDefinitionId());
 
 		Assert.assertNotEquals(
-			workflowDefinition1.getName(),
-			workflowDefinition2.getName());
+			workflowDefinition1.getName(), workflowDefinition2.getName());
 
 		Assert.assertNotEquals(
 			workflowDefinition1.getExternalReferenceCode(),
 			workflowDefinition2.getExternalReferenceCode());
 	}
-
 
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
@@ -177,6 +174,19 @@ public class TaskDefinitionResourceTest
 		TaskDefinition taskDefinition) {
 
 		return taskDefinition;
+	}
+
+	private WorkflowDefinition _deployWorkflowDefinition() throws Exception {
+		WorkflowDefinition workflowDefinition =
+			_workflowDefinitionManager.getLatestWorkflowDefinition(
+				TestPropsValues.getCompanyId(), "Single Approver");
+
+		String content = workflowDefinition.getContent();
+
+		return _workflowDefinitionManager.deployWorkflowDefinition(
+			null, workflowDefinition.getCompanyId(),
+			workflowDefinition.getUserId(), workflowDefinition.getTitle(),
+			RandomTestUtil.randomString(), content.getBytes());
 	}
 
 	private void _testGetTaskDefinitionsPage() throws Exception {
@@ -207,25 +217,8 @@ public class TaskDefinitionResourceTest
 			_systemTaskDefinitions, (List<TaskDefinition>)page.getItems());
 	}
 
-	private WorkflowDefinition _deployWorkflowDefinition() throws Exception {
-		WorkflowDefinition workflowDefinition =
-			_workflowDefinitionManager.getLatestWorkflowDefinition(
-				TestPropsValues.getCompanyId(), "Single Approver");
-
-		String content = workflowDefinition.getContent();
-
-		return _workflowDefinitionManager.deployWorkflowDefinition(
-			null, workflowDefinition.getCompanyId(),
-			workflowDefinition.getUserId(), workflowDefinition.getTitle(),
-			RandomTestUtil.randomString(), content.getBytes());
-	}
-
-
 	private static String _originalName;
 	private static PermissionChecker _originalPermissionChecker;
-
-	@Inject
-	private WorkflowDefinitionManager _workflowDefinitionManager;
 
 	@Inject
 	private static SiteInitializerRegistry _siteInitializerRegistry;
@@ -274,5 +267,8 @@ public class TaskDefinitionResourceTest
 				version = 1;
 			}
 		});
+
+	@Inject
+	private WorkflowDefinitionManager _workflowDefinitionManager;
 
 }

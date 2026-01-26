@@ -22,18 +22,17 @@ import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.util.ActionUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
+import java.util.Map;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-
-import com.liferay.portal.vulcan.util.ActionUtil;
-
-import java.util.Map;
 
 /**
  * @author Feliphe Marinho
@@ -41,10 +40,12 @@ import java.util.Map;
  */
 @Component(service = TaskDefinitionManager.class)
 public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
+
 	@Override
 	public void deleteTaskDefinition(
-		long taskDefinitionId, DTOConverterContext dtoConverterContext)
+			long taskDefinitionId, DTOConverterContext dtoConverterContext)
 		throws Exception {
+
 		WorkflowDefinition workflowDefinition =
 			_workflowDefinitionManager.getWorkflowDefinition(taskDefinitionId);
 
@@ -66,15 +67,13 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 
 		Map<String, Map<String, String>> actions = null;
 
-		if(dtoConverterContext != null) {
-			actions = HashMapBuilder.put(
+		if (dtoConverterContext != null) {
+			actions = HashMapBuilder.<String, Map<String, String>>put(
 				"get",
 				ActionUtil.addAction(
-					ActionKeys.VIEW,
-					TaskDefinitionResourceImpl.class,
-					null,"getTaskDefinitionsPage",
-					_kaleoDefinitionModelResourcePermission,
-					(Long) null,
+					ActionKeys.VIEW, TaskDefinitionResourceImpl.class, null,
+					"getTaskDefinitionsPage",
+					_kaleoDefinitionModelResourcePermission, (Long)null,
 					dtoConverterContext.getUriInfo())
 			).build();
 		}
@@ -96,14 +95,14 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 			document -> _toTaskDefinition(
 				_workflowDefinitionManager.getWorkflowDefinition(
 					companyId, document.get(Field.NAME),
-					GetterUtil.getInteger(document.get(Field.VERSION)
-					)
-				), dtoConverterContext));
+					GetterUtil.getInteger(document.get(Field.VERSION))),
+				dtoConverterContext));
 	}
 
 	@Override
 	public TaskDefinition patchTaskDefinitionUpdateActive(
-		long taskDefinitionId, Boolean active, DTOConverterContext dtoConverterContext)
+			long taskDefinitionId, Boolean active,
+			DTOConverterContext dtoConverterContext)
 		throws Exception {
 
 		WorkflowDefinition workflowDefinition =
@@ -119,7 +118,7 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 
 	@Override
 	public TaskDefinition postTaskDefinitionCopy(
-		long taskDefinitionId, DTOConverterContext dtoConverterContext)
+			long taskDefinitionId, DTOConverterContext dtoConverterContext)
 		throws Exception {
 
 		WorkflowDefinition workflowDefinition =
@@ -131,19 +130,19 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				null, workflowDefinition.getCompanyId(),
 				workflowDefinition.getUserId(), workflowDefinition.getTitle(),
-				StringUtil.randomString(), "ai",
-				content.getBytes());
+				StringUtil.randomString(), "ai", content.getBytes());
 
 		return _toTaskDefinition(workflowDefinition, dtoConverterContext);
 	}
 
 	private TaskDefinition _toTaskDefinition(
-			WorkflowDefinition workflowDefinition, DTOConverterContext dtoConverterContext)
+			WorkflowDefinition workflowDefinition,
+			DTOConverterContext dtoConverterContext)
 		throws PortalException {
 
 		return new TaskDefinition() {
 			{
-				if(dtoConverterContext != null) {
+				if (dtoConverterContext != null) {
 					setActions(
 						() -> HashMapBuilder.put(
 							"copy",
@@ -153,8 +152,7 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 								workflowDefinition.getWorkflowDefinitionId(),
 								"postTaskDefinitionCopy",
 								_kaleoDefinitionModelResourcePermission,
-								(Long) null,
-								dtoConverterContext.getUriInfo())
+								(Long)null, dtoConverterContext.getUriInfo())
 						).put(
 							"delete",
 							() -> {
@@ -165,14 +163,16 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 								return ActionUtil.addAction(
 									ActionKeys.DELETE,
 									TaskDefinitionResourceImpl.class,
-									workflowDefinition.getWorkflowDefinitionId(),
+									workflowDefinition.
+										getWorkflowDefinitionId(),
 									"deleteTaskDefinition",
 									_kaleoDefinitionModelResourcePermission,
-									(Long) null,
+									(Long)null,
 									dtoConverterContext.getUriInfo());
 							}
 						).put(
-							workflowDefinition.isActive() ? "disable" : "enable",
+							workflowDefinition.isActive() ? "disable" :
+								"enable",
 							() -> {
 								if (workflowDefinition.isSystem()) {
 									return null;
@@ -180,16 +180,19 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 
 								return ActionUtil.addAction(
 									workflowDefinition.isActive() ?
-										ActionKeys.DEACTIVATE : ActionKeys.ACTIVATE,
+										ActionKeys.DEACTIVATE :
+											ActionKeys.ACTIVATE,
 									TaskDefinitionResourceImpl.class,
-									workflowDefinition.getWorkflowDefinitionId(),
+									workflowDefinition.
+										getWorkflowDefinitionId(),
 									"patchTaskDefinitionUpdateActive",
 									_kaleoDefinitionModelResourcePermission,
-									(Long) null,
+									(Long)null,
 									dtoConverterContext.getUriInfo());
 							}
 						).build());
 				}
+
 				setActive(workflowDefinition::isActive);
 				setDescription(workflowDefinition::getDescription);
 				setId(workflowDefinition::getWorkflowDefinitionId);
@@ -199,14 +202,13 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 		};
 	}
 
-
-	@Reference
-	private WorkflowDefinitionManager _workflowDefinitionManager;
-
 	@Reference(
 		target = "(model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoDefinition)"
 	)
 	private ModelResourcePermission<KaleoDefinition>
 		_kaleoDefinitionModelResourcePermission;
+
+	@Reference
+	private WorkflowDefinitionManager _workflowDefinitionManager;
 
 }
