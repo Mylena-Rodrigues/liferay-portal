@@ -15,7 +15,6 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -24,7 +23,6 @@ import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.SearchUtil;
-import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
@@ -109,19 +107,21 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 		return _toTaskDefinition(workflowDefinition);
 	}
 
+		@Override
 	public TaskDefinition postTaskDefinitionCopy(Long taskDefinitionId)
 		throws Exception {
 
 		WorkflowDefinition workflowDefinition =
 			_workflowDefinitionManager.getWorkflowDefinition(taskDefinitionId);
 
+		String content = workflowDefinition.getContent();
+
 		workflowDefinition =
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				null, workflowDefinition.getCompanyId(),
 				workflowDefinition.getUserId(), workflowDefinition.getTitle(),
 				StringUtil.randomString(), "ai",
-				workflowDefinition.getContent(
-				).getBytes());
+				content.getBytes());
 
 		return _toTaskDefinition(workflowDefinition);
 	}
@@ -164,7 +164,7 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 					).put(
 						"copy",
 						addAction(
-							ActionKeys.UPDATE,
+							ActionKeys.ADD_DEFINITION,
 							workflowDefinition.getWorkflowDefinitionId(),
 							"postTaskDefinitionCopy",
 							_workflowDefinitionModelResourcePermission)
