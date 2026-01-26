@@ -29,6 +29,10 @@ public interface TaskDefinitionManager {
 			String search, Filter filter, Pagination pagination, Sort[] sorts)
 		throws Exception;
 
+	public TaskDefinition patchTaskDefinitionUpdateActive(
+		long taskDefinitionId, Boolean active, DTOConverterContext dtoConverterContext)
+		throws Exception;
+
 	public TaskDefinition postTaskDefinitionCopy(
 		long taskDefinitionId, DTOConverterContext dtoConverterContext)
 		throws Exception;

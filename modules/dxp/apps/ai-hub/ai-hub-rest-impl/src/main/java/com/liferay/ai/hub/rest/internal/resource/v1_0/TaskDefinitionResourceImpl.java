@@ -77,6 +77,19 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 	}
 
 	@Override
+	public TaskDefinition patchTaskDefinitionUpdateActive(Long taskDefinitionId, Boolean active)
+		throws Exception {
+		return _taskDefinitionManager.patchTaskDefinitionUpdateActive(
+			taskDefinitionId, active,
+			new DefaultDTOConverterContext(
+				contextAcceptLanguage.isAcceptAllLanguages(),
+				null,
+				_dtoConverterRegistry, contextHttpServletRequest, taskDefinitionId,
+				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+				contextUser));
+	}
+
+	@Override
 	public TaskDefinition postTaskDefinitionCopy(Long taskDefinitionId)
 		throws Exception {
 		return _taskDefinitionManager.postTaskDefinitionCopy(taskDefinitionId,

@@ -102,6 +102,22 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 	}
 
 	@Override
+	public TaskDefinition patchTaskDefinitionUpdateActive(
+		long taskDefinitionId, Boolean active, DTOConverterContext dtoConverterContext)
+		throws Exception {
+
+		WorkflowDefinition workflowDefinition =
+			_workflowDefinitionManager.getWorkflowDefinition(taskDefinitionId);
+
+		workflowDefinition = _workflowDefinitionManager.updateActive(
+			workflowDefinition.getCompanyId(), dtoConverterContext.getUserId(),
+			workflowDefinition.getName(), workflowDefinition.getVersion(),
+			active);
+
+		return _toTaskDefinition(workflowDefinition, dtoConverterContext);
+	}
+
+	@Override
 	public TaskDefinition postTaskDefinitionCopy(
 		long taskDefinitionId, DTOConverterContext dtoConverterContext)
 		throws Exception {
@@ -151,6 +167,23 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 									TaskDefinitionResourceImpl.class,
 									workflowDefinition.getWorkflowDefinitionId(),
 									"deleteTaskDefinition",
+									_kaleoDefinitionModelResourcePermission,
+									(Long) null,
+									dtoConverterContext.getUriInfo());
+							}
+						).put(
+							workflowDefinition.isActive() ? "disable" : "enable",
+							() -> {
+								if (workflowDefinition.isSystem()) {
+									return null;
+								}
+
+								return ActionUtil.addAction(
+									workflowDefinition.isActive() ?
+										ActionKeys.DEACTIVATE : ActionKeys.ACTIVATE,
+									TaskDefinitionResourceImpl.class,
+									workflowDefinition.getWorkflowDefinitionId(),
+									"patchTaskDefinitionUpdateActive",
 									_kaleoDefinitionModelResourcePermission,
 									(Long) null,
 									dtoConverterContext.getUriInfo());
