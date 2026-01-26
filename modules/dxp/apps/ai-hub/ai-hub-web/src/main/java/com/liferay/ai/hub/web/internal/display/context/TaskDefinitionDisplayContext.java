@@ -76,7 +76,11 @@ public class TaskDefinitionDisplayContext {
 			new FDSActionDropdownItem(
 				getAPIURL() + "/{id}/copy", "copy", "copy",
 				LanguageUtil.get(_httpServletRequest, "duplicate"), "post",
-				"copy", "async"));
+				"copy", "async"),
+			new FDSActionDropdownItem(
+				getAPIURL() + "/{id}", "trash", "delete",
+				LanguageUtil.get(_httpServletRequest, "delete"), "delete",
+				"delete", "async"));
 	}
 
 	private String _getBaseURL(Company company, String namespace)
