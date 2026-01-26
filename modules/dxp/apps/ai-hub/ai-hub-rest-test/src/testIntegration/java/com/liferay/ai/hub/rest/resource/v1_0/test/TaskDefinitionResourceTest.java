@@ -170,25 +170,38 @@ public class TaskDefinitionResourceTest
 
 	@Test
 	public void testPostTaskDefinitionCopy() throws Exception {
-		WorkflowDefinition workflowDefinition =
+		WorkflowDefinition workflowDefinition1 =
 			_workflowDefinitionManager.getLatestWorkflowDefinition(
-				TestPropsValues.getCompanyId(), "Single Approver");
+				TestPropsValues.getCompanyId(),
+				WorkflowDefinitionConstants.NAME_CHANGE_TONE);
 
 		TaskDefinition taskDefinition =
 			taskDefinitionResource.postTaskDefinitionCopy(
-				workflowDefinition.getWorkflowDefinitionId());
+				workflowDefinition1.getWorkflowDefinitionId());
 
-		WorkflowDefinition workflowDefinitionFromCopy =
+		WorkflowDefinition workflowDefinition2 =
 			_workflowDefinitionManager.getWorkflowDefinition(
 				taskDefinition.getId());
 
 		Assert.assertEquals(
-			workflowDefinition.getDescription(),
-			workflowDefinitionFromCopy.getDescription());
+			workflowDefinition1.getDescription(),
+			workflowDefinition2.getDescription());
 
 		Assert.assertEquals(
-			workflowDefinition.getContentAsXML(),
-			workflowDefinitionFromCopy.getContentAsXML());
+			workflowDefinition1.getContentAsXML(),
+			workflowDefinition2.getContentAsXML());
+
+		Assert.assertNotEquals(
+			workflowDefinition1.getWorkflowDefinitionId(),
+			workflowDefinition2.getWorkflowDefinitionId());
+
+		Assert.assertNotEquals(
+			workflowDefinition1.getName(),
+			workflowDefinition2.getName());
+
+		Assert.assertNotEquals(
+			workflowDefinition1.getExternalReferenceCode(),
+			workflowDefinition2.getExternalReferenceCode());
 	}
 
 	@Override
