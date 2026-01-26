@@ -6,24 +6,35 @@
 package com.liferay.ai.hub.rest.internal.manager.v1_0;
 
 import com.liferay.ai.hub.rest.dto.v1_0.TaskDefinition;
+import com.liferay.ai.hub.rest.internal.resource.v1_0.TaskDefinitionResourceImpl;
 import com.liferay.ai.hub.rest.manager.v1_0.TaskDefinitionManager;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
+import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
+import jakarta.ws.rs.core.UriInfo;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+
+import com.liferay.portal.vulcan.util.ActionUtil;
+
+import java.util.Map;
 
 /**
  * @author Feliphe Marinho
@@ -31,15 +42,29 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = TaskDefinitionManager.class)
 public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
-
 	@Override
 	public Page<TaskDefinition> getTaskDefinitions(
 			long companyId, DTOConverterContext dtoConverterContext,
 			String search, Filter filter, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
+		Map<String, Map<String, String>> actions = null;
+
+		if(dtoConverterContext != null) {
+			actions = HashMapBuilder.put(
+				"get",
+				ActionUtil.addAction(
+					ActionKeys.VIEW,
+					TaskDefinitionResourceImpl.class,
+					null,"getTaskDefinitionsPage",
+					_kaleoDefinitionModelResourcePermission,
+					(Long) null,
+					dtoConverterContext.getUriInfo())
+			).build();
+		}
+
 		return SearchUtil.search(
-			dtoConverterContext.getActions(),
+			actions,
 			booleanQuery -> {
 				BooleanFilter booleanFilter =
 					booleanQuery.getPreBooleanFilter();
@@ -55,24 +80,68 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 			document -> _toTaskDefinition(
 				_workflowDefinitionManager.getWorkflowDefinition(
 					companyId, document.get(Field.NAME),
-					GetterUtil.getInteger(document.get(Field.VERSION)))));
+					GetterUtil.getInteger(document.get(Field.VERSION)
+					)
+				), dtoConverterContext));
+	}
+
+	@Override
+	public TaskDefinition postTaskDefinitionCopy(
+		long taskDefinitionId, DTOConverterContext dtoConverterContext)
+		throws Exception {
+
+		WorkflowDefinition workflowDefinition =
+			_workflowDefinitionManager.getWorkflowDefinition(taskDefinitionId);
+
+		String content = workflowDefinition.getContent();
+
+		workflowDefinition =
+			_workflowDefinitionManager.deployWorkflowDefinition(
+				null, workflowDefinition.getCompanyId(),
+				workflowDefinition.getUserId(), workflowDefinition.getTitle(),
+				StringUtil.randomString(), "ai",
+				content.getBytes());
+
+		return _toTaskDefinition(workflowDefinition, dtoConverterContext);
 	}
 
 	private TaskDefinition _toTaskDefinition(
-			WorkflowDefinition workflowDefinition)
+			WorkflowDefinition workflowDefinition, DTOConverterContext dtoConverterContext)
 		throws PortalException {
 
 		return new TaskDefinition() {
 			{
+				if(dtoConverterContext != null) {
+					setActions(
+						() -> HashMapBuilder.put(
+							"copy",
+							ActionUtil.addAction(
+								ActionKeys.ADD_DEFINITION,
+								TaskDefinitionResourceImpl.class,
+								workflowDefinition.getWorkflowDefinitionId(),
+								"postTaskDefinitionCopy",
+								_kaleoDefinitionModelResourcePermission,
+								(Long) null,
+								dtoConverterContext.getUriInfo())
+						).build());
+				}
 				setActive(workflowDefinition::isActive);
 				setDescription(workflowDefinition::getDescription);
+				setId(workflowDefinition::getWorkflowDefinitionId);
 				setName(workflowDefinition::getName);
 				setVersion(workflowDefinition::getVersion);
 			}
 		};
 	}
 
+
 	@Reference
 	private WorkflowDefinitionManager _workflowDefinitionManager;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoDefinition)"
+	)
+	private ModelResourcePermission<KaleoDefinition>
+		_kaleoDefinitionModelResourcePermission;
 
 }

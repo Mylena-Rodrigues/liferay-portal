@@ -57,16 +57,23 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 			contextCompany.getCompanyId(),
 			new DefaultDTOConverterContext(
 				contextAcceptLanguage.isAcceptAllLanguages(),
-				HashMapBuilder.put(
-					"get",
-					addAction(
-						ActionKeys.VIEW, null, "getTaskDefinitionsPage",
-						_kaleoDefinitionModelResourcePermission)
-				).build(),
+				null,
 				_dtoConverterRegistry, contextHttpServletRequest, null,
 				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 				contextUser),
 			search, filter, pagination, sorts);
+	}
+
+	@Override
+	public TaskDefinition postTaskDefinitionCopy(Long taskDefinitionId)
+		throws Exception {
+		return _taskDefinitionManager.postTaskDefinitionCopy(taskDefinitionId,
+			new DefaultDTOConverterContext(
+			contextAcceptLanguage.isAcceptAllLanguages(),
+			null,
+			_dtoConverterRegistry, contextHttpServletRequest, taskDefinitionId,
+			contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+			contextUser));
 	}
 
 	private static final EntityModel _entityModel =
@@ -74,12 +81,6 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
-
-	@Reference(
-		target = "(model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoDefinition)"
-	)
-	private ModelResourcePermission<KaleoDefinition>
-		_kaleoDefinitionModelResourcePermission;
 
 	@Reference
 	private TaskDefinitionManager _taskDefinitionManager;

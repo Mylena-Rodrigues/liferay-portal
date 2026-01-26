@@ -36,7 +36,7 @@ public class AgentsFactory {
 			Page<TaskDefinition> page =
 				_taskDefinitionManager.getTaskDefinitions(
 					_agentContext.getCompanyId(),
-					_agentContext.getDTOConverterContext(), null, null,
+					null, null, null,
 					Pagination.of(1, 20), null);
 
 			List<TaskDefinition> taskDefinitions =
