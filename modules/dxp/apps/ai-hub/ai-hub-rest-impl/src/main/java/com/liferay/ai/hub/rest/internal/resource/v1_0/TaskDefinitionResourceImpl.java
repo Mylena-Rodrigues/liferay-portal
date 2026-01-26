@@ -38,6 +38,18 @@ import org.osgi.service.component.annotations.ServiceScope;
 public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 
 	@Override
+	public void deleteTaskDefinition(Long taskDefinitionId)
+		throws Exception {
+		_taskDefinitionManager.deleteTaskDefinition(taskDefinitionId,
+			new DefaultDTOConverterContext(
+				contextAcceptLanguage.isAcceptAllLanguages(),
+				null,
+				_dtoConverterRegistry, contextHttpServletRequest, taskDefinitionId,
+				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+				contextUser));
+	}
+
+	@Override
 	public EntityModel getEntityModel(MultivaluedMap multivaluedMap) {
 		return _entityModel;
 	}

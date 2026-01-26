@@ -28,7 +28,6 @@ import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
-import jakarta.ws.rs.core.UriInfo;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -42,6 +41,23 @@ import java.util.Map;
  */
 @Component(service = TaskDefinitionManager.class)
 public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
+	@Override
+	public void deleteTaskDefinition(
+		long taskDefinitionId, DTOConverterContext dtoConverterContext)
+		throws Exception {
+		WorkflowDefinition workflowDefinition =
+			_workflowDefinitionManager.getWorkflowDefinition(taskDefinitionId);
+
+		_workflowDefinitionManager.updateActive(
+			workflowDefinition.getCompanyId(), dtoConverterContext.getUserId(),
+			workflowDefinition.getName(), workflowDefinition.getVersion(),
+			false);
+
+		_workflowDefinitionManager.undeployWorkflowDefinition(
+			workflowDefinition.getCompanyId(), dtoConverterContext.getUserId(),
+			workflowDefinition.getName(), workflowDefinition.getVersion());
+	}
+
 	@Override
 	public Page<TaskDefinition> getTaskDefinitions(
 			long companyId, DTOConverterContext dtoConverterContext,
@@ -123,6 +139,22 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 								_kaleoDefinitionModelResourcePermission,
 								(Long) null,
 								dtoConverterContext.getUriInfo())
+						).put(
+							"delete",
+							() -> {
+								if (workflowDefinition.isSystem()) {
+									return null;
+								}
+
+								return ActionUtil.addAction(
+									ActionKeys.DELETE,
+									TaskDefinitionResourceImpl.class,
+									workflowDefinition.getWorkflowDefinitionId(),
+									"deleteTaskDefinition",
+									_kaleoDefinitionModelResourcePermission,
+									(Long) null,
+									dtoConverterContext.getUriInfo());
+							}
 						).build());
 				}
 				setActive(workflowDefinition::isActive);

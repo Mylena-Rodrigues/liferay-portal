@@ -20,6 +20,10 @@ import jakarta.ws.rs.core.UriInfo;
  */
 public interface TaskDefinitionManager {
 
+	public void deleteTaskDefinition(
+		long taskDefinitionId, DTOConverterContext dtoConverterContext)
+		throws Exception;
+
 	public Page<TaskDefinition> getTaskDefinitions(
 			long companyId, DTOConverterContext dtoConverterContext,
 			String search, Filter filter, Pagination pagination, Sort[] sorts)
