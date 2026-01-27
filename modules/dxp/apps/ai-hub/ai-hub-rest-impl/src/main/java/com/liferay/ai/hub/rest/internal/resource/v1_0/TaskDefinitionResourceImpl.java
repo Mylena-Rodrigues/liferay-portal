@@ -36,8 +36,8 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 	@Override
 	public void deleteTaskDefinition(Long taskDefinitionId) throws Exception {
 		_taskDefinitionManager.deleteTaskDefinition(
-			taskDefinitionId,
-			_createDefaultDTOConverterContext(taskDefinitionId));
+			_createDefaultDTOConverterContext(taskDefinitionId),
+			taskDefinitionId);
 	}
 
 	@Override
@@ -72,8 +72,8 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 		throws Exception {
 
 		return _taskDefinitionManager.patchTaskDefinitionUpdateActive(
-			taskDefinitionId, active,
-			_createDefaultDTOConverterContext(taskDefinitionId));
+			active, _createDefaultDTOConverterContext(taskDefinitionId),
+			taskDefinitionId);
 	}
 
 	@Override
@@ -81,8 +81,8 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 		throws Exception {
 
 		return _taskDefinitionManager.postTaskDefinitionCopy(
-			taskDefinitionId,
-			_createDefaultDTOConverterContext(taskDefinitionId));
+			_createDefaultDTOConverterContext(taskDefinitionId),
+			taskDefinitionId);
 	}
 
 	private DefaultDTOConverterContext _createDefaultDTOConverterContext(

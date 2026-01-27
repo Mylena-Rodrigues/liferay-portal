@@ -43,7 +43,7 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 
 	@Override
 	public void deleteTaskDefinition(
-			long taskDefinitionId, DTOConverterContext dtoConverterContext)
+			DTOConverterContext dtoConverterContext, long taskDefinitionId)
 		throws Exception {
 
 		WorkflowDefinition workflowDefinition =
@@ -93,32 +93,33 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 				Field.NAME, Field.VERSION),
 			searchContext -> searchContext.setCompanyId(companyId), sorts,
 			document -> _toTaskDefinition(
+				dtoConverterContext,
 				_workflowDefinitionManager.getWorkflowDefinition(
 					companyId, document.get(Field.NAME),
-					GetterUtil.getInteger(document.get(Field.VERSION))),
-				dtoConverterContext));
+					GetterUtil.getInteger(document.get(Field.VERSION)))));
 	}
 
 	@Override
 	public TaskDefinition patchTaskDefinitionUpdateActive(
-			long taskDefinitionId, Boolean active,
-			DTOConverterContext dtoConverterContext)
+			boolean active, DTOConverterContext dtoConverterContext,
+			long taskDefinitionId)
 		throws Exception {
 
 		WorkflowDefinition workflowDefinition =
 			_workflowDefinitionManager.getWorkflowDefinition(taskDefinitionId);
 
-		workflowDefinition = _workflowDefinitionManager.updateActive(
-			workflowDefinition.getCompanyId(), dtoConverterContext.getUserId(),
-			workflowDefinition.getName(), workflowDefinition.getVersion(),
-			active);
-
-		return _toTaskDefinition(workflowDefinition, dtoConverterContext);
+		return _toTaskDefinition(
+			dtoConverterContext,
+			_workflowDefinitionManager.updateActive(
+				workflowDefinition.getCompanyId(),
+				dtoConverterContext.getUserId(), workflowDefinition.getName(),
+				workflowDefinition.getVersion(),
+				GetterUtil.getBoolean(active)));
 	}
 
 	@Override
 	public TaskDefinition postTaskDefinitionCopy(
-			long taskDefinitionId, DTOConverterContext dtoConverterContext)
+			DTOConverterContext dtoConverterContext, long taskDefinitionId)
 		throws Exception {
 
 		WorkflowDefinition workflowDefinition =
@@ -126,18 +127,18 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 
 		String content = workflowDefinition.getContent();
 
-		workflowDefinition =
+		return _toTaskDefinition(
+			dtoConverterContext,
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				null, workflowDefinition.getCompanyId(),
 				workflowDefinition.getUserId(), workflowDefinition.getTitle(),
-				StringUtil.randomString(), "ai", content.getBytes());
-
-		return _toTaskDefinition(workflowDefinition, dtoConverterContext);
+				StringUtil.randomString(), WorkflowDefinitionConstants.SCOPE_AI,
+				content.getBytes()));
 	}
 
 	private TaskDefinition _toTaskDefinition(
-			WorkflowDefinition workflowDefinition,
-			DTOConverterContext dtoConverterContext)
+			DTOConverterContext dtoConverterContext,
+			WorkflowDefinition workflowDefinition)
 		throws PortalException {
 
 		return new TaskDefinition() {
@@ -195,6 +196,8 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 
 				setActive(workflowDefinition::isActive);
 				setDescription(workflowDefinition::getDescription);
+				setExternalReferenceCode(
+					workflowDefinition::getExternalReferenceCode);
 				setId(workflowDefinition::getWorkflowDefinitionId);
 				setName(workflowDefinition::getName);
 				setVersion(workflowDefinition::getVersion);
