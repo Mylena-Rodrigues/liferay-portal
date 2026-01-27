@@ -37,11 +37,7 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 	public void deleteTaskDefinition(Long taskDefinitionId) throws Exception {
 		_taskDefinitionManager.deleteTaskDefinition(
 			taskDefinitionId,
-			new DefaultDTOConverterContext(
-				contextAcceptLanguage.isAcceptAllLanguages(), null,
-				_dtoConverterRegistry, contextHttpServletRequest,
-				taskDefinitionId, contextAcceptLanguage.getPreferredLocale(),
-				contextUriInfo, contextUser));
+			_createDefaultDTOConverterContext(taskDefinitionId));
 	}
 
 	@Override
@@ -74,25 +70,29 @@ public class TaskDefinitionResourceImpl extends BaseTaskDefinitionResourceImpl {
 	public TaskDefinition patchTaskDefinitionUpdateActive(
 			Long taskDefinitionId, Boolean active)
 		throws Exception {
+
 		return _taskDefinitionManager.patchTaskDefinitionUpdateActive(
 			taskDefinitionId, active,
-			new DefaultDTOConverterContext(
-				contextAcceptLanguage.isAcceptAllLanguages(), null,
-				_dtoConverterRegistry, contextHttpServletRequest,
-				taskDefinitionId, contextAcceptLanguage.getPreferredLocale(),
-				contextUriInfo, contextUser));
+			_createDefaultDTOConverterContext(taskDefinitionId));
 	}
 
 	@Override
 	public TaskDefinition postTaskDefinitionCopy(Long taskDefinitionId)
 		throws Exception {
+
 		return _taskDefinitionManager.postTaskDefinitionCopy(
 			taskDefinitionId,
-			new DefaultDTOConverterContext(
-				contextAcceptLanguage.isAcceptAllLanguages(), null,
-				_dtoConverterRegistry, contextHttpServletRequest,
-				taskDefinitionId, contextAcceptLanguage.getPreferredLocale(),
-				contextUriInfo, contextUser));
+			_createDefaultDTOConverterContext(taskDefinitionId));
+	}
+
+	private DefaultDTOConverterContext _createDefaultDTOConverterContext(
+		Long taskDefinitionId) {
+
+		return new DefaultDTOConverterContext(
+			contextAcceptLanguage.isAcceptAllLanguages(), null,
+			_dtoConverterRegistry, contextHttpServletRequest, taskDefinitionId,
+			contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+			contextUser);
 	}
 
 	private static final EntityModel _entityModel =
