@@ -76,6 +76,8 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 			List<PathElement> remainingPathElements)
 		throws PortalException {
 
+		long companyId = CompanyThreadLocal.getCompanyId();
+		long ctCollectionId = CTCollectionThreadLocal.getCTCollectionId();
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 
@@ -104,9 +106,6 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 
 		Map<String, Serializable> workflowContext =
 			executionContext.getWorkflowContext();
-
-		long companyId = CompanyThreadLocal.getCompanyId();
-		long ctCollectionId = CTCollectionThreadLocal.getCTCollectionId();
 
 		AssistantHandlerUtil.handle(
 			AssistantHandlerContext.builder(
