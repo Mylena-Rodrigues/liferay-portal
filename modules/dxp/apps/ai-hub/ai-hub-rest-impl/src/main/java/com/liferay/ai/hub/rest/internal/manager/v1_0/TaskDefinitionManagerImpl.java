@@ -5,6 +5,7 @@
 
 package com.liferay.ai.hub.rest.internal.manager.v1_0;
 
+import com.liferay.ai.hub.rest.dto.v1_0.LabelsList;
 import com.liferay.ai.hub.rest.dto.v1_0.TaskDefinition;
 import com.liferay.ai.hub.rest.internal.resource.v1_0.TaskDefinitionResourceImpl;
 import com.liferay.ai.hub.rest.manager.v1_0.TaskDefinitionManager;
@@ -30,6 +31,8 @@ import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -161,6 +164,46 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 			dtoConverterContext.getUriInfo());
 	}
 
+	private LabelsList[] _getTaskDefinitionLabelsList(
+		DTOConverterContext dtoConverterContext,
+		WorkflowDefinition workflowDefinition) {
+
+		List<LabelsList> labelsList = new ArrayList<>();
+
+		Locale locale;
+
+		if (dtoConverterContext == null) {
+			locale = null;
+		}
+		else {
+			locale = dtoConverterContext.getLocale();
+		}
+
+		LabelsList statusLabel = new LabelsList();
+
+		if (workflowDefinition.isActive()) {
+			statusLabel.setDisplayType(() -> "success");
+			statusLabel.setValue(() -> LanguageUtil.get(locale, "active"));
+		}
+		else {
+			statusLabel.setDisplayType(() -> "danger");
+			statusLabel.setValue(() -> LanguageUtil.get(locale, "inactive"));
+		}
+
+		labelsList.add(statusLabel);
+
+		if (workflowDefinition.isSystem()) {
+			LabelsList systemLabel = new LabelsList();
+
+			systemLabel.setDisplayType(() -> "info");
+			systemLabel.setValue(() -> LanguageUtil.get(locale, "system"));
+
+			labelsList.add(systemLabel);
+		}
+
+		return labelsList.toArray(new LabelsList[0]);
+	}
+
 	private TaskDefinition _toTaskDefinition(
 			DTOConverterContext dtoConverterContext,
 			WorkflowDefinition workflowDefinition)
@@ -212,6 +255,9 @@ public class TaskDefinitionManagerImpl implements TaskDefinitionManager {
 				setExternalReferenceCode(
 					workflowDefinition::getExternalReferenceCode);
 				setId(workflowDefinition::getWorkflowDefinitionId);
+				setLabelsList(
+					() -> _getTaskDefinitionLabelsList(
+						dtoConverterContext, workflowDefinition));
 				setName(workflowDefinition::getName);
 				setTitle(
 					() -> {
