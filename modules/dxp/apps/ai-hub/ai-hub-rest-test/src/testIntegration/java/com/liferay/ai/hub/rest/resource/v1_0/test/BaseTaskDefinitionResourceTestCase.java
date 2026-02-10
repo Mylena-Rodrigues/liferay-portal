@@ -822,6 +822,14 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("labelsList", additionalAssertFieldName)) {
+				if (taskDefinition.getLabelsList() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("name", additionalAssertFieldName)) {
 				if (taskDefinition.getName() == null) {
 					valid = false;
@@ -1017,6 +1025,17 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						taskDefinition1.getId(), taskDefinition2.getId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("labelsList", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						taskDefinition1.getLabelsList(),
+						taskDefinition2.getLabelsList())) {
 
 					return false;
 				}
@@ -1267,6 +1286,11 @@ public abstract class BaseTaskDefinitionResourceTestCase {
 		}
 
 		if (entityFieldName.equals("id")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("labelsList")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}

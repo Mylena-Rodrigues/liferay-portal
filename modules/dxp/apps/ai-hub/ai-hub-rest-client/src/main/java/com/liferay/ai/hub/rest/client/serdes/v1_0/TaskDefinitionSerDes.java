@@ -5,6 +5,7 @@
 
 package com.liferay.ai.hub.rest.client.serdes.v1_0;
 
+import com.liferay.ai.hub.rest.client.dto.v1_0.LabelsList;
 import com.liferay.ai.hub.rest.client.dto.v1_0.TaskDefinition;
 import com.liferay.ai.hub.rest.client.json.BaseJSONParser;
 
@@ -104,6 +105,26 @@ public class TaskDefinitionSerDes {
 			sb.append(taskDefinition.getId());
 		}
 
+		if (taskDefinition.getLabelsList() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"labelsList\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < taskDefinition.getLabelsList().length; i++) {
+				sb.append(String.valueOf(taskDefinition.getLabelsList()[i]));
+
+				if ((i + 1) < taskDefinition.getLabelsList().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		if (taskDefinition.getName() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -199,6 +220,14 @@ public class TaskDefinitionSerDes {
 			map.put("id", String.valueOf(taskDefinition.getId()));
 		}
 
+		if (taskDefinition.getLabelsList() == null) {
+			map.put("labelsList", null);
+		}
+		else {
+			map.put(
+				"labelsList", String.valueOf(taskDefinition.getLabelsList()));
+		}
+
 		if (taskDefinition.getName() == null) {
 			map.put("name", null);
 		}
@@ -255,6 +284,9 @@ public class TaskDefinitionSerDes {
 			else if (Objects.equals(jsonParserFieldName, "id")) {
 				return false;
 			}
+			else if (Objects.equals(jsonParserFieldName, "labelsList")) {
+				return false;
+			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
 				return false;
 			}
@@ -301,6 +333,22 @@ public class TaskDefinitionSerDes {
 				if (jsonParserFieldValue != null) {
 					taskDefinition.setId(
 						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "labelsList")) {
+				if (jsonParserFieldValue != null) {
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					LabelsList[] labelsListArray =
+						new LabelsList[jsonParserFieldValues.length];
+
+					for (int i = 0; i < labelsListArray.length; i++) {
+						labelsListArray[i] = LabelsListSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					taskDefinition.setLabelsList(labelsListArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
