@@ -62,7 +62,7 @@ public class AgentDefinitionResourceImpl
 			throw new UnsupportedOperationException();
 		}
 
-		return _agentDefinitionManager.getAgentDefinitions(
+		return _agentDefinitionManager.getAgentDefinitionsPage(
 			contextCompany.getCompanyId(), _createDTOConverterContext(),
 			ParamUtil.getString(contextHttpServletRequest, "filter"),
 			pagination, search, sorts);

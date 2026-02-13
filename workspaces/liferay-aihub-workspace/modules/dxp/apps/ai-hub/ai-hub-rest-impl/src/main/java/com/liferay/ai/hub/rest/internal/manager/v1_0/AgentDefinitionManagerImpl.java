@@ -77,7 +77,7 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 	}
 
 	@Override
-	public Page<AgentDefinition> getAgentDefinitions(
+	public Page<AgentDefinition> getAgentDefinitionsPage(
 			long companyId, DTOConverterContext dtoConverterContext,
 			String filter, Pagination pagination, String search, Sort[] sorts)
 		throws Exception {
