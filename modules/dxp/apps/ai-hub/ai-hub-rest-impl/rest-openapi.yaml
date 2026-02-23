@@ -26,7 +26,8 @@ components:
                     type: array
                 labels:
                     items:
-                        $ref: "#/components/schemas/Label"
+                        type: string
+                    readOnly: true
                     type: array
                 outputVariable:
                     $ref: "#/components/schemas/Variable"
@@ -41,13 +42,6 @@ components:
         Chat:
             properties:
                 externalReferenceCode:
-                    type: string
-            type: object
-        Label:
-            properties:
-                displayType:
-                    type: string
-                value:
                     type: string
             type: object
         Message:
