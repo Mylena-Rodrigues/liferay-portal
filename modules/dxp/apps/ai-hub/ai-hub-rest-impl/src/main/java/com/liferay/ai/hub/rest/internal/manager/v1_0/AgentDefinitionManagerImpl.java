@@ -231,13 +231,15 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 
 		if (workflowDefinition.isActive()) {
 			labels[0] = _language.get(locale, "active");
-		} else {
+		}
+		else {
 			labels[0] = _language.get(locale, "inactive");
 		}
 
 		if (workflowDefinition.isSystem()) {
 			labels[1] = _language.get(locale, "system");
-		} else {
+		}
+		else {
 			labels[1] = _language.get(locale, "custom");
 		}
 

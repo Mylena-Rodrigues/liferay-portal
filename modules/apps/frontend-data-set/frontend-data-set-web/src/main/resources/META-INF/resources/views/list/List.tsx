@@ -21,6 +21,7 @@ import FDSDndProvider from '../../dnd/FDSDndProvider';
 import useFDSDrop from '../../dnd/useFDSDrop';
 import {getLocalizedValue} from '../../utils/getLocalizedValue';
 import {
+	DisplayType,
 	IHeader,
 	IListLabelSchema,
 	IListSchema,
@@ -102,6 +103,44 @@ const ListItem = forwardRef<HTMLLIElement, any>(
 		});
 
 		const accessibleName = title || description || '';
+
+		const getLabels = (
+        			item: any
+        		): Array<{
+        			displayType: DisplayType;
+        			value: string;
+        		}> => {
+        			if (!labels) {
+        				return [];
+        			}
+
+        			return labels.JSONArray.flatMap((label: IListLabelSchema) => {
+        				const {displayTypeKey, displayTypeValues} = label;
+        				let {displayType} = label;
+
+        				if (!displayType && displayTypeValues && displayTypeKey) {
+        					const keyValue = getLocalizedValue(
+        						item,
+        						displayTypeKey
+        					)?.value;
+
+        					displayType = displayTypeValues[keyValue!];
+        				}
+
+        				const value = getLocalizedValue(item, label.value)?.value;
+
+        				if (!value) {
+        					return [];
+        				}
+
+        				return [
+        					{
+        						displayType: displayType || DisplayType.UNSTYLED,
+        						value,
+        					},
+        				];
+        			});
+        		};
 
 		return (
 			<ClayList.Item
@@ -187,17 +226,28 @@ const ListItem = forwardRef<HTMLLIElement, any>(
 
 					{labels && (
 						<ClayLayout.ContentRow className="mt-1">
-							{item[labels]?.map(
-								(label: IListLabelSchema, index: number) => (
-									<ClayLabel
-										className="text-uppercase"
-										displayType={label.displayType}
-										key={index}
-										large
-									>
-										{label.value}
-									</ClayLabel>
-								)
+							{labels?.JSONArray.flatMap(
+								(label: IListLabelSchema) =>
+									getLocalizedValue(item, label.value)?.value.map(
+										(value: string, index: number) => {
+											if(Object.hasOwn(label.displayTypeValues, value)) {
+												return (
+													<ClayLabel
+														className="text-uppercase"
+														displayType={
+															label?.displayTypeValues[
+																value
+															]
+														}
+														key={index}
+														large
+													>
+														{value}
+													</ClayLabel>
+												)
+											}
+										}
+									)
 							)}
 						</ClayLayout.ContentRow>
 					)}

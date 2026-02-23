@@ -252,7 +252,9 @@ export interface IHeader {
 }
 
 export type IListLabelSchema = {
-	displayType: DisplayType;
+	displayType?: never;
+	displayTypeKey: string;
+	displayTypeValues: Record<string, DisplayType>;
 	value: string;
 };
 
@@ -263,7 +265,7 @@ export interface IListTitleRenderer {
 export interface IListSchema {
 	description: string;
 	image?: string;
-	labels?: string;
+	labels?: IListLabelSchema;
 	sticker?: string;
 	symbol?: string;
 	title: string;

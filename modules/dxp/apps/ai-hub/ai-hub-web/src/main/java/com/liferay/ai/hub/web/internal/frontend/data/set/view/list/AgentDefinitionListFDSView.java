@@ -8,6 +8,14 @@ package com.liferay.ai.hub.web.internal.frontend.data.set.view.list;
 import com.liferay.ai.hub.web.internal.constants.AIHubFDSNames;
 import com.liferay.frontend.data.set.view.FDSView;
 import com.liferay.frontend.data.set.view.list.BaseListFDSView;
+import com.liferay.frontend.data.set.view.list.FDSListSchema;
+import com.liferay.frontend.data.set.view.list.FDSListSchemaBuilder;
+import com.liferay.frontend.data.set.view.list.FDSListSchemaBuilderFactory;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+
+import java.util.Locale;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -26,13 +34,40 @@ public class AgentDefinitionListFDSView extends BaseListFDSView {
 	}
 
 	@Override
-	public String getLabel() {
-		return "labels";
+	public FDSListSchema getFDSListSchema(Locale locale) {
+		FDSListSchemaBuilderFactory fdsListSchemaBuilderFactory =
+			_fdsListSchemaBuilderFactorySnapshot.get();
+
+		if (fdsListSchemaBuilderFactory == null) {
+			return null;
+		}
+
+		FDSListSchemaBuilder fdsListSchemaBuilder =
+			fdsListSchemaBuilderFactory.create();
+
+		return fdsListSchemaBuilder.add(
+			"labels",
+			HashMapBuilder.put(
+				LanguageUtil.get(locale, "active"), "success"
+			).put(
+				LanguageUtil.get(locale, "custom"), "warning"
+			).put(
+				LanguageUtil.get(locale, "inactive"), "danger"
+			).put(
+				LanguageUtil.get(locale, "system"), "info"
+			).build(),
+			"labels"
+		).build();
 	}
 
 	@Override
 	public String getTitle() {
 		return "title";
 	}
+
+	private static final Snapshot<FDSListSchemaBuilderFactory>
+		_fdsListSchemaBuilderFactorySnapshot = new Snapshot<>(
+			AgentDefinitionListFDSView.class,
+			FDSListSchemaBuilderFactory.class);
 
 }
