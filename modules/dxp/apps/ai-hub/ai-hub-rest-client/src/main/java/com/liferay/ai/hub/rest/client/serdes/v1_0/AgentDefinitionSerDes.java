@@ -6,7 +6,6 @@
 package com.liferay.ai.hub.rest.client.serdes.v1_0;
 
 import com.liferay.ai.hub.rest.client.dto.v1_0.AgentDefinition;
-import com.liferay.ai.hub.rest.client.dto.v1_0.Label;
 import com.liferay.ai.hub.rest.client.dto.v1_0.Variable;
 import com.liferay.ai.hub.rest.client.json.BaseJSONParser;
 
@@ -139,7 +138,7 @@ public class AgentDefinitionSerDes {
 			sb.append("[");
 
 			for (int i = 0; i < agentDefinition.getLabels().length; i++) {
-				sb.append(String.valueOf(agentDefinition.getLabels()[i]));
+				sb.append(_toJSON(agentDefinition.getLabels()[i]));
 
 				if ((i + 1) < agentDefinition.getLabels().length) {
 					sb.append(", ");
@@ -416,18 +415,8 @@ public class AgentDefinitionSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "labels")) {
 				if (jsonParserFieldValue != null) {
-					Object[] jsonParserFieldValues =
-						(Object[])jsonParserFieldValue;
-
-					Label[] labelsArray =
-						new Label[jsonParserFieldValues.length];
-
-					for (int i = 0; i < labelsArray.length; i++) {
-						labelsArray[i] = LabelSerDes.toDTO(
-							(String)jsonParserFieldValues[i]);
-					}
-
-					agentDefinition.setLabels(labelsArray);
+					agentDefinition.setLabels(
+						toStrings((Object[])jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "outputVariable")) {

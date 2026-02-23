@@ -151,16 +151,16 @@ public class AgentDefinition implements Cloneable, Serializable {
 
 	protected Variable[] inputVariables;
 
-	public Label[] getLabels() {
+	public String[] getLabels() {
 		return labels;
 	}
 
-	public void setLabels(Label[] labels) {
+	public void setLabels(String[] labels) {
 		this.labels = labels;
 	}
 
 	public void setLabels(
-		UnsafeSupplier<Label[], Exception> labelsUnsafeSupplier) {
+		UnsafeSupplier<String[], Exception> labelsUnsafeSupplier) {
 
 		try {
 			labels = labelsUnsafeSupplier.get();
@@ -170,7 +170,7 @@ public class AgentDefinition implements Cloneable, Serializable {
 		}
 	}
 
-	protected Label[] labels;
+	protected String[] labels;
 
 	public Variable getOutputVariable() {
 		return outputVariable;

@@ -296,8 +296,7 @@ public class AgentDefinition implements Serializable {
 	private Supplier<Variable[]> _inputVariablesSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
-	@Valid
-	public Label[] getLabels() {
+	public String[] getLabels() {
 		if (_labelsSupplier != null) {
 			labels = _labelsSupplier.get();
 
@@ -307,7 +306,7 @@ public class AgentDefinition implements Serializable {
 		return labels;
 	}
 
-	public void setLabels(Label[] labels) {
+	public void setLabels(String[] labels) {
 		this.labels = labels;
 
 		_labelsSupplier = null;
@@ -315,7 +314,7 @@ public class AgentDefinition implements Serializable {
 
 	@JsonIgnore
 	public void setLabels(
-		UnsafeSupplier<Label[], Exception> labelsUnsafeSupplier) {
+		UnsafeSupplier<String[], Exception> labelsUnsafeSupplier) {
 
 		_labelsSupplier = () -> {
 			try {
@@ -331,11 +330,11 @@ public class AgentDefinition implements Serializable {
 	}
 
 	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Label[] labels;
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String[] labels;
 
 	@JsonIgnore
-	private Supplier<Label[]> _labelsSupplier;
+	private Supplier<String[]> _labelsSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
@@ -620,7 +619,7 @@ public class AgentDefinition implements Serializable {
 			sb.append("]");
 		}
 
-		Label[] labels = getLabels();
+		String[] labels = getLabels();
 
 		if (labels != null) {
 			if (sb.length() > 1) {
@@ -632,7 +631,11 @@ public class AgentDefinition implements Serializable {
 			sb.append("[");
 
 			for (int i = 0; i < labels.length; i++) {
-				sb.append(String.valueOf(labels[i]));
+				sb.append("\"");
+
+				sb.append(_escape(labels[i]));
+
+				sb.append("\"");
 
 				if ((i + 1) < labels.length) {
 					sb.append(", ");
