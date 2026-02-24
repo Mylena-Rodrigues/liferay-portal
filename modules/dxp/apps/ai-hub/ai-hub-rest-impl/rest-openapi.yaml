@@ -26,6 +26,14 @@ components:
                     type: array
                 outputVariable:
                     $ref: "#/components/schemas/Variable"
+                status:
+                    properties:
+                        label:
+                            type: string
+                        label_i18n:
+                            type: string
+                    readOnly: true
+                    type: object
                 title:
                     type: string
                 version:
