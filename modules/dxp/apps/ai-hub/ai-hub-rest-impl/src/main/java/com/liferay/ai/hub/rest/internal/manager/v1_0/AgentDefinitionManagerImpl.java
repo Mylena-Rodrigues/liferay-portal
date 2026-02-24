@@ -7,6 +7,7 @@ package com.liferay.ai.hub.rest.internal.manager.v1_0;
 
 import com.liferay.account.model.AccountEntry;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentDefinition;
+import com.liferay.ai.hub.rest.dto.v1_0.Status;
 import com.liferay.ai.hub.rest.dto.v1_0.Variable;
 import com.liferay.ai.hub.rest.internal.resource.v1_0.AgentDefinitionResourceImpl;
 import com.liferay.ai.hub.rest.manager.v1_0.AgentDefinitionManager;
@@ -17,6 +18,7 @@ import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -242,6 +244,23 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 			companyId, "AIHubAgentDefinition");
 	}
 
+	private Status _getStatus(
+		Locale locale, WorkflowDefinition workflowDefinition) {
+
+		Status status = new Status();
+
+		if (workflowDefinition.isActive()) {
+			status.setLabel(() -> "active");
+			status.setLabel_i18n(() -> _language.get(locale, "active"));
+		}
+		else {
+			status.setLabel(() -> "inactive");
+			status.setLabel_i18n(() -> _language.get(locale, "inactive"));
+		}
+
+		return status;
+	}
+
 	private AgentDefinition _toAgentDefinition(
 			long companyId, DTOConverterContext dtoConverterContext,
 			ObjectEntry objectEntry)
@@ -323,6 +342,16 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 					() -> _toVariable(
 						GetterUtil.getString(
 							objectEntry.getPropertyValue("outputVariable"))));
+				setStatus(
+					() -> {
+						if (dtoConverterContext == null) {
+							return null;
+						}
+
+						return _getStatus(
+							dtoConverterContext.getLocale(),
+							workflowDefinition);
+					});
 				setTitle(
 					() -> GetterUtil.getString(
 						objectEntry.getPropertyValue("title")));
@@ -346,6 +375,9 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 	)
 	private ModelResourcePermission<KaleoDefinition>
 		_kaleoDefinitionModelResourcePermission;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
