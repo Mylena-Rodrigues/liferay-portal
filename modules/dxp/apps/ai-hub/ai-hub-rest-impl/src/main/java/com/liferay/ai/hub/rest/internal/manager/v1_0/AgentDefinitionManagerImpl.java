@@ -244,21 +244,26 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 			companyId, "AIHubAgentDefinition");
 	}
 
-	private Status _getStatus(
+	private Status[] _getStatus(
 		Locale locale, WorkflowDefinition workflowDefinition) {
 
-		Status status = new Status();
+		Status[] statuses = new Status[2];
 
 		if (workflowDefinition.isActive()) {
-			status.setLabel(() -> "active");
-			status.setLabel_i18n(() -> _language.get(locale, "active"));
+			statuses[0] = _toStatus("active", locale);
 		}
 		else {
-			status.setLabel(() -> "inactive");
-			status.setLabel_i18n(() -> _language.get(locale, "inactive"));
+			statuses[0] = _toStatus("inactive", locale);
 		}
 
-		return status;
+		if (workflowDefinition.isSystem()) {
+			statuses[1] = _toStatus("system", locale);
+		}
+		else {
+			statuses[1] = _toStatus("custom", locale);
+		}
+
+		return statuses;
 	}
 
 	private AgentDefinition _toAgentDefinition(
@@ -359,6 +364,15 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 				setWorkflowDefinitionName(workflowDefinition::getName);
 			}
 		};
+	}
+
+	private Status _toStatus(String label, Locale locale) {
+		Status status = new Status();
+
+		status.setLabel(() -> label);
+		status.setLabel_i18n(() -> _language.get(locale, label));
+
+		return status;
 	}
 
 	private Variable _toVariable(String variableName) {
