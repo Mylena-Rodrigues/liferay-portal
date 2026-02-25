@@ -339,7 +339,7 @@ public class AgentDefinition implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
-	public Status getStatus() {
+	public Status[] getStatus() {
 		if (_statusSupplier != null) {
 			status = _statusSupplier.get();
 
@@ -349,7 +349,7 @@ public class AgentDefinition implements Serializable {
 		return status;
 	}
 
-	public void setStatus(Status status) {
+	public void setStatus(Status[] status) {
 		this.status = status;
 
 		_statusSupplier = null;
@@ -357,7 +357,7 @@ public class AgentDefinition implements Serializable {
 
 	@JsonIgnore
 	public void setStatus(
-		UnsafeSupplier<Status, Exception> statusUnsafeSupplier) {
+		UnsafeSupplier<Status[], Exception> statusUnsafeSupplier) {
 
 		_statusSupplier = () -> {
 			try {
@@ -374,10 +374,10 @@ public class AgentDefinition implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Status status;
+	protected Status[] status;
 
 	@JsonIgnore
-	private Supplier<Status> _statusSupplier;
+	private Supplier<Status[]> _statusSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	public String getTitle() {
@@ -632,7 +632,7 @@ public class AgentDefinition implements Serializable {
 			sb.append(String.valueOf(outputVariable));
 		}
 
-		Status status = getStatus();
+		Status[] status = getStatus();
 
 		if (status != null) {
 			if (sb.length() > 1) {
@@ -641,7 +641,17 @@ public class AgentDefinition implements Serializable {
 
 			sb.append("\"status\": ");
 
-			sb.append(String.valueOf(status));
+			sb.append("[");
+
+			for (int i = 0; i < status.length; i++) {
+				sb.append(String.valueOf(status[i]));
+
+				if ((i + 1) < status.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		String title = getTitle();

@@ -6,6 +6,7 @@
 package com.liferay.ai.hub.rest.client.serdes.v1_0;
 
 import com.liferay.ai.hub.rest.client.dto.v1_0.AgentDefinition;
+import com.liferay.ai.hub.rest.client.dto.v1_0.Status;
 import com.liferay.ai.hub.rest.client.dto.v1_0.Variable;
 import com.liferay.ai.hub.rest.client.json.BaseJSONParser;
 
@@ -145,7 +146,17 @@ public class AgentDefinitionSerDes {
 
 			sb.append("\"status\": ");
 
-			sb.append(String.valueOf(agentDefinition.getStatus()));
+			sb.append("[");
+
+			for (int i = 0; i < agentDefinition.getStatus().length; i++) {
+				sb.append(String.valueOf(agentDefinition.getStatus()[i]));
+
+				if ((i + 1) < agentDefinition.getStatus().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (agentDefinition.getTitle() != null) {
@@ -411,8 +422,18 @@ public class AgentDefinitionSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "status")) {
 				if (jsonParserFieldValue != null) {
-					agentDefinition.setStatus(
-						StatusSerDes.toDTO((String)jsonParserFieldValue));
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					Status[] statusArray =
+						new Status[jsonParserFieldValues.length];
+
+					for (int i = 0; i < statusArray.length; i++) {
+						statusArray[i] = StatusSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					agentDefinition.setStatus(statusArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "title")) {
