@@ -27,13 +27,15 @@ components:
                 outputVariable:
                     $ref: "#/components/schemas/Variable"
                 status:
-                    properties:
-                        label:
-                            type: string
-                        label_i18n:
-                            type: string
+                    items:
+                        properties:
+                            label:
+                                type: string
+                            label_i18n:
+                                type: string
+                        type: object
                     readOnly: true
-                    type: object
+                    type: array
                 title:
                     type: string
                 version:
