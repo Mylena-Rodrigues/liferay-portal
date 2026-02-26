@@ -6,6 +6,7 @@
 import {ClayCheckbox, ClayRadio} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
+import ClayLink from '@clayui/link';
 import ClayList from '@clayui/list';
 import ClaySticker from '@clayui/sticker';
 import {ClayTooltipProvider} from '@clayui/tooltip';
@@ -21,6 +22,7 @@ import useFDSDrop from '../../dnd/useFDSDrop';
 import {getLocalizedValue} from '../../utils/getLocalizedValue';
 import {
 	IHeader,
+	IItemsActions,
 	IListSchema,
 	IListTitleRenderer,
 	IView,
@@ -29,14 +31,27 @@ import ViewsContext from '../ViewsContext';
 
 const Title = ({
 	item,
+	itemsActions,
 	title,
 	titleRenderer,
 }: {
 	item: any;
+	itemsActions?: Array<IItemsActions>;
 	title: string;
 	titleRenderer: IListTitleRenderer;
 }) => {
 	const TitleRendererComponent = titleRenderer?.component;
+
+	const getViewActionURL = (
+		itemActions?: Array<IItemsActions>
+	): string | undefined => {
+		const viewAction = itemActions?.find(
+			(action: IItemsActions) =>
+				action?.data?.id === 'view' || action?.data?.id === 'edit'
+		);
+
+		return viewAction?.href;
+	};
 
 	if (TitleRendererComponent) {
 		return <TitleRendererComponent itemData={item} />;
@@ -45,7 +60,12 @@ const Title = ({
 	if (title) {
 		return (
 			<ClayList.ItemTitle>
-				{getLocalizedValue(item, title)?.value}
+				<ClayLink
+					className="align-items-center d-flex text-decoration-none w-100"
+					href={getViewActionURL(itemsActions)}
+				>
+					{getLocalizedValue(item, title)?.value}
+				</ClayLink>
 			</ClayList.ItemTitle>
 		);
 	}
@@ -178,6 +198,7 @@ const ListItem = forwardRef<HTMLLIElement, any>(
 				>
 					<Title
 						item={item}
+						itemsActions={itemsActions || item.actionDropdownItems}
 						title={title}
 						titleRenderer={titleRenderer}
 					/>
