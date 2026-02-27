@@ -100,16 +100,15 @@ public class EditAgentDefinitionDisplayContext {
 					accountEntry, namespace, aiHubURL + "/workflow-definition");
 
 				return HttpComponentsUtil.addParameters(
-					_addNameParameter(namespace, url), "p_p_id",
-					WorkflowPortletKeys.KALEO_DESIGNER, "p_p_lifecycle", "0",
-					"p_p_state", WindowState.MAXIMIZED.toString(), "p_p_mode",
-					PortletMode.VIEW.toString(), namespace + "mvcPath",
-					"/designer/edit_workflow_definition.jsp",
-					namespace + "redirect",
-					_portal.getPortalURL(_httpServletRequest) +
-						_portal.getCurrentURL(_httpServletRequest),
-					namespace + "clearSessionMessage", true,
-					namespace + "scope", WorkflowDefinitionConstants.SCOPE_AI);
+    			_addNameParameter(namespace, url), 
+					"p_p_id", "myCustomPortletId",
+					"p_p_lifecycle", "0",
+					"p_p_state", WindowState.NORMAL.toString(),
+					"p_p_mode", PortletMode.VIEW.toString(), 
+					namespace + "mvcPath", "/edit_workflow_definition.jsp",
+					namespace + "kaleoRedirect", _portal.getPortalURL(_httpServletRequest) + _portal.getCurrentURL(_httpServletRequest),
+					namespace + "kaleoScope", WorkflowDefinitionConstants.SCOPE_AI
+);
 			}
 		).build();
 	}

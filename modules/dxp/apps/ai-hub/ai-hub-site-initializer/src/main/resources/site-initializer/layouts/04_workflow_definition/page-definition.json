@@ -18,9 +18,8 @@
 		"type": "Root"
 	},
 	"settings": {
-		"masterPage": {
-			"key": "workflow-definition-editor-master"
-		}
+		"colorSchemeName": "01",
+		"themeName": "Classic"
 	},
 	"version": 1.0
 }

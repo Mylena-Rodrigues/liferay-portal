@@ -25,5 +25,4 @@ public class EditWorkflowDefinitionFragmentRenderer
 	protected String getJSPPath() {
 		return "/edit_workflow_definition.jsp";
 	}
-
 }
