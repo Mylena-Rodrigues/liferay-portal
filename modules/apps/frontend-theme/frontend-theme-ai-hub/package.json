@@ -9,7 +9,7 @@
 	"license": "LGPL",
 	"liferayTheme": {
 		"baseTheme": "styled",
-		"distName": "cms-theme",
+		"distName": "ai-hub-theme",
 		"rubySass": false,
 		"sassOptions": {
 			"dartSass": true
