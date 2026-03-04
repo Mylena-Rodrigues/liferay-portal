@@ -391,7 +391,8 @@ export default function AgentDefinitionForm({
 											)}
 											required={true}
 											selectedKey={
-												formData.workflowDefinitionName
+												formData.workflowDefinitionName ??
+												null
 											}
 										>
 											{({label, value}) => (
