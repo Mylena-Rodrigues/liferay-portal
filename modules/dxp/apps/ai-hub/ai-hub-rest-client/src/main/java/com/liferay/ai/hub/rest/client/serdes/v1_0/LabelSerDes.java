@@ -5,7 +5,7 @@
 
 package com.liferay.ai.hub.rest.client.serdes.v1_0;
 
-import com.liferay.ai.hub.rest.client.dto.v1_0.Status;
+import com.liferay.ai.hub.rest.client.dto.v1_0.Label;
 import com.liferay.ai.hub.rest.client.json.BaseJSONParser;
 
 import jakarta.annotation.Generated;
@@ -21,22 +21,22 @@ import java.util.TreeMap;
  * @generated
  */
 @Generated("")
-public class StatusSerDes {
+public class LabelSerDes {
 
-	public static Status toDTO(String json) {
-		StatusJSONParser statusJSONParser = new StatusJSONParser();
+	public static Label toDTO(String json) {
+		LabelJSONParser labelJSONParser = new LabelJSONParser();
 
-		return statusJSONParser.parseToDTO(json);
+		return labelJSONParser.parseToDTO(json);
 	}
 
-	public static Status[] toDTOs(String json) {
-		StatusJSONParser statusJSONParser = new StatusJSONParser();
+	public static Label[] toDTOs(String json) {
+		LabelJSONParser labelJSONParser = new LabelJSONParser();
 
-		return statusJSONParser.parseToDTOs(json);
+		return labelJSONParser.parseToDTOs(json);
 	}
 
-	public static String toJSON(Status status) {
-		if (status == null) {
+	public static String toJSON(Label label) {
+		if (label == null) {
 			return "null";
 		}
 
@@ -44,40 +44,40 @@ public class StatusSerDes {
 
 		sb.append("{");
 
-		if (status.getCode() != null) {
+		if (label.getCode() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
 			sb.append("\"code\": ");
 
-			sb.append(status.getCode());
+			sb.append(label.getCode());
 		}
 
-		if (status.getLabel() != null) {
+		if (label.getValue() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"label\": ");
+			sb.append("\"value\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(status.getLabel()));
+			sb.append(_escape(label.getValue()));
 
 			sb.append("\"");
 		}
 
-		if (status.getLabel_i18n() != null) {
+		if (label.getValue_i18n() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"label_i18n\": ");
+			sb.append("\"value_i18n\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(status.getLabel_i18n()));
+			sb.append(_escape(label.getValue_i18n()));
 
 			sb.append("\"");
 		}
@@ -88,52 +88,52 @@ public class StatusSerDes {
 	}
 
 	public static Map<String, Object> toMap(String json) {
-		StatusJSONParser statusJSONParser = new StatusJSONParser();
+		LabelJSONParser labelJSONParser = new LabelJSONParser();
 
-		return statusJSONParser.parseToMap(json);
+		return labelJSONParser.parseToMap(json);
 	}
 
-	public static Map<String, String> toMap(Status status) {
-		if (status == null) {
+	public static Map<String, String> toMap(Label label) {
+		if (label == null) {
 			return null;
 		}
 
 		Map<String, String> map = new TreeMap<>();
 
-		if (status.getCode() == null) {
+		if (label.getCode() == null) {
 			map.put("code", null);
 		}
 		else {
-			map.put("code", String.valueOf(status.getCode()));
+			map.put("code", String.valueOf(label.getCode()));
 		}
 
-		if (status.getLabel() == null) {
-			map.put("label", null);
+		if (label.getValue() == null) {
+			map.put("value", null);
 		}
 		else {
-			map.put("label", String.valueOf(status.getLabel()));
+			map.put("value", String.valueOf(label.getValue()));
 		}
 
-		if (status.getLabel_i18n() == null) {
-			map.put("label_i18n", null);
+		if (label.getValue_i18n() == null) {
+			map.put("value_i18n", null);
 		}
 		else {
-			map.put("label_i18n", String.valueOf(status.getLabel_i18n()));
+			map.put("value_i18n", String.valueOf(label.getValue_i18n()));
 		}
 
 		return map;
 	}
 
-	public static class StatusJSONParser extends BaseJSONParser<Status> {
+	public static class LabelJSONParser extends BaseJSONParser<Label> {
 
 		@Override
-		protected Status createDTO() {
-			return new Status();
+		protected Label createDTO() {
+			return new Label();
 		}
 
 		@Override
-		protected Status[] createDTOArray(int size) {
-			return new Status[size];
+		protected Label[] createDTOArray(int size) {
+			return new Label[size];
 		}
 
 		@Override
@@ -141,10 +141,10 @@ public class StatusSerDes {
 			if (Objects.equals(jsonParserFieldName, "code")) {
 				return false;
 			}
-			else if (Objects.equals(jsonParserFieldName, "label")) {
+			else if (Objects.equals(jsonParserFieldName, "value")) {
 				return false;
 			}
-			else if (Objects.equals(jsonParserFieldName, "label_i18n")) {
+			else if (Objects.equals(jsonParserFieldName, "value_i18n")) {
 				return false;
 			}
 
@@ -153,23 +153,23 @@ public class StatusSerDes {
 
 		@Override
 		protected void setField(
-			Status status, String jsonParserFieldName,
+			Label label, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
 			if (Objects.equals(jsonParserFieldName, "code")) {
 				if (jsonParserFieldValue != null) {
-					status.setCode(
+					label.setCode(
 						Integer.valueOf((String)jsonParserFieldValue));
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "label")) {
+			else if (Objects.equals(jsonParserFieldName, "value")) {
 				if (jsonParserFieldValue != null) {
-					status.setLabel((String)jsonParserFieldValue);
+					label.setValue((String)jsonParserFieldValue);
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "label_i18n")) {
+			else if (Objects.equals(jsonParserFieldName, "value_i18n")) {
 				if (jsonParserFieldValue != null) {
-					status.setLabel_i18n((String)jsonParserFieldValue);
+					label.setValue_i18n((String)jsonParserFieldValue);
 				}
 			}
 		}

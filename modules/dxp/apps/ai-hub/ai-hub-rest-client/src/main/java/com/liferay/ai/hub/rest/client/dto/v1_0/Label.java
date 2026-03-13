@@ -6,7 +6,7 @@
 package com.liferay.ai.hub.rest.client.dto.v1_0;
 
 import com.liferay.ai.hub.rest.client.function.UnsafeSupplier;
-import com.liferay.ai.hub.rest.client.serdes.v1_0.StatusSerDes;
+import com.liferay.ai.hub.rest.client.serdes.v1_0.LabelSerDes;
 
 import jakarta.annotation.Generated;
 
@@ -19,10 +19,10 @@ import java.util.Objects;
  * @generated
  */
 @Generated("")
-public class Status implements Cloneable, Serializable {
+public class Label implements Cloneable, Serializable {
 
-	public static Status toDTO(String json) {
-		return StatusSerDes.toDTO(json);
+	public static Label toDTO(String json) {
+		return LabelSerDes.toDTO(json);
 	}
 
 	public Integer getCode() {
@@ -44,51 +44,51 @@ public class Status implements Cloneable, Serializable {
 
 	protected Integer code;
 
-	public String getLabel() {
-		return label;
+	public String getValue() {
+		return value;
 	}
 
-	public void setLabel(String label) {
-		this.label = label;
+	public void setValue(String value) {
+		this.value = value;
 	}
 
-	public void setLabel(
-		UnsafeSupplier<String, Exception> labelUnsafeSupplier) {
+	public void setValue(
+		UnsafeSupplier<String, Exception> valueUnsafeSupplier) {
 
 		try {
-			label = labelUnsafeSupplier.get();
+			value = valueUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected String label;
+	protected String value;
 
-	public String getLabel_i18n() {
-		return label_i18n;
+	public String getValue_i18n() {
+		return value_i18n;
 	}
 
-	public void setLabel_i18n(String label_i18n) {
-		this.label_i18n = label_i18n;
+	public void setValue_i18n(String value_i18n) {
+		this.value_i18n = value_i18n;
 	}
 
-	public void setLabel_i18n(
-		UnsafeSupplier<String, Exception> label_i18nUnsafeSupplier) {
+	public void setValue_i18n(
+		UnsafeSupplier<String, Exception> value_i18nUnsafeSupplier) {
 
 		try {
-			label_i18n = label_i18nUnsafeSupplier.get();
+			value_i18n = value_i18nUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected String label_i18n;
+	protected String value_i18n;
 
 	@Override
-	public Status clone() throws CloneNotSupportedException {
-		return (Status)super.clone();
+	public Label clone() throws CloneNotSupportedException {
+		return (Label)super.clone();
 	}
 
 	@Override
@@ -97,13 +97,13 @@ public class Status implements Cloneable, Serializable {
 			return true;
 		}
 
-		if (!(object instanceof Status)) {
+		if (!(object instanceof Label)) {
 			return false;
 		}
 
-		Status status = (Status)object;
+		Label label = (Label)object;
 
-		return Objects.equals(toString(), status.toString());
+		return Objects.equals(toString(), label.toString());
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class Status implements Cloneable, Serializable {
 	}
 
 	public String toString() {
-		return StatusSerDes.toJSON(this);
+		return LabelSerDes.toJSON(this);
 	}
 
 }

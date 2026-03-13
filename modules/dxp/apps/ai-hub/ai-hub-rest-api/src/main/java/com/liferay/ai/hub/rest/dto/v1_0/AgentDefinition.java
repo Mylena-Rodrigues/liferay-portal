@@ -297,6 +297,48 @@ public class AgentDefinition implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
+	public Map<String, ?> getLabels() {
+		if (_labelsSupplier != null) {
+			labels = _labelsSupplier.get();
+
+			_labelsSupplier = null;
+		}
+
+		return labels;
+	}
+
+	public void setLabels(Map<String, ?> labels) {
+		this.labels = labels;
+
+		_labelsSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setLabels(
+		UnsafeSupplier<Map<String, ?>, Exception> labelsUnsafeSupplier) {
+
+		_labelsSupplier = () -> {
+			try {
+				return labelsUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Map<String, ?> labels;
+
+	@JsonIgnore
+	private Supplier<Map<String, ?>> _labelsSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	@Valid
 	public Variable getOutputVariable() {
 		if (_outputVariableSupplier != null) {
 			outputVariable = _outputVariableSupplier.get();
@@ -336,48 +378,6 @@ public class AgentDefinition implements Serializable {
 
 	@JsonIgnore
 	private Supplier<Variable> _outputVariableSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema
-	@Valid
-	public Status getStatus() {
-		if (_statusSupplier != null) {
-			status = _statusSupplier.get();
-
-			_statusSupplier = null;
-		}
-
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-
-		_statusSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setStatus(
-		UnsafeSupplier<Status, Exception> statusUnsafeSupplier) {
-
-		_statusSupplier = () -> {
-			try {
-				return statusUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Status status;
-
-	@JsonIgnore
-	private Supplier<Status> _statusSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	public String getTitle() {
@@ -620,6 +620,18 @@ public class AgentDefinition implements Serializable {
 			sb.append("]");
 		}
 
+		Map<String, ?> labels = getLabels();
+
+		if (labels != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"labels\": ");
+
+			sb.append(_toJSON(labels));
+		}
+
 		Variable outputVariable = getOutputVariable();
 
 		if (outputVariable != null) {
@@ -630,18 +642,6 @@ public class AgentDefinition implements Serializable {
 			sb.append("\"outputVariable\": ");
 
 			sb.append(String.valueOf(outputVariable));
-		}
-
-		Status status = getStatus();
-
-		if (status != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"status\": ");
-
-			sb.append(String.valueOf(status));
 		}
 
 		String title = getTitle();

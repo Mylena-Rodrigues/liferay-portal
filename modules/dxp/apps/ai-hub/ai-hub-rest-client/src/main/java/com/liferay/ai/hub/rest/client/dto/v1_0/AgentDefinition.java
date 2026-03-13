@@ -151,6 +151,27 @@ public class AgentDefinition implements Cloneable, Serializable {
 
 	protected Variable[] inputVariables;
 
+	public Map<String, ?> getLabels() {
+		return labels;
+	}
+
+	public void setLabels(Map<String, ?> labels) {
+		this.labels = labels;
+	}
+
+	public void setLabels(
+		UnsafeSupplier<Map<String, ?>, Exception> labelsUnsafeSupplier) {
+
+		try {
+			labels = labelsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Map<String, ?> labels;
+
 	public Variable getOutputVariable() {
 		return outputVariable;
 	}
@@ -171,27 +192,6 @@ public class AgentDefinition implements Cloneable, Serializable {
 	}
 
 	protected Variable outputVariable;
-
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-
-	public void setStatus(
-		UnsafeSupplier<Status, Exception> statusUnsafeSupplier) {
-
-		try {
-			status = statusUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected Status status;
 
 	public String getTitle() {
 		return title;

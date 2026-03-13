@@ -805,16 +805,16 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("outputVariable", additionalAssertFieldName)) {
-				if (agentDefinition.getOutputVariable() == null) {
+			if (Objects.equals("labels", additionalAssertFieldName)) {
+				if (agentDefinition.getLabels() == null) {
 					valid = false;
 				}
 
 				continue;
 			}
 
-			if (Objects.equals("status", additionalAssertFieldName)) {
-				if (agentDefinition.getStatus() == null) {
+			if (Objects.equals("outputVariable", additionalAssertFieldName)) {
+				if (agentDefinition.getOutputVariable() == null) {
 					valid = false;
 				}
 
@@ -1037,10 +1037,10 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("outputVariable", additionalAssertFieldName)) {
-				if (!Objects.deepEquals(
-						agentDefinition1.getOutputVariable(),
-						agentDefinition2.getOutputVariable())) {
+			if (Objects.equals("labels", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)agentDefinition1.getLabels(),
+						(Map)agentDefinition2.getLabels())) {
 
 					return false;
 				}
@@ -1048,10 +1048,10 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("status", additionalAssertFieldName)) {
+			if (Objects.equals("outputVariable", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						agentDefinition1.getStatus(),
-						agentDefinition2.getStatus())) {
+						agentDefinition1.getOutputVariable(),
+						agentDefinition2.getOutputVariable())) {
 
 					return false;
 				}
@@ -1314,12 +1314,12 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
-		if (entityFieldName.equals("outputVariable")) {
+		if (entityFieldName.equals("labels")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
 
-		if (entityFieldName.equals("status")) {
+		if (entityFieldName.equals("outputVariable")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}

@@ -33,17 +33,17 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("Status")
+@GraphQLName("Label")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "Status")
-public class Status implements Serializable {
+@XmlRootElement(name = "Label")
+public class Label implements Serializable {
 
-	public static Status toDTO(String json) {
-		return ObjectMapperUtil.readValue(Status.class, json);
+	public static Label toDTO(String json) {
+		return ObjectMapperUtil.readValue(Label.class, json);
 	}
 
-	public static Status unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(Status.class, json);
+	public static Label unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(Label.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
@@ -86,29 +86,29 @@ public class Status implements Serializable {
 	private Supplier<Integer> _codeSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
-	public String getLabel() {
-		if (_labelSupplier != null) {
-			label = _labelSupplier.get();
+	public String getValue() {
+		if (_valueSupplier != null) {
+			value = _valueSupplier.get();
 
-			_labelSupplier = null;
+			_valueSupplier = null;
 		}
 
-		return label;
+		return value;
 	}
 
-	public void setLabel(String label) {
-		this.label = label;
+	public void setValue(String value) {
+		this.value = value;
 
-		_labelSupplier = null;
+		_valueSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setLabel(
-		UnsafeSupplier<String, Exception> labelUnsafeSupplier) {
+	public void setValue(
+		UnsafeSupplier<String, Exception> valueUnsafeSupplier) {
 
-		_labelSupplier = () -> {
+		_valueSupplier = () -> {
 			try {
-				return labelUnsafeSupplier.get();
+				return valueUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -121,35 +121,35 @@ public class Status implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String label;
+	protected String value;
 
 	@JsonIgnore
-	private Supplier<String> _labelSupplier;
+	private Supplier<String> _valueSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
-	public String getLabel_i18n() {
-		if (_label_i18nSupplier != null) {
-			label_i18n = _label_i18nSupplier.get();
+	public String getValue_i18n() {
+		if (_value_i18nSupplier != null) {
+			value_i18n = _value_i18nSupplier.get();
 
-			_label_i18nSupplier = null;
+			_value_i18nSupplier = null;
 		}
 
-		return label_i18n;
+		return value_i18n;
 	}
 
-	public void setLabel_i18n(String label_i18n) {
-		this.label_i18n = label_i18n;
+	public void setValue_i18n(String value_i18n) {
+		this.value_i18n = value_i18n;
 
-		_label_i18nSupplier = null;
+		_value_i18nSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setLabel_i18n(
-		UnsafeSupplier<String, Exception> label_i18nUnsafeSupplier) {
+	public void setValue_i18n(
+		UnsafeSupplier<String, Exception> value_i18nUnsafeSupplier) {
 
-		_label_i18nSupplier = () -> {
+		_value_i18nSupplier = () -> {
 			try {
-				return label_i18nUnsafeSupplier.get();
+				return value_i18nUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -162,10 +162,10 @@ public class Status implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String label_i18n;
+	protected String value_i18n;
 
 	@JsonIgnore
-	private Supplier<String> _label_i18nSupplier;
+	private Supplier<String> _value_i18nSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -173,13 +173,13 @@ public class Status implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof Status)) {
+		if (!(object instanceof Label)) {
 			return false;
 		}
 
-		Status status = (Status)object;
+		Label label = (Label)object;
 
-		return Objects.equals(toString(), status.toString());
+		return Objects.equals(toString(), label.toString());
 	}
 
 	@Override
@@ -206,34 +206,34 @@ public class Status implements Serializable {
 			sb.append(code);
 		}
 
-		String label = getLabel();
+		String value = getValue();
 
-		if (label != null) {
+		if (value != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"label\": ");
+			sb.append("\"value\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(label));
+			sb.append(_escape(value));
 
 			sb.append("\"");
 		}
 
-		String label_i18n = getLabel_i18n();
+		String value_i18n = getValue_i18n();
 
-		if (label_i18n != null) {
+		if (value_i18n != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"label_i18n\": ");
+			sb.append("\"value_i18n\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(label_i18n));
+			sb.append(_escape(value_i18n));
 
 			sb.append("\"");
 		}
@@ -245,7 +245,7 @@ public class Status implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.ai.hub.rest.dto.v1_0.Status",
+		defaultValue = "com.liferay.ai.hub.rest.dto.v1_0.Label",
 		name = "x-class-name"
 	)
 	public String xClassName;
