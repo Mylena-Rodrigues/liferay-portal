@@ -24,11 +24,11 @@ components:
                     items:
                         $ref: "#/components/schemas/Variable"
                     type: array
+                labels:
+                    additionalProperties: true
+                    type: object
                 outputVariable:
                     $ref: "#/components/schemas/Variable"
-                status:
-                    $ref: "#/components/schemas/Status"
-                    readOnly: true
                 title:
                     type: string
                 version:
@@ -40,6 +40,16 @@ components:
         Chat:
             properties:
                 externalReferenceCode:
+                    type: string
+            type: object
+        Label:
+            properties:
+                code:
+                    format: int32
+                    type: integer
+                value:
+                    type: string
+                value_i18n:
                     type: string
             type: object
         Message:
