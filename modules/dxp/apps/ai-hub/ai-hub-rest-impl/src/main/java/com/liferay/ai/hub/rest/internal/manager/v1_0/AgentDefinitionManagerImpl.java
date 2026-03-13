@@ -7,7 +7,7 @@ package com.liferay.ai.hub.rest.internal.manager.v1_0;
 
 import com.liferay.account.model.AccountEntry;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentDefinition;
-import com.liferay.ai.hub.rest.dto.v1_0.Status;
+import com.liferay.ai.hub.rest.dto.v1_0.Label;
 import com.liferay.ai.hub.rest.dto.v1_0.Variable;
 import com.liferay.ai.hub.rest.internal.resource.v1_0.AgentDefinitionResourceImpl;
 import com.liferay.ai.hub.rest.manager.v1_0.AgentDefinitionManager;
@@ -36,6 +36,7 @@ import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -237,14 +238,7 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 			dtoConverterContext.getUriInfo());
 	}
 
-	private ObjectDefinition _getObjectDefinition(long companyId)
-		throws Exception {
-
-		return _objectDefinitionLocalService.getObjectDefinition(
-			companyId, "AIHubAgentDefinition");
-	}
-
-	private Status _getStatus(
+	private Map<String, Object> _getLabels(
 		DTOConverterContext dtoConverterContext,
 		WorkflowDefinition workflowDefinition) {
 
@@ -252,13 +246,32 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 			return null;
 		}
 
+		Map<String, Object> labels = new HashMap<>();
+
 		Locale locale = dtoConverterContext.getLocale();
 
 		if (workflowDefinition.isActive()) {
-			return _toStatus("active", locale);
+			labels.put("agentDefinitionStatus", _toLabel("active", locale));
+		}
+		else {
+			labels.put("agentDefinitionStatus", _toLabel("inactive", locale));
 		}
 
-		return _toStatus("inactive", locale);
+		if (workflowDefinition.isSystem()) {
+			labels.put("agentDefinitionType", _toLabel("system", locale));
+		}
+		else {
+			labels.put("agentDefinitionType", _toLabel("custom", locale));
+		}
+
+		return labels;
+	}
+
+	private ObjectDefinition _getObjectDefinition(long companyId)
+		throws Exception {
+
+		return _objectDefinitionLocalService.getObjectDefinition(
+			companyId, "AIHubAgentDefinition");
 	}
 
 	private AgentDefinition _toAgentDefinition(
@@ -342,8 +355,8 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 					() -> _toVariable(
 						GetterUtil.getString(
 							objectEntry.getPropertyValue("outputVariable"))));
-				setStatus(
-					() -> _getStatus(dtoConverterContext, workflowDefinition));
+				setLabels(
+					() -> _getLabels(dtoConverterContext, workflowDefinition));
 				setTitle(
 					() -> GetterUtil.getString(
 						objectEntry.getPropertyValue("title")));
@@ -353,13 +366,13 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 		};
 	}
 
-	private Status _toStatus(String label, Locale locale) {
-		Status status = new Status();
+	private Label _toLabel(String value, Locale locale) {
+		Label label = new Label();
 
-		status.setLabel(() -> label);
-		status.setLabel_i18n(() -> _language.get(locale, label));
+		label.setValue(() -> value);
+		label.setValue_i18n(() -> _language.get(locale, value));
 
-		return status;
+		return label;
 	}
 
 	private Variable _toVariable(String variableName) {
