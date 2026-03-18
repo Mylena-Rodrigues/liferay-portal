@@ -84,6 +84,12 @@ public class AIDecisionNodeExecutor extends BaseNodeExecutor {
 					CompanyThreadLocal.setCompanyIdWithSafeCloseable(
 						invocationParameters.get("companyId"))) {
 
+				PermissionThreadLocal.setPermissionChecker(
+					invocationParameters.get("permissionChecker"));
+
+				KaleoInstanceToken kaleoInstanceToken =
+					executionContext.getKaleoInstanceToken();
+
 				ExecutionContext executionContext = invocationParameters.get(
 					"executionContext");
 
@@ -91,12 +97,6 @@ public class AIDecisionNodeExecutor extends BaseNodeExecutor {
 					executionContext.getWorkflowContext();
 
 				workflowContext.put("reason", reason);
-
-				KaleoInstanceToken kaleoInstanceToken =
-					executionContext.getKaleoInstanceToken();
-
-				PermissionThreadLocal.setPermissionChecker(
-					invocationParameters.get("permissionChecker"));
 
 				_workflowNodeManager.completeWorkflowNode(
 					kaleoInstanceToken.getCompanyId(),
@@ -123,8 +123,6 @@ public class AIDecisionNodeExecutor extends BaseNodeExecutor {
 			KaleoNode currentKaleoNode, ExecutionContext executionContext,
 			List<PathElement> remainingPathElements)
 		throws PortalException {
-
-		long companyId = CompanyThreadLocal.getCompanyId();
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
@@ -169,8 +167,9 @@ public class AIDecisionNodeExecutor extends BaseNodeExecutor {
 			).invocationParameters(
 				InvocationParameters.from(
 					Map.of(
-						"companyId", companyId, "executionContext",
-						executionContext, "permissionChecker",
+						"companyId", CompanyThreadLocal.getCompanyId(),
+						"executionContext", executionContext,
+						"permissionChecker",
 						PermissionThreadLocal.getPermissionChecker()))
 			).memoryId(
 				GetterUtil.getString(workflowContext.get("memoryId"))
