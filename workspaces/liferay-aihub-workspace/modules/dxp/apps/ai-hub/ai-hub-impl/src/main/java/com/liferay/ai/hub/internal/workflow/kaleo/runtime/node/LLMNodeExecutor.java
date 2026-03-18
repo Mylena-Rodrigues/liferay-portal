@@ -208,10 +208,10 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 		KaleoNode kaleoNode, Map<String, String> kaleoNodeSettingValues,
 		String prompt, String userMessage) {
 
+		AiMessage aiMessage = chatResponse.aiMessage();
+
 		Map<String, Serializable> workflowContext =
 			executionContext.getWorkflowContext();
-
-		AiMessage aiMessage = chatResponse.aiMessage();
 
 		JSONArray jsonArray = VariablesUtil.getVariablesJSONArray(
 			"outputVariables", kaleoNodeSettingValues);
