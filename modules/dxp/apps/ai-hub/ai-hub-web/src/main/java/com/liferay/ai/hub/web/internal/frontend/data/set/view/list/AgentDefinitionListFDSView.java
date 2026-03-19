@@ -26,6 +26,37 @@ public class AgentDefinitionListFDSView extends BaseListFDSView {
 	}
 
 	@Override
+	public FDSListSchema getFDSListSchema(Locale locale) {
+		FDSListSchemaBuilderFactory fdsListSchemaBuilderFactory =
+			_fdsListSchemaBuilderFactorySnapshot.get();
+
+		if (fdsListSchemaBuilderFactory == null) {
+			return null;
+		}
+
+		FDSListSchemaBuilder fdsListSchemaBuilder =
+			fdsListSchemaBuilderFactory.create();
+
+		return fdsListSchemaBuilder.add(
+			"labels.agentDefinitionStatus.value",
+			HashMapBuilder.put(
+				"active", "success"
+			).put(
+				"inactive", "danger"
+			).build(),
+			"labels.agentDefinitionStatus.value_i18n"
+		).add(
+			"labels.agentDefinitionType.value",
+			HashMapBuilder.put(
+				"custom", "warning"
+			).put(
+				"system", "info"
+			).build(),
+			"labels.agentDefinitionType.value_i18n"
+		).build();
+	}
+
+	@Override
 	public String getTitle() {
 		return "title";
 	}
