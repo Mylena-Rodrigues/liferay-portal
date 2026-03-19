@@ -8,6 +8,7 @@ package com.liferay.ai.hub.rest.resource.v1_0.test;
 import com.liferay.ai.hub.cell.security.JWTTokenUtil;
 import com.liferay.ai.hub.configuration.AIHubConfiguration;
 import com.liferay.ai.hub.rest.resource.v1_0.test.util.SseEventSourceTestUtil;
+import com.liferay.ai.hub.rest.resource.v1_0.test.util.TokenTestUtil;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.oauth2.provider.constants.ClientProfile;
@@ -116,13 +117,7 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 			).toString(),
 			"ai-hub/v1.0/chats/by-external-reference-code/" + sseEventSinkKey +
 				"/messages",
-			HashMapBuilder.put(
-				"Liferay-AI-Hub-On-Behalf-Of",
-				token.getString("userToken")
-			).put(
-				"Authorization",
-				"Bearer " + token.getString("accessToken")
-			).build(),
+			TokenTestUtil.getAuthorizationTokens(),
 			Http.Method.POST);
 
 		Assert.assertEquals(
@@ -145,13 +140,7 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 			).toString(),
 			"ai-hub/v1.0/chats/by-external-reference-code/" + sseEventSinkKey +
 				"/messages",
-			HashMapBuilder.put(
-				"Liferay-AI-Hub-On-Behalf-Of",
-				token.getString("userToken")
-			).put(
-				"Authorization",
-				"Bearer " + token.getString("accessToken")
-			).build(),
+			TokenTestUtil.getAuthorizationTokens(),
 			Http.Method.POST);
 
 		Assert.assertEquals(
@@ -168,37 +157,6 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 		String firstMessageSent = lines.get(5);
 
 		Assert.assertTrue(firstMessageSent, firstMessageSent.contains(text));
-	}
-
-
-	private JSONObject _generateToken() throws Exception {
-		User user = TestPropsValues.getUser();
-
-		OAuth2Application oAuth2Application =
-			_oAuth2ApplicationLocalService.addOAuth2Application(
-				user.getCompanyId(), user.getUserId(), user.getFullName(),
-				List.of(GrantType.CLIENT_CREDENTIALS), "client_secret_post",
-				user.getUserId(),
-				OAuth2SecureRandomGenerator.generateClientId(),
-				ClientProfile.WEB_APPLICATION.id(),
-				OAuth2SecureRandomGenerator.generateClientSecret(), "",
-				List.of(), "http://localhost:8080", 0, null, "AI Hub", "",
-				List.of("http://localhost:8080"), false,
-				Arrays.asList("Liferay.AI.Hub.REST.everything"), false,
-				new ServiceContext());
-
-		ConfigurationTestUtil.saveConfiguration(
-			AIHubConfiguration.class.getName(),
-			HashMapDictionaryBuilder.<String, Object>put(
-				"clientId", oAuth2Application.getClientId()
-			).put(
-				"clientSecret", oAuth2Application.getClientSecret()
-			).put(
-				"serviceURL", "http://localhost:8080"
-			).build());
-
-		return HTTPTestUtil.invokeToJSONObject(
-			null, "ai-hub/v1.0/tokens", Http.Method.POST);
 	}
 
 	private static String _originalName;

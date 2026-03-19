@@ -12,13 +12,10 @@ import com.liferay.account.service.AccountEntryUserRelLocalService;
 import com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration;
 import com.liferay.ai.hub.cell.security.JWTTokenUtil;
 import com.liferay.ai.hub.rest.resource.v1_0.test.util.SseEventSourceTestUtil;
+import com.liferay.ai.hub.rest.resource.v1_0.test.util.TokenTestUtil;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.oauth2.provider.constants.ClientProfile;
-import com.liferay.oauth2.provider.constants.GrantType;
-import com.liferay.oauth2.provider.model.OAuth2Application;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
-import com.liferay.oauth2.provider.util.OAuth2SecureRandomGenerator;
 import com.liferay.object.field.builder.LongTextObjectFieldBuilder;
 import com.liferay.object.field.builder.TextObjectFieldBuilder;
 import com.liferay.object.model.ObjectDefinition;
@@ -43,7 +40,6 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -328,35 +324,6 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 			workflowContext.get("userMessageInput"));
 	}
 
-	private JSONObject _generateToken() throws Exception {
-		User user = TestPropsValues.getUser();
-
-		OAuth2Application oAuth2Application =
-			_oAuth2ApplicationLocalService.addOAuth2Application(
-				user.getCompanyId(), user.getUserId(), user.getFullName(),
-				List.of(GrantType.CLIENT_CREDENTIALS), "client_secret_post",
-				user.getUserId(),
-				OAuth2SecureRandomGenerator.generateClientId(),
-				ClientProfile.WEB_APPLICATION.id(),
-				OAuth2SecureRandomGenerator.generateClientSecret(), "",
-				List.of(), "http://localhost:8080", 0, null, "AI Hub", "",
-				List.of("http://localhost:8080"), false,
-				Arrays.asList("Liferay.AI.Hub.REST.everything"), false,
-				new ServiceContext());
-
-		ConfigurationTestUtil.saveConfiguration(
-			AIHubConfiguration.class.getName(),
-			HashMapDictionaryBuilder.<String, Object>put(
-				"clientId", oAuth2Application.getClientId()
-			).put(
-				"clientSecret", oAuth2Application.getClientSecret()
-			).put(
-				"serviceURL", "http://localhost:8080"
-			).build());
-
-		return HTTPTestUtil.invokeToJSONObject(
-			null, "ai-hub/v1.0/tokens", Http.Method.POST);
-	}
 
 	private void _testPostTask() throws Exception {
 		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
@@ -494,8 +461,6 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 		String sseEventSinkKey = SseEventSourceTestUtil.open(
 			List.of(countDownLatch), lines, "tasks/subscribe");
 
-		JSONObject token = _generateToken();
-
 		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
 				"context", JSONUtil.put("text", "Thi text ix wrong.")
@@ -506,11 +471,7 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 				WorkflowDefinitionConstants.NAME_FIX_SPELLING_AND_GRAMMAR
 			).toString(),
 			"ai-hub/v1.0/tasks",
-			HashMapBuilder.put(
-				"Authorization", "Bearer " + token.getString("accessToken")
-			).put(
-				"Liferay-AI-Hub-On-Behalf-Of", token.getString("userToken")
-			).build(),
+			TokenTestUtil.getAuthorizationTokens(),
 			Http.Method.POST);
 
 		Assert.assertTrue(countDownLatch.await(20, TimeUnit.SECONDS));
@@ -561,8 +522,6 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 			List.of(countDownLatch1, countDownLatch2), lines,
 			"tasks/subscribe");
 
-		JSONObject token = _generateToken();
-
 		HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
 				"context",
@@ -573,11 +532,7 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 				"type", "LLM Node With RAG Workflow Definition"
 			).toString(),
 			"ai-hub/v1.0/tasks",
-			HashMapBuilder.put(
-				"Authorization", "Bearer " + token.getString("accessToken")
-			).put(
-				"Liferay-AI-Hub-On-Behalf-Of", token.getString("userToken")
-			).build(),
+			TokenTestUtil.getAuthorizationTokens(),
 			Http.Method.POST);
 
 		Assert.assertTrue(countDownLatch1.await(10, TimeUnit.SECONDS));
@@ -610,11 +565,7 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 				"type", "LLM Node With RAG Workflow Definition"
 			).toString(),
 			"ai-hub/v1.0/tasks",
-			HashMapBuilder.put(
-				"Authorization", "Bearer " + token.getString("accessToken")
-			).put(
-				"Liferay-AI-Hub-On-Behalf-Of", token.getString("userToken")
-			).build(),
+			TokenTestUtil.getAuthorizationTokens(),
 			Http.Method.POST);
 
 		Assert.assertTrue(countDownLatch2.await(10, TimeUnit.SECONDS));
@@ -651,8 +602,6 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 
 		long userId = user.getUserId();
 
-		JSONObject token = _generateToken();
-
 		_objectEntryLocalService.addObjectEntry(
 			0L, TestPropsValues.getUserId(),
 			_objectDefinition.getObjectDefinitionId(), 0,
@@ -684,13 +633,7 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 						"type", "LLM Node With RAG Workflow Definition"
 					).toString(),
 					"ai-hub/v1.0/tasks",
-					HashMapBuilder.put(
-						"Authorization",
-						"Bearer " + token.getString("accessToken")
-					).put(
-						"Liferay-AI-Hub-On-Behalf-Of",
-						token.getString("userToken")
-					).build(),
+					TokenTestUtil.getAuthorizationTokens(),
 					Http.Method.POST);
 
 				Assert.assertTrue(countDownLatch1.await(10, TimeUnit.SECONDS));
@@ -726,13 +669,7 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 						"type", "LLM Node With RAG Workflow Definition"
 					).toString(),
 					"ai-hub/v1.0/tasks",
-					HashMapBuilder.put(
-						"Authorization",
-						"Bearer " + token.getString("accessToken")
-					).put(
-						"Liferay-AI-Hub-On-Behalf-Of",
-						token.getString("userToken")
-					).build(),
+					TokenTestUtil.getAuthorizationTokens(),
 					Http.Method.POST);
 
 				Assert.assertTrue(countDownLatch2.await(10, TimeUnit.SECONDS));
@@ -760,8 +697,6 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 		String sseEventSinkKey = SseEventSourceTestUtil.open(
 			List.of(countDownLatch), lines, "tasks/subscribe");
 
-		JSONObject token = _generateToken();
-
 		HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
 				"context",
@@ -773,11 +708,7 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 				"type", "LLM Node With Tool Workflow Definition"
 			).toString(),
 			"ai-hub/v1.0/tasks",
-			HashMapBuilder.put(
-				"Authorization", "Bearer " + token.getString("accessToken")
-			).put(
-				"Liferay-AI-Hub-On-Behalf-Of", token.getString("userToken")
-			).build(),
+			TokenTestUtil.getAuthorizationTokens(),
 			Http.Method.POST);
 
 		Assert.assertTrue(countDownLatch.await(10, TimeUnit.SECONDS));
@@ -803,8 +734,6 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 			"This is a long and detailed sentence that should be shortened " +
 				"by the AI model for testing purposes.";
 
-		JSONObject token = _generateToken();
-
 		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
 				"context", JSONUtil.put("text", inputText)
@@ -814,11 +743,7 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 				"type", WorkflowDefinitionConstants.NAME_MAKE_SHORTER
 			).toString(),
 			"ai-hub/v1.0/tasks",
-			HashMapBuilder.put(
-				"Authorization", "Bearer " + token.getString("accessToken")
-			).put(
-				"Liferay-AI-Hub-On-Behalf-Of", token.getString("userToken")
-			).build(),
+			TokenTestUtil.getAuthorizationTokens(),
 			Http.Method.POST);
 
 		Assert.assertTrue(countDownLatch.await(10, TimeUnit.SECONDS));
