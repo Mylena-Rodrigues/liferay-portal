@@ -55,7 +55,7 @@ public class TokenTestUtil {
 			).build());
 
 		return HTTPTestUtil.invokeToJSONObject(
-			null, "ai-hub-cell/v1.0/tokens", Http.Method.POST);
+			null, "ai-hub-cell/v1.0/authorization-tokens", Http.Method.POST);
 	}
 
 }
