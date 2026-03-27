@@ -35,7 +35,7 @@ public class ViewAgentDefinitionsFragmentRenderer
 
 	@Override
 	public String getLabel(Locale locale) {
-		return _language.get(locale, "all-section");
+		return _language.get(locale, "agents-section");
 	}
 
 	@Override
