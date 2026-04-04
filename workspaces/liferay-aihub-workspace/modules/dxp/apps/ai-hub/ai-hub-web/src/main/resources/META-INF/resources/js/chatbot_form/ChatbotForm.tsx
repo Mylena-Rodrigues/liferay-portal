@@ -176,7 +176,7 @@ export default function ChatbotForm({
 			removedAgentDefinitionERCsRef.current.clear();
 
 			openToast({
-				message: Liferay.Language.get('chatbot-saved-successfully'),
+				message: Liferay.Language.get('chatbot-was-saved-successfully'),
 				type: 'success',
 			});
 		}
