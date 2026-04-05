@@ -52,7 +52,7 @@ public class ContentRetrieverManagerImpl implements ContentRetrieverManager {
 			companyId, dtoConverterContext, externalReferenceCode,
 			_getObjectDefinition(companyId), null);
 
-		_removeIndex(
+		_deleteIndex(
 			GetterUtil.getString(objectEntry.getPropertyValue("indexName")));
 
 		_objectEntryManager.deleteObjectEntry(
@@ -148,7 +148,7 @@ public class ContentRetrieverManagerImpl implements ContentRetrieverManager {
 		return jsonObject.toString();
 	}
 
-	private void _removeIndex(String indexName) {
+	private void _deleteIndex(String indexName) {
 		if (!_hasIndex(indexName)) {
 			return;
 		}
