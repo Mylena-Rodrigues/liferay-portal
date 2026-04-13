@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.ai.hub.cell.security;
+package com.liferay.ai.hub.cell.internal.security.service.access.token;
 
 import com.liferay.portal.kernel.security.SecureRandomUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * @author Rafael Praxedes
  */
-public class JWTTokenUtilTest {
+public class JWTTokenTest {
 
 	@ClassRule
 	public static final LiferayUnitTestRule liferayUnitTestRule =
@@ -34,7 +34,7 @@ public class JWTTokenUtilTest {
 
 	@Test
 	public void testGenerateToken() throws Exception {
-		String token = JWTTokenUtil.generateToken(
+		String token = JWTTokenImpl.generateToken(
 			TimeUnit.MINUTES.toMillis(1), _ISSUER, _USER_ID);
 
 		Assert.assertNotNull(token);
@@ -51,10 +51,10 @@ public class JWTTokenUtilTest {
 
 	@Test
 	public void testGetUserId() throws Exception {
-		String token = JWTTokenUtil.generateToken(
+		String token = JWTTokenImpl.generateToken(
 			TimeUnit.MINUTES.toMillis(1), _ISSUER, _USER_ID);
 
-		Assert.assertEquals(_USER_ID, JWTTokenUtil.getUserId(token));
+		Assert.assertEquals(_USER_ID, JWTTokenImpl.getUserId(token));
 
 		byte[] secret = new byte[64];
 
@@ -64,7 +64,7 @@ public class JWTTokenUtilTest {
 
 		try (AutoCloseable autoCloseable =
 				ReflectionTestUtil.setFieldValueWithAutoCloseable(
-					JWTTokenUtil.class, "_SECRET", secret)) {
+					JWTTokenImpl.class, "_SECRET", secret)) {
 
 			_testGetUserId("Invalid JWT signature", token);
 		}
@@ -74,7 +74,7 @@ public class JWTTokenUtilTest {
 			token.substring(0, token.length() - 5) + "abcde");
 		_testGetUserId(
 			"The JWT token is expired",
-			JWTTokenUtil.generateToken(0, _ISSUER, _USER_ID));
+			JWTTokenImpl.generateToken(0, _ISSUER, _USER_ID));
 		_testGetUserId(
 			"Unable to parse and verify the JWT token",
 			RandomTestUtil.randomString());
@@ -82,10 +82,11 @@ public class JWTTokenUtilTest {
 
 	private void _testGetUserId(String expectedLogMessage, String token) {
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
-				"com.liferay.ai.hub.cell.security.JWTTokenUtil",
+				"com.liferay.ai.hub.cell.internal.security.service.access." +
+					"token.JWTTokenImpl",
 				LoggerTestUtil.DEBUG)) {
 
-			JWTTokenUtil.getUserId(token);
+			JWTTokenImpl.getUserId(token);
 
 			List<LogEntry> logEntries = logCapture.getLogEntries();
 
