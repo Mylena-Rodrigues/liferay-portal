@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.ai.hub.cell.security;
+package com.liferay.ai.hub.cell.internal.security.service.access.token;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -22,7 +22,7 @@ import java.util.Date;
 /**
  * @author Rafael Praxedes
  */
-public class JWTTokenUtil {
+public class JWTTokenImpl {
 
 	public static String generateToken(
 		long expirationTime, String issuer, long userId) {
@@ -96,7 +96,7 @@ public class JWTTokenUtil {
 
 	private static final byte[] _SECRET;
 
-	private static final Log _log = LogFactoryUtil.getLog(JWTTokenUtil.class);
+	private static final Log _log = LogFactoryUtil.getLog(JWTTokenImpl.class);
 
 	static {
 		int sha256BlockSize = 64;
