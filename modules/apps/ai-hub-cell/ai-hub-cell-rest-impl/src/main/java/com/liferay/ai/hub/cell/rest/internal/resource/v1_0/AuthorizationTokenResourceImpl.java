@@ -8,7 +8,7 @@ package com.liferay.ai.hub.cell.rest.internal.resource.v1_0;
 import com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration;
 import com.liferay.ai.hub.cell.rest.dto.v1_0.AuthorizationToken;
 import com.liferay.ai.hub.cell.rest.resource.v1_0.AuthorizationTokenResource;
-import com.liferay.ai.hub.cell.security.JWTTokenUtil;
+import com.liferay.ai.hub.cell.security.JWTToken;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -62,7 +62,7 @@ public class AuthorizationTokenResourceImpl
 				setScope(() -> jsonObject.getString("scope"));
 				setServiceURL(aiHubCellConfiguration::serviceURL);
 				setUserToken(
-					() -> JWTTokenUtil.generateToken(
+					() -> _jwtToken.generateToken(
 						TimeUnit.MINUTES.toMillis(1),
 						contextCompany.getVirtualHostname(),
 						contextUser.getUserId()));
@@ -78,5 +78,8 @@ public class AuthorizationTokenResourceImpl
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private JWTToken _jwtToken;
 
 }
