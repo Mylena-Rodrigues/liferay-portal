@@ -5,14 +5,9 @@
 
 package com.liferay.ai.hub.cell.web.internal.constants;
 
-/**
- * @author Davyson Melo
- */
-public class AIHubCellPortletKeys {
-
-	public static final String AI_HUB_CELL =
-		"com_liferay_ai_hub_cell_web_internal_portlet_AIHubCellPortlet";
+public class AIHubCellFDSNames {
 
 	public static final String CONTENT_SITE_GENERATOR =
-		"com_liferay_ai_hub_cell_web_internal_portlet_ContentSiteGeneratorPortlet";
+		AIHubCellPortletKeys.CONTENT_SITE_GENERATOR + "-contentSiteGenerator";
+
 }
