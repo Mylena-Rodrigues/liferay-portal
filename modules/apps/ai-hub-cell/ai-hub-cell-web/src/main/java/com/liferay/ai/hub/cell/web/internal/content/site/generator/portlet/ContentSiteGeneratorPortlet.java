@@ -56,6 +56,13 @@ public class ContentSiteGeneratorPortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+		renderRequest);
+
+		renderRequest.setAttribute(
+			ViewContentSitesDisplayContext.class.getName(),
+			new ViewContentSitesDisplayContext(httpServletRequest));
+
 		super.render(renderRequest, renderResponse);
 	}
 
