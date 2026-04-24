@@ -4,3 +4,4 @@
  */
 
 export {default as ContentSiteGenerator} from './ContentSiteGenerator';
+export {default as MultiStepProgress} from './MultiStepProgress';
