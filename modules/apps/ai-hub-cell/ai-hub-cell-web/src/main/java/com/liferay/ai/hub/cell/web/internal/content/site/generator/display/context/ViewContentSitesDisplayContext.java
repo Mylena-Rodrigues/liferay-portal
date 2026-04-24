@@ -10,6 +10,8 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,9 +23,11 @@ import java.util.List;
 public class ViewContentSitesDisplayContext {
 
 	public ViewContentSitesDisplayContext(
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest,
+		LiferayPortletResponse liferayPortletResponse) {
 
 		_httpServletRequest = httpServletRequest;
+		_liferayPortletResponse = liferayPortletResponse;
 	}
 
 	public String getAPIURL() {
@@ -38,15 +42,29 @@ public class ViewContentSitesDisplayContext {
 				"delete", "async"));
 	}
 
+	public String getBackURL() {
+		return PortletURLBuilder.createRenderURL(
+			_liferayPortletResponse
+		).buildString();
+	}
+
 	public CreationMenu getCreationMenu() throws Exception {
 		return CreationMenuBuilder.addDropdownItem(
 			dropdownItem -> {
-				dropdownItem.setHref("#");
-				dropdownItem.setIcon("stars");
+				dropdownItem.setHref(getContentSiteGeneratorURL());
+				dropdownItem.setIcon("plus");
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "new-generator"));
 			}
 		).build();
+	}
+
+	public String getContentSiteGeneratorURL() {
+		return PortletURLBuilder.createRenderURL(
+			_liferayPortletResponse
+		).setMVCPath(
+			"/view_content_site_generator.jsp"
+		).buildString();
 	}
 
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems()
@@ -64,5 +82,6 @@ public class ViewContentSitesDisplayContext {
 	}
 
 	private final HttpServletRequest _httpServletRequest;
+	private final LiferayPortletResponse _liferayPortletResponse;
 
 }
