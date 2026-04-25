@@ -34,6 +34,12 @@ public class ViewContentSitesDisplayContext {
 		return "/o/ai-hub-cell/content-generator";
 	}
 
+	public String getBackURL() {
+		return PortletURLBuilder.createRenderURL(
+			_liferayPortletResponse
+		).buildString();
+	}
+
 	public List<DropdownItem> getBulkActionDropdownItems() throws Exception {
 		return List.of(
 			new FDSActionDropdownItem(
@@ -42,9 +48,11 @@ public class ViewContentSitesDisplayContext {
 				"delete", "async"));
 	}
 
-	public String getBackURL() {
+	public String getContentSiteGeneratorURL() {
 		return PortletURLBuilder.createRenderURL(
 			_liferayPortletResponse
+		).setMVCPath(
+			"/view_content_site_generator.jsp"
 		).buildString();
 	}
 
@@ -57,14 +65,6 @@ public class ViewContentSitesDisplayContext {
 					LanguageUtil.get(_httpServletRequest, "new-generator"));
 			}
 		).build();
-	}
-
-	public String getContentSiteGeneratorURL() {
-		return PortletURLBuilder.createRenderURL(
-			_liferayPortletResponse
-		).setMVCPath(
-			"/view_content_site_generator.jsp"
-		).buildString();
 	}
 
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems()

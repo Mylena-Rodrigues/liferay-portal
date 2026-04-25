@@ -62,7 +62,7 @@ public class ContentSiteGeneratorPortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-		renderRequest);
+			renderRequest);
 
 		LiferayPortletResponse liferayPortletResponse =
 			_portal.getLiferayPortletResponse(renderResponse);
