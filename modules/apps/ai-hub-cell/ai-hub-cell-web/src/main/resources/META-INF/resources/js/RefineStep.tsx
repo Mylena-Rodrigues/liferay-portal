@@ -265,6 +265,46 @@ const buildGeneratedItems = (
 	return items;
 };
 
+const buildInitialAssistantReply = (
+	totalEntries: number,
+	templates: Template[],
+	languageLabels: string[]
+): string => {
+	if (!totalEntries && !templates.length && !languageLabels.length) {
+		return Liferay.Language.get(
+			'all-done-your-configuration-is-ready-let-me-know-if-you-would-like-to-refine-anything'
+		);
+	}
+
+	const parts: string[] = [];
+
+	if (totalEntries) {
+		parts.push(sub(Liferay.Language.get('x-entries'), totalEntries));
+	}
+
+	if (templates.length) {
+		parts.push(
+			sub(
+				Liferay.Language.get('across-x'),
+				templates.map((template) => template.name).join(', ')
+			)
+		);
+	}
+
+	if (languageLabels.length) {
+		parts.push(
+			sub(Liferay.Language.get('in-x'), languageLabels.join(', '))
+		);
+	}
+
+	return sub(
+		Liferay.Language.get(
+			'all-done-i-have-prepared-x-let-me-know-if-you-would-like-to-refine-anything'
+		),
+		parts.join(' ')
+	);
+};
+
 export default function RefineStep({
 	backURL,
 	cancelURL,
@@ -460,6 +500,14 @@ export default function RefineStep({
 			attachment.title ?? `${Liferay.Language.get('attachment')} ${index + 1}`
 	);
 
+	const initialAssistantReply = run
+		? buildInitialAssistantReply(
+				artifacts.length,
+				templates,
+				languages.map(getLanguageLabel)
+			)
+		: '';
+
 	const getChatContext = useCallback(
 		(): ChatContext => ({
 			context: {prompt: promptText, runId},
@@ -476,7 +524,12 @@ export default function RefineStep({
 						className="content-site-generator-refine__sidebar"
 						md={3}
 					>
-						<AIAssistantChat embedded getContext={getChatContext} />
+						<AIAssistantChat
+							embedded
+							getContext={getChatContext}
+							initialAssistantReply={initialAssistantReply}
+							initialMessage={promptText}
+						/>
 					</ClayLayout.Col>
 
 					<ClayLayout.Col md={9}>

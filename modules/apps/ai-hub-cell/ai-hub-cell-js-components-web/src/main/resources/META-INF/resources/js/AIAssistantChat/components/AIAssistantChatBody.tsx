@@ -23,7 +23,7 @@ interface AIAssistantChatBodyProps {
 	isGenerating: boolean;
 	message: string;
 	messages: Message[];
-	onCloseClick: () => void;
+	onCloseClick?: () => void | null;
 	onSendMessage: (text: string) => void;
 	setMessage: (message: string) => void;
 }
@@ -33,7 +33,7 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 	isGenerating,
 	message,
 	messages,
-	onCloseClick,
+	onCloseClick = null,
 	onSendMessage,
 	setMessage,
 }) => {
@@ -138,11 +138,13 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 			)}
 
 			<div className="ai-assistant-chat__messages-container flex-grow-1 overflow-auto px-3">
-				<AIAssistantMessageBalloon
-					error={false}
-					message="Hi! I can help you generate content, titles, tags, or
-					translate your work. What would you like to do?"
-				/>
+				{!messages.length && (
+					<AIAssistantMessageBalloon
+						error={false}
+						message="Hi! I can help you generate content, titles, tags, or
+						translate your work. What would you like to do?"
+					/>
+				)}
 
 				{messages.map((item, index) =>
 					item.sender === 'user' ? (

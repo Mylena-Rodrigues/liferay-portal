@@ -23,6 +23,8 @@ interface AIAssistantChatProps {
 	embedded?: boolean;
 	externalEventTypes?: string[];
 	getContext: () => ChatContext;
+	initialAssistantReply?: string;
+	initialMessage?: string;
 	onExternalEvent?: (type: string, data: string) => void;
 }
 
@@ -31,6 +33,8 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	embedded = false,
 	externalEventTypes,
 	getContext,
+	initialAssistantReply,
+	initialMessage,
 	onExternalEvent,
 }) => {
 	const [active, setActive] = useState<boolean>(false);
@@ -39,7 +43,32 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	const [message, setMessage] = useState<string>('');
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const eventSourceReference = useRef<string | null>(null);
+	const initialMessageAppliedRef = useRef<boolean>(false);
 	const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+	useEffect(() => {
+		if (initialMessageAppliedRef.current) {
+			return;
+		}
+
+		const trimmedMessage = initialMessage?.trim();
+
+		if (!trimmedMessage) {
+			return;
+		}
+
+		initialMessageAppliedRef.current = true;
+
+		const seeded: Message[] = [{sender: 'user', text: trimmedMessage}];
+
+		const trimmedReply = initialAssistantReply?.trim();
+
+		if (trimmedReply) {
+			seeded.push({sender: 'assistant', text: trimmedReply});
+		}
+
+		setMessages(seeded);
+	}, [initialAssistantReply, initialMessage]);
 
 	function onSendMessage(text: string) {
 		setMessages((previousMessages) => [
@@ -114,13 +143,13 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	if (embedded) {
 		return (
 			<AIAssistantChatBody
-			embedded={embedded}
-			isGenerating={isGenerating}
-			message={message}
-			messages={messages}
-			onSendMessage={onSendMessage}
-			setMessage={setMessage}
-		/>
+				embedded={embedded}
+				isGenerating={isGenerating}
+				message={message}
+				messages={messages}
+				onSendMessage={onSendMessage}
+				setMessage={setMessage}
+			/>
 		);
 	}
 
