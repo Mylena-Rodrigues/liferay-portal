@@ -10,8 +10,12 @@ import ClayLabel from '@clayui/label';
 import ClayLayout from '@clayui/layout';
 import ClayList from '@clayui/list';
 import ClayPanel from '@clayui/panel';
+import {
+	AIAssistantChat,
+	ChatContext,
+} from '@liferay/ai-hub-cell-js-components-web';
 import {fetch as liferayFetch, sub} from 'frontend-js-web';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 
 import ContentSampleItem from './components/ContentSampleItem';
 import MultiStepProgress from './components/MultiStepProgress';
@@ -456,11 +460,28 @@ export default function RefineStep({
 			attachment.title ?? `${Liferay.Language.get('attachment')} ${index + 1}`
 	);
 
+	const getChatContext = useCallback(
+		(): ChatContext => ({
+			context: {prompt: promptText, runId},
+			instructionDefinitionScope: 'content-site-generator',
+		}),
+		[promptText, runId]
+	);
+
 	return (
 		<div className="content-site-generator">
 			<ClayLayout.ContainerFluid view>
-				<ClayLayout.Row justify="center">
-					<ClayLayout.Col md={10} xl={8}>
+				<ClayLayout.Row>
+					<ClayLayout.Col
+						className="content-site-generator-refine__sidebar"
+						md={3}
+					>
+						<AIAssistantChat embedded getContext={getChatContext} />
+					</ClayLayout.Col>
+
+					<ClayLayout.Col md={9}>
+						<ClayLayout.Row justify="center">
+							<ClayLayout.Col md={12} xl={10}>
 						<div className="content-site-generator__progress">
 							<MultiStepProgress
 								activeStep={1}
@@ -774,6 +795,8 @@ export default function RefineStep({
 								onContinue={handleContinue}
 							/>
 						</div>
+							</ClayLayout.Col>
+						</ClayLayout.Row>
 					</ClayLayout.Col>
 				</ClayLayout.Row>
 			</ClayLayout.ContainerFluid>
