@@ -5,7 +5,7 @@
 
 import React, {useEffect, useState} from 'react';
 
-import {getUserAccount} from '../services/getUserAccount';
+import {getUserAccount} from '../services/UserAccountService';
 import Avatar from './Avatar';
 
 const UserChatItem: React.FC<{message: string}> = ({message}) => {

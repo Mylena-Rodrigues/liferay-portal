@@ -4,5 +4,5 @@
  */
 
 export {default as AIAssistantChat} from './AIAssistantChat/AIAssistantChat';
-export type {ChatContext} from './AIAssistantChat/api';
+export type {ChatContext} from './AIAssistantChat/types/ChatContext';
 export {default as WritingAssistant} from './WritingAssistant/WritingAssistant';

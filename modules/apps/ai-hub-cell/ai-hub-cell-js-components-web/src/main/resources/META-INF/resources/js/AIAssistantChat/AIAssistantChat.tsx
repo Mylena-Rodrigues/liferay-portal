@@ -12,13 +12,10 @@ import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {EventSource} from 'eventsource';
 import React, {useEffect, useRef, useState} from 'react';
 
-import {
-	ChatContext,
-	createEventSource,
-	postChatByExternalReferenceCodeMessage,
-} from './api';
+import {createEventSource, postChatByExternalReferenceCodeMessage} from './api';
 import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
+import {ChatContext} from './types/ChatContext';
 
 import './chat.scss';
 

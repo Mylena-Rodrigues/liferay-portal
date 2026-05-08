@@ -6,7 +6,9 @@
 import {fetch} from 'frontend-js-web';
 
 async function getUserAccount(id: string) {
-	const response = await fetch(`/o/headless-admin-user/v1.0/user-accounts/${id}`);
+	const response = await fetch(
+		`/o/headless-admin-user/v1.0/user-accounts/${id}`
+	);
 
 	if (!response.ok) {
 		throw new Error('Failed to fetch user data.');

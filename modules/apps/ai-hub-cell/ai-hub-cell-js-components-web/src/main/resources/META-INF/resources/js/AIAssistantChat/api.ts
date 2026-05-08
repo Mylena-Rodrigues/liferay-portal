@@ -6,12 +6,9 @@
 import {EventSource} from 'eventsource';
 import {fetch} from 'frontend-js-web';
 
-const AI_HUB_ENDPOINT = '/o/ai-hub/v1.0';
+import {ChatContext} from './types/ChatContext';
 
-export interface ChatContext {
-	context: Record<string, unknown>;
-	instructionDefinitionScope: string;
-}
+const AI_HUB_ENDPOINT = '/o/ai-hub/v1.0';
 
 export async function createEventSource() {
 	const authorizationToken = await postAuthorizationToken();
@@ -92,7 +89,8 @@ export async function postChatByExternalReferenceCodeMessage({
 		{
 			body: JSON.stringify({
 				context: chatContext.context,
-				instructionDefinitionScope: chatContext.instructionDefinitionScope,
+				instructionDefinitionScope:
+					chatContext.instructionDefinitionScope,
 				text: message,
 			}),
 			headers: new Headers({
