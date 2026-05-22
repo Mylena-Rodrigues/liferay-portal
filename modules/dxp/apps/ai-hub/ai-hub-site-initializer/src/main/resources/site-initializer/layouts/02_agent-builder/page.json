@@ -1,0 +1,18 @@
+{
+	"friendlyURL": "/agent-builder",
+	"hidden": false,
+	"name_i18n": {
+		"en_US": "Agent Builder"
+	},
+	"permissions": [
+		{
+			"actionIds": [
+			],
+			"roleName": "Guest",
+			"scope": 4
+		}
+	],
+	"private": false,
+	"system": false,
+	"type": "Content"
+}
