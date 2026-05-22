@@ -380,7 +380,7 @@ public abstract class BaseSectionDisplayContextTestCase
 			filterString.contains(
 				"groupIds/any(g:g in (" + depotEntry1.getGroupId() + "))"));
 
-		User cmsAdministratorUser = UserTestUtil.addUser(
+		User cmsAdministratorUser = UserTestUtil.addCompanyUser(
 			companyLocalService.getCompany(TestPropsValues.getCompanyId()),
 			RoleConstants.CMS_ADMINISTRATOR);
 
@@ -1104,7 +1104,7 @@ public abstract class BaseSectionDisplayContextTestCase
 					new int[] {
 						RoleConstants.TYPE_REGULAR, RoleConstants.TYPE_DEPOT
 					},
-					0, 0, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
+					null, 0, 0, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
 				role -> HashMapBuilder.put(
 					"key", role.getName()
 				).put(

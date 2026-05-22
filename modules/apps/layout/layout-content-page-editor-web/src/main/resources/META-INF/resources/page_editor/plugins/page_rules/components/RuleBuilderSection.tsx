@@ -25,6 +25,7 @@ import {translateConditionsToScript} from '../../../app/utils/translateCondition
 import useActionValues from '../../../app/utils/useActionValues';
 import useConditionValues from '../../../app/utils/useConditionValues';
 import {Action, Condition} from '../../../types/Rule';
+import useMappingFieldItems from '../utils/useMappingFieldItems';
 import ActionComponent from './Action';
 import AdvancedRuleEditor from './AdvancedRuleEditor';
 import ConditionComponent from './Condition';
@@ -192,6 +193,8 @@ export function RuleBuilderConditionSection({
 	script,
 	setRuleConditions,
 }: RuleBuilderConditionProps) {
+	const mappingFieldItems = useMappingFieldItems();
+
 	const fragmentEntryLinks = useSelector((state) => state.fragmentEntryLinks);
 	const layoutData = useSelector((state) => state.layoutData);
 
@@ -230,7 +233,18 @@ export function RuleBuilderConditionSection({
 		conditionType,
 		conditions,
 		items: inputFragmentItems,
+		mappingFieldItems,
 	});
+
+	const fieldTypes = useMemo(() => {
+		const types: Record<string, string> = {};
+
+		for (const field of mappingFieldItems) {
+			types[field.value] = field.type;
+		}
+
+		return types;
+	}, [mappingFieldItems]);
 
 	const tooltipId = useId();
 
@@ -277,7 +291,8 @@ export function RuleBuilderConditionSection({
 												script: conditions?.length
 													? translateConditionsToScript(
 															conditions,
-															conditionType
+															conditionType,
+															fieldTypes
 														)
 													: '',
 											}
@@ -414,6 +429,7 @@ export function RuleBuilderConditionSection({
 								<ConditionComponent
 									condition={item}
 									inputFragmentItems={inputFragmentItems}
+									mappingFieldItems={mappingFieldItems}
 									onConditionChange={onChange}
 								/>
 							)}
@@ -427,6 +443,7 @@ export function RuleBuilderConditionSection({
 				) : (
 					<div>
 						<AdvancedRuleEditor
+							mappingFieldItems={mappingFieldItems}
 							onChange={(value: string | undefined) => {
 								setRuleConditions({script: value || ''});
 							}}

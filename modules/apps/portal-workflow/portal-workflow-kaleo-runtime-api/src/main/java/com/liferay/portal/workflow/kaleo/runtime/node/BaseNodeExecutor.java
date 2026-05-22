@@ -15,6 +15,7 @@ import com.liferay.portal.workflow.kaleo.runtime.action.KaleoActionExecutor;
 import com.liferay.portal.workflow.kaleo.runtime.graph.PathElement;
 import com.liferay.portal.workflow.kaleo.runtime.notification.NotificationHelper;
 import com.liferay.portal.workflow.kaleo.runtime.util.ExecutionContextHelper;
+import com.liferay.portal.workflow.kaleo.service.KaleoInstanceTokenLocalServiceUtil;
 import com.liferay.portal.workflow.kaleo.service.KaleoTimerInstanceTokenLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoTimerLocalService;
 
@@ -35,7 +36,15 @@ public abstract class BaseNodeExecutor implements NodeExecutor {
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 
-		kaleoInstanceToken.setCurrentKaleoNode(currentKaleoNode);
+		if (kaleoInstanceToken.getCurrentKaleoNodeId() !=
+				currentKaleoNode.getKaleoNodeId()) {
+
+			executionContext.setKaleoInstanceToken(
+				KaleoInstanceTokenLocalServiceUtil.updateKaleoInstanceToken(
+					kaleoInstanceToken.getKaleoInstanceTokenId(),
+					currentKaleoNode.getKaleoNodeId(),
+					currentKaleoNode.getName()));
+		}
 
 		boolean performExecute = doEnter(currentKaleoNode, executionContext);
 

@@ -14,6 +14,8 @@ import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
 import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
+import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
+import com.liferay.object.internal.field.business.type.AssigneeObjectFieldBusinessType;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectEntryFolder;
@@ -36,7 +38,6 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.FieldArray;
 import com.liferay.portal.kernel.search.ReindexCacheThreadLocal;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.BigDecimalUtil;
@@ -47,7 +48,6 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.ml.embedding.text.TextEmbeddingDocumentContributor;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
 
@@ -81,12 +81,14 @@ public class ObjectEntryModelDocumentContributor
 			accountEntryOrganizationRelLocalService,
 		DLFileEntryLocalService dlFileEntryLocalService,
 		ObjectEntryFolderLocalService objectEntryFolderLocalService,
+		ObjectFieldBusinessTypeRegistry objectFieldBusinessTypeRegistry,
 		TextEmbeddingDocumentContributor textEmbeddingDocumentContributor) {
 
 		_accountEntryOrganizationRelLocalService =
 			accountEntryOrganizationRelLocalService;
 		_dlFileEntryLocalService = dlFileEntryLocalService;
 		_objectEntryFolderLocalService = objectEntryFolderLocalService;
+		_objectFieldBusinessTypeRegistry = objectFieldBusinessTypeRegistry;
 		_textEmbeddingDocumentContributor = textEmbeddingDocumentContributor;
 	}
 
@@ -158,7 +160,39 @@ public class ObjectEntryModelDocumentContributor
 
 		if (StringUtil.equals(
 				objectField.getBusinessType(),
-				ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT)) {
+				ObjectFieldConstants.BUSINESS_TYPE_ASSIGNEE) &&
+			(fieldValue instanceof Map)) {
+
+			Map<String, Long> assigneeMap = (Map<String, Long>)fieldValue;
+
+			long classNameId = MapUtil.getLong(assigneeMap, "classNameId");
+			long classPK = MapUtil.getLong(assigneeMap, "classPK");
+
+			fieldValue = StringBundler.concat(
+				classNameId, StringPool.UNDERLINE, classPK);
+
+			AssigneeObjectFieldBusinessType assigneeObjectFieldBusinessType =
+				(AssigneeObjectFieldBusinessType)
+					_objectFieldBusinessTypeRegistry.getObjectFieldBusinessType(
+						ObjectFieldConstants.BUSINESS_TYPE_ASSIGNEE);
+
+			if (assigneeObjectFieldBusinessType != null) {
+				String assigneeName =
+					assigneeObjectFieldBusinessType.getDisplayName(
+						classNameId, classPK);
+
+				if (Validator.isNotNull(assigneeName)) {
+					_addField(
+						fieldArray, fieldName, "value_text", assigneeName);
+
+					_appendToContent(
+						objectContentHelper, locale, fieldName, assigneeName);
+				}
+			}
+		}
+		else if (StringUtil.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT)) {
 
 			fieldValue = _getFileName(
 				GetterUtil.getLong(fieldValue), objectDefinition);
@@ -311,12 +345,6 @@ public class ObjectEntryModelDocumentContributor
 				document.get(Field.ENTRY_CLASS_PK)));
 
 		ObjectDefinition objectDefinition = objectEntry.getObjectDefinition();
-
-		if (objectDefinition.isCMS() &&
-			(objectEntry.getStatus() == WorkflowConstants.STATUS_IN_TRASH)) {
-
-			document.addKeyword(Field.VIEW_ACTION_ID, ActionKeys.DELETE);
-		}
 
 		FieldArray fieldArray = (FieldArray)document.getField(
 			"nestedFieldArray");
@@ -707,6 +735,8 @@ public class ObjectEntryModelDocumentContributor
 		_accountEntryOrganizationRelLocalService;
 	private final DLFileEntryLocalService _dlFileEntryLocalService;
 	private final ObjectEntryFolderLocalService _objectEntryFolderLocalService;
+	private final ObjectFieldBusinessTypeRegistry
+		_objectFieldBusinessTypeRegistry;
 	private final TextEmbeddingDocumentContributor
 		_textEmbeddingDocumentContributor;
 
