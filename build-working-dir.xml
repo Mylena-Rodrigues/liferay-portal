@@ -54,13 +54,6 @@
 			<equals arg1="${public.branch.git.hash}" arg2="latest" />
 		</condition>
 
-		<fetch-portal
-			fetch.portal.local.branch.name="${public.branch.name}"
-			fetch.portal.remote.branch.name="${public.branch.name}"
-			fetch.portal.repository.name="liferay-portal-ee"
-			if:true="${public.branch.git.hash.is.latest}"
-		/>
-
 		<exec executable="git" if:true="${public.branch.git.hash.is.latest}" outputproperty="public.branch.head.raw">
 			<arg value="rev-parse" />
 			<arg value="${public.branch.name}" />
@@ -91,7 +84,7 @@
 		</condition>
 
 		<fetch-portal
-			fetch.portal.local.branch.name="${public.branch.name}"
+			fetch.portal.local.branch.name="git-branch-portal"
 			fetch.portal.remote.branch.name="${public.branch.name}"
 			fetch.portal.repository.name="liferay-portal-ee"
 			unless:set="portal.git.commit.available"
@@ -139,19 +132,25 @@
 			<arg value="--delete" />
 			<arg value="git-tag-portal" />
 		</exec>
+
+		<condition property="git.branch.portal.exists">
+			<not>
+				<isset property="portal.git.commit.available" />
+			</not>
+		</condition>
+
+		<exec executable="git" if:true="${git.branch.portal.exists}">
+			<arg value="branch" />
+			<arg value="--delete" />
+			<arg value="--force" />
+			<arg value="git-branch-portal" />
+		</exec>
 	</target>
 
 	<target name="checkout-portal-private" unless="checkout.portal.private.skip">
 		<condition property="private.branch.git.hash.is.latest">
 			<equals arg1="${private.branch.git.hash}" arg2="latest" />
 		</condition>
-
-		<fetch-portal
-			fetch.portal.local.branch.name="${private.branch.name}"
-			fetch.portal.remote.branch.name="${private.branch.name}"
-			fetch.portal.repository.name="liferay-portal-ee"
-			if:true="${private.branch.git.hash.is.latest}"
-		/>
 
 		<exec executable="git" if:true="${private.branch.git.hash.is.latest}" outputproperty="private.branch.head.raw">
 			<arg value="rev-parse" />
@@ -197,7 +196,7 @@
 		</condition>
 
 		<fetch-portal
-			fetch.portal.local.branch.name="${private.branch.name}"
+			fetch.portal.local.branch.name="git-branch-portal-private"
 			fetch.portal.remote.branch.name="${private.branch.name}"
 			fetch.portal.repository.name="liferay-portal-ee"
 			unless:set="portal.private.git.commit.available"
@@ -240,6 +239,19 @@
 			<arg value="tag" />
 			<arg value="--delete" />
 			<arg value="git-tag-portal-private" />
+		</exec>
+
+		<condition property="git.branch.portal.private.exists">
+			<not>
+				<isset property="portal.private.git.commit.available" />
+			</not>
+		</condition>
+
+		<exec executable="git" if:true="${git.branch.portal.private.exists}">
+			<arg value="branch" />
+			<arg value="--delete" />
+			<arg value="--force" />
+			<arg value="git-branch-portal-private" />
 		</exec>
 	</target>
 
