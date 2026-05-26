@@ -1,0 +1,21 @@
+# Ignore everything checked out from master
+*
+
+# Keep master-private managed files at the root
+!.gitignore
+!build-working-dir.xml
+!working.dir.properties
+
+# Keep modules/dxp/apps/ai-hub
+!modules/
+modules/*
+!modules/dxp/
+modules/dxp/*
+!modules/dxp/apps/
+modules/dxp/apps/*
+!modules/dxp/apps/ai-hub/
+
+# Keep workspaces/liferay-aihub-workspace
+!workspaces/
+workspaces/*
+!workspaces/liferay-aihub-workspace/
