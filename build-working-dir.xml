@@ -9,10 +9,12 @@
 	<property file="working.dir.${env.HOSTNAME}.properties" />
 	<property file="working.dir.properties" />
 
-	<condition property="prepare.working.dir.private">
-		<not>
-			<available file="git-commit-portal" />
-		</not>
+	<condition property="checkout.portal.skip">
+		<equals arg1="${public.branch.git.hash}" arg2="" />
+	</condition>
+
+	<condition property="checkout.portal.private.skip">
+		<equals arg1="${private.branch.git.hash}" arg2="" />
 	</condition>
 
 	<macrodef name="fetch-portal">
@@ -47,15 +49,33 @@
 		</sequential>
 	</macrodef>
 
-	<target name="checkout-portal" unless="prepare.working.dir.private">
-		<loadfile
-			property="portal.git.commit"
-			srcFile="git-commit-portal"
-		>
+	<target name="checkout-portal" unless="checkout.portal.skip">
+		<condition property="public.branch.git.hash.is.latest">
+			<equals arg1="${public.branch.git.hash}" arg2="latest" />
+		</condition>
+
+		<fetch-portal
+			fetch.portal.local.branch.name="${public.branch.name}"
+			fetch.portal.remote.branch.name="${public.branch.name}"
+			fetch.portal.repository.name="liferay-portal-ee"
+			if:true="${public.branch.git.hash.is.latest}"
+		/>
+
+		<exec executable="git" if:true="${public.branch.git.hash.is.latest}" outputproperty="public.branch.head.raw">
+			<arg value="rev-parse" />
+			<arg value="${public.branch.name}" />
+		</exec>
+
+		<loadresource property="public.branch.head" if:true="${public.branch.git.hash.is.latest}">
+			<propertyresource name="public.branch.head.raw" />
 			<filterchain>
 				<striplinebreaks />
 			</filterchain>
-		</loadfile>
+		</loadresource>
+
+		<condition else="${public.branch.git.hash}" property="portal.git.commit" value="${public.branch.head}">
+			<isset property="public.branch.git.hash.is.latest" />
+		</condition>
 
 		<local name="return.code" />
 
@@ -82,7 +102,7 @@
 		<exec executable="git" failonerror="false" resultproperty="return.code">
 			<arg value="tag" />
 			<arg value="--force" />
-			<arg value="git-commit-portal" />
+			<arg value="git-tag-portal" />
 			<arg value="${portal.git.commit}" />
 		</exec>
 
@@ -103,7 +123,7 @@
 
 		<exec executable="git" failonerror="true">
 			<arg value="checkout" />
-			<arg value="refs/tags/git-commit-portal" />
+			<arg value="refs/tags/git-tag-portal" />
 			<arg value="." />
 			<arg line=":(exclude)${working.dir.checkout.excludes.git}" />
 		</exec>
@@ -117,19 +137,37 @@
 		<exec executable="git">
 			<arg value="tag" />
 			<arg value="--delete" />
-			<arg value="git-commit-portal" />
+			<arg value="git-tag-portal" />
 		</exec>
 	</target>
 
-	<target if="prepare.working.dir.private" name="checkout-portal-private">
-		<loadfile
-			property="portal.private.git.commit"
-			srcFile="git-commit-portal-private"
-		>
+	<target name="checkout-portal-private" unless="checkout.portal.private.skip">
+		<condition property="private.branch.git.hash.is.latest">
+			<equals arg1="${private.branch.git.hash}" arg2="latest" />
+		</condition>
+
+		<fetch-portal
+			fetch.portal.local.branch.name="${private.branch.name}"
+			fetch.portal.remote.branch.name="${private.branch.name}"
+			fetch.portal.repository.name="liferay-portal-ee"
+			if:true="${private.branch.git.hash.is.latest}"
+		/>
+
+		<exec executable="git" if:true="${private.branch.git.hash.is.latest}" outputproperty="private.branch.head.raw">
+			<arg value="rev-parse" />
+			<arg value="${private.branch.name}" />
+		</exec>
+
+		<loadresource property="private.branch.head" if:true="${private.branch.git.hash.is.latest}">
+			<propertyresource name="private.branch.head.raw" />
 			<filterchain>
 				<striplinebreaks />
 			</filterchain>
-		</loadfile>
+		</loadresource>
+
+		<condition else="${private.branch.git.hash}" property="portal.private.git.commit" value="${private.branch.head}">
+			<isset property="private.branch.git.hash.is.latest" />
+		</condition>
 
 		<exec executable="git" resultproperty="portal.private.git.commit.result">
 			<arg value="cat-file" />
@@ -170,7 +208,7 @@
 		<exec executable="git" failonerror="false" resultproperty="return.code">
 			<arg value="tag" />
 			<arg value="--force" />
-			<arg value="git-commit-portal-private" />
+			<arg value="git-tag-portal-private" />
 			<arg value="${portal.private.git.commit}" />
 		</exec>
 
@@ -184,7 +222,7 @@
 
 		<exec executable="git" failonerror="true">
 			<arg value="checkout" />
-			<arg value="refs/tags/git-commit-portal-private" />
+			<arg value="refs/tags/git-tag-portal-private" />
 			<arg if:true="${checkout.portal.private.releng}" value="modules/.releng/private" />
 			<arg value="modules/private" />
 			<arg value="working.dir.properties" />
@@ -201,7 +239,7 @@
 		<exec executable="git">
 			<arg value="tag" />
 			<arg value="--delete" />
-			<arg value="git-commit-portal-private" />
+			<arg value="git-tag-portal-private" />
 		</exec>
 	</target>
 
