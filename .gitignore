@@ -1,0 +1,14 @@
+/*
+!/.gitignore
+!/build-working-dir.xml
+!/modules
+!/workspaces
+!/working.dir.properties
+/modules/*
+!/modules/dxp
+/modules/dxp/*
+!/modules/dxp/apps
+/modules/dxp/apps/*
+!/modules/dxp/apps/ai-hub
+/workspaces/*
+!/workspaces/liferay-aihub-workspace
