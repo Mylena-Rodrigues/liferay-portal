@@ -13,34 +13,23 @@
 		<equals arg1="${public.branch.git.hash}" arg2="" />
 	</condition>
 
+	<condition else="git@github.com:liferay/liferay-portal-ee.git" property="liferay.portal.ee.repository.url" value="git@github-dev.liferay.com:liferay/liferay-portal-ee.git">
+		<isset property="env.JENKINS_HOME" />
+	</condition>
+
 	<macrodef name="fetch-portal">
 		<attribute name="fetch.portal.local.branch.name" />
 		<attribute name="fetch.portal.remote.branch.name" />
-		<attribute name="fetch.portal.repository.name" />
 
 		<sequential>
-			<local name="fetch.portal.repository.url" />
-
-			<condition else="git@github.com:liferay/@{fetch.portal.repository.name}.git" property="fetch.portal.repository.url" value="git@github-dev.liferay.com:liferay/@{fetch.portal.repository.name}.git">
-				<isset property="env.JENKINS_HOME" />
-			</condition>
-
-			<local name="fetch.portal.branch.name" />
-
-			<condition else="@{fetch.portal.remote.branch.name}" property="fetch.portal.branch.name" value="@{fetch.portal.local.branch.name}">
-				<not>
-					<equals arg1="${fetch.portal.local.branch.name}" arg2="" />
-				</not>
-			</condition>
-
-			<echo>git fetch --force --no-tags ${fetch.portal.repository.url} @{fetch.portal.remote.branch.name}:${fetch.portal.branch.name}</echo>
+			<echo>git fetch --force --no-tags ${liferay.portal.ee.repository.url} @{fetch.portal.remote.branch.name}:@{fetch.portal.local.branch.name}</echo>
 
 			<exec executable="git">
 				<arg value="fetch" />
 				<arg value="--force" />
 				<arg value="--no-tags" />
-				<arg value="${fetch.portal.repository.url}" />
-				<arg value="@{fetch.portal.remote.branch.name}:${fetch.portal.branch.name}" />
+				<arg value="${liferay.portal.ee.repository.url}" />
+				<arg value="@{fetch.portal.remote.branch.name}:@{fetch.portal.local.branch.name}" />
 			</exec>
 		</sequential>
 	</macrodef>
@@ -66,9 +55,7 @@
 			<isset property="public.branch.git.hash.is.latest" />
 		</condition>
 
-		<local name="return.code" />
-
-		<exec executable="git" failonerror="false" resultproperty="return.code">
+		<exec executable="git" failonerror="false" resultproperty="git.log.return.code">
 			<arg value="log" />
 			<arg value="-n" />
 			<arg value="1" />
@@ -76,19 +63,16 @@
 		</exec>
 
 		<condition property="portal.git.commit.available">
-			<equals arg1="${return.code}" arg2="0" />
+			<equals arg1="${git.log.return.code}" arg2="0" />
 		</condition>
 
 		<fetch-portal
 			fetch.portal.local.branch.name="git-branch-portal"
 			fetch.portal.remote.branch.name="${public.branch.name}"
-			fetch.portal.repository.name="liferay-portal-ee"
 			unless:set="portal.git.commit.available"
 		/>
 
-		<local name="return.code" />
-
-		<exec executable="git" failonerror="false" resultproperty="return.code">
+		<exec executable="git" failonerror="false" resultproperty="git.tag.return.code">
 			<arg value="tag" />
 			<arg value="--force" />
 			<arg value="git-tag-portal" />
@@ -98,7 +82,7 @@
 		<fail message="Please fetch the public branch from upstream before using this command.">
 			<condition>
 				<not>
-					<equals arg1="${return.code}" arg2="0" />
+					<equals arg1="${git.tag.return.code}" arg2="0" />
 				</not>
 			</condition>
 		</fail>
@@ -129,13 +113,7 @@
 			<arg value="git-tag-portal" />
 		</exec>
 
-		<condition property="git.branch.portal.exists">
-			<not>
-				<isset property="portal.git.commit.available" />
-			</not>
-		</condition>
-
-		<exec executable="git" if:true="${git.branch.portal.exists}">
+		<exec executable="git" unless:set="portal.git.commit.available">
 			<arg value="branch" />
 			<arg value="--delete" />
 			<arg value="--force" />
