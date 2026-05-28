@@ -1,0 +1,5 @@
+Bundle-Name: Liferay AI Hub Pricing Web
+Bundle-SymbolicName: com.liferay.ai.hub.pricing.web
+Bundle-Version: 1.0.0
+Web-ContextPath: /ai-hub-pricing-web
+-dsannotations-options: inherit
