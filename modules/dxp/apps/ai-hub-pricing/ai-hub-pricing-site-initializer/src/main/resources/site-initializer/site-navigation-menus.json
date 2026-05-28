@@ -1,0 +1,13 @@
+[
+	{
+		"externalReferenceCode": "AIHUBPRIMARYNAVIGATION",
+		"menuItems": [
+			{
+				"externalReferenceCode": "AIHUBPRICINGPRIMARYNAVIGATION1",
+				"friendlyURL": "/activity",
+				"privateLayout": false,
+				"type": "layout"
+			}
+		]
+	}
+]
