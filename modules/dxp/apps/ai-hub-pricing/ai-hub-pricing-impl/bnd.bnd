@@ -1,0 +1,19 @@
+Bundle-Name: Liferay AI Hub Pricing Implementation
+Bundle-SymbolicName: com.liferay.ai.hub.pricing.impl
+Bundle-Version: 1.0.0
+Import-Package:\
+	!com.fasterxml.jackson.datatype.*,\
+	\
+	!javax.annotation,\
+	\
+	!org.bouncycastle.jsse.*,\
+	\
+	!org.conscrypt.*,\
+	\
+	!org.openjsse.javax.net.ssl.*,\
+	!org.openjsse.net.ssl.*,\
+	\
+	android.*;resolution:=optional,\
+	\
+	*
+-dsannotations-options: inherit
