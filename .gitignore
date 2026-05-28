@@ -3,6 +3,7 @@
 #
 
 /*
+*.iml
 
 #
 # Include top level files
@@ -13,7 +14,7 @@
 !/working.dir.properties
 
 #
-# Include modules/dxp/apps/ai-hub
+# Include modules/dxp/apps/ai-hub-pricing
 #
 
 !/modules
@@ -22,12 +23,5 @@
 /modules/dxp/*
 !/modules/dxp/apps
 /modules/dxp/apps/*
-!/modules/dxp/apps/ai-hub
-
-#
-# Include workspaces/liferay-aihub-workspace
-#
-
-!/workspaces
-/workspaces/*
-!/workspaces/liferay-aihub-workspace
+!/modules/dxp/apps/ai-hub-pricing
+/modules/dxp/apps/ai-hub-pricing/*/build
