@@ -7,9 +7,7 @@ export type ActivityMetrics = {
 	agentsCount: number;
 	averageResponseTimeMs: number;
 	chatbotsCount: number;
-	monthlyAllowanceLRT: number;
-	monthlyConsumedLRT: number;
-	prepaidBalanceLRT: number;
-	prepaidExpiresAt: string | null;
+	expiresAt: string | null;
 	totalInteractions: number;
+	totalLRT: number;
 };

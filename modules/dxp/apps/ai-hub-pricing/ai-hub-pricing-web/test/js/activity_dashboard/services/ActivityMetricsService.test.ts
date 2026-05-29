@@ -13,11 +13,9 @@ describe('ActivityMetricsService', () => {
 			agentsCount: expect.any(Number),
 			averageResponseTimeMs: expect.any(Number),
 			chatbotsCount: expect.any(Number),
-			monthlyAllowanceLRT: expect.any(Number),
-			monthlyConsumedLRT: expect.any(Number),
-			prepaidBalanceLRT: expect.any(Number),
-			prepaidExpiresAt: expect.any(String),
+			expiresAt: expect.any(String),
 			totalInteractions: expect.any(Number),
+			totalLRT: expect.any(Number),
 		});
 	});
 });

@@ -2,7 +2,6 @@
 	"dependencies": {
 		"@clayui/icon": "^3.163.0",
 		"@clayui/layout": "^3.163.0",
-		"@clayui/progress-bar": "^3.163.0",
 		"@liferay/frontend-js-react-web": "*",
 		"react": "18.2.0",
 		"react-dom": "18.2.0"

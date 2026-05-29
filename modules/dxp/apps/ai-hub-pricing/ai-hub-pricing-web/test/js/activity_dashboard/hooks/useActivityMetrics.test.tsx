@@ -23,11 +23,9 @@ const SAMPLE_METRICS: ActivityMetrics = {
 	agentsCount: 18,
 	averageResponseTimeMs: 2600,
 	chatbotsCount: 4,
-	monthlyAllowanceLRT: 10_000,
-	monthlyConsumedLRT: 8972,
-	prepaidBalanceLRT: 2500,
-	prepaidExpiresAt: '2027-05-21T00:00:00Z',
+	expiresAt: '2027-05-21T00:00:00Z',
 	totalInteractions: 1245,
+	totalLRT: 2500,
 };
 
 function setTabVisible(visible: boolean) {
