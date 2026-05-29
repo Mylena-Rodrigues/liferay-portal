@@ -1,5 +1,5 @@
 {
-	"@generated": "5dde15a27cbb44528aebb3963f23668c03cbae40",
+	"@generated": "62bca415710f1a1ff5488874e4a3db3bf4c8915f",
 	"@readonly": "** AUTO-GENERATED: DO NOT EDIT **",
 	"compilerOptions": {
 		"allowSyntheticDefaultImports": true,
@@ -11,6 +11,9 @@
 		"module": "es2022",
 		"moduleResolution": "node",
 		"paths": {
+			"@liferay/frontend-js-react-web": [
+				"../../../../../apps/frontend-js/frontend-js-react-web/src/main/resources/META-INF/resources/js/index.ts"
+			]
 		},
 		"rootDir": "../../../../..",
 		"skipLibCheck": true,
@@ -30,5 +33,8 @@
 		"../src/**/*.tsx"
 	],
 	"references": [
+		{
+			"path": "../../../../../apps/frontend-js/frontend-js-react-web/src/main/resources/META-INF/resources/tsconfig.json"
+		}
 	]
 }
