@@ -80,11 +80,12 @@ public class QuotaBlockResourceImpl extends BaseQuotaBlockResourceImpl {
 					return calendar.getTime();
 				}
 			).put(
-				"r_quotaCTToQuotaBlocks_l_aiHubQuotaConversionTableId",
+				"r_aiHubQuotaCTToAIHubQuotaBlocks_l_" +
+					"aiHubQuotaConversionTableId",
 				MapUtil.getLong(
 					conversionTableValues, "l_aiHubQuotaConversionTableId")
 			).put(
-				"r_quotaToQuotaBlocks_l_aiHubQuotaId",
+				"r_aiHubQuotaToAIHubQuotaBlocks_l_aiHubQuotaId",
 				() -> {
 					ObjectDefinition quotaObjectDefinition =
 						_objectDefinitionLocalService.
