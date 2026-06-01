@@ -17,7 +17,7 @@
 			"externalReferenceCode": "AEN_PER_LRT",
 			"indexed": true,
 			"label": {
-				"en_US": "AEN Per LRT"
+				"en_US": "AEN per LRT"
 			},
 			"name": "aenPerLRT",
 			"required": true,
@@ -30,7 +30,7 @@
 			"externalReferenceCode": "EMBEDDING_TOKENS_PER_LRT",
 			"indexed": true,
 			"label": {
-				"en_US": "Embedding Tokens Per LRT"
+				"en_US": "Embedding Tokens per LRT"
 			},
 			"name": "embeddingTokensPerLRT",
 			"required": true,
@@ -43,7 +43,7 @@
 			"externalReferenceCode": "MODEL_ARMOR_TOKENS_PER_LRT",
 			"indexed": true,
 			"label": {
-				"en_US": "Model Armor Tokens Per LRT"
+				"en_US": "Model Armor Tokens per LRT"
 			},
 			"name": "modelArmorTokensPerLRT",
 			"required": true,
@@ -69,7 +69,7 @@
 			"externalReferenceCode": "VERTEX_INPUT_TOKENS_PER_LRT",
 			"indexed": true,
 			"label": {
-				"en_US": "Vertex Input Tokens Per LRT"
+				"en_US": "Vertex Input Tokens per LRT"
 			},
 			"name": "vertexInputTokensPerLRT",
 			"required": true,
@@ -82,7 +82,7 @@
 			"externalReferenceCode": "VERTEX_OUTPUT_TOKENS_PER_LRT",
 			"indexed": true,
 			"label": {
-				"en_US": "Vertex Output Tokens Per LRT"
+				"en_US": "Vertex Output Tokens per LRT"
 			},
 			"name": "vertexOutputTokensPerLRT",
 			"required": true,
