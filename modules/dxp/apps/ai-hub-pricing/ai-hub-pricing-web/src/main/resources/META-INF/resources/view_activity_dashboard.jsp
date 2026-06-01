@@ -14,6 +14,6 @@ ViewActivityDashboardDisplayContext viewActivityDashboardDisplayContext = (ViewA
 <div>
 	<react:component
 		module="{ActivityDashboard} from ai-hub-pricing-web"
-		props="<%= viewActivityDashboardDisplayContext.getProperties() %>"
+		props="<%= viewActivityDashboardDisplayContext.getProps() %>"
 	/>
 </div>
