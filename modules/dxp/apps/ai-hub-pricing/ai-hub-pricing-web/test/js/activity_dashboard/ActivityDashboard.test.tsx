@@ -9,17 +9,6 @@ import React from 'react';
 import '@testing-library/jest-dom';
 
 import ActivityDashboard from '../../../src/main/resources/META-INF/resources/js/activity_dashboard/ActivityDashboard';
-import {ActivityMetrics} from '../../../src/main/resources/META-INF/resources/js/activity_dashboard/types/ActivityMetrics';
-
-const mockUseActivityMetrics = jest.fn();
-
-jest.mock(
-	'../../../src/main/resources/META-INF/resources/js/activity_dashboard/hooks/useActivityMetrics',
-	() => ({
-		__esModule: true,
-		default: (...args: any[]) => mockUseActivityMetrics(...args),
-	})
-);
 
 (global as any).Liferay = {
 	Language: {
@@ -30,86 +19,28 @@ jest.mock(
 	},
 };
 
-const SAMPLE_METRICS: ActivityMetrics = {
-	agentsCount: 18,
-	averageResponseTimeMs: 2600,
-	chatbotsCount: 4,
-	expiresAt: '2027-05-21T00:00:00Z',
-	totalInteractions: 1245,
-	totalLRT: 2500,
-};
-
-function mockResult(overrides: Record<string, unknown> = {}) {
-	mockUseActivityMetrics.mockReturnValue({
-		data: null,
-		error: null,
-		loading: false,
-		refetch: jest.fn(),
-		...overrides,
-	});
+function renderDashboard() {
+	return render(
+		<ActivityDashboard
+			agentsCount={18}
+			chatbotsCount={4}
+			expiresAt="2027-05-21T00:00:00Z"
+			totalLRT={2500}
+		/>
+	);
 }
 
 describe('ActivityDashboard', () => {
-	beforeEach(() => {
-		mockUseActivityMetrics.mockReset();
-	});
-
-	it('forwards the account external reference code to the metrics hook', () => {
-		mockResult({data: SAMPLE_METRICS});
-
-		render(
-			<ActivityDashboard accountEntryExternalReferenceCode="ACCOUNT_ERC" />
-		);
-
-		expect(mockUseActivityMetrics).toHaveBeenCalledWith('ACCOUNT_ERC');
-	});
-
-	it('renders a loading indicator while metrics are loading', () => {
-		mockResult({loading: true});
-
-		const {container} = render(<ActivityDashboard />);
-
-		expect(
-			container.querySelector('.loading-animation')
-		).toBeInTheDocument();
-
-		expect(
-			screen.queryByRole('heading', {level: 1, name: 'activity'})
-		).not.toBeInTheDocument();
-	});
-
-	it('renders an error alert when no metrics are available', () => {
-		mockResult({data: null});
-
-		render(<ActivityDashboard />);
-
-		expect(
-			screen.getByText('an-unexpected-error-occurred')
-		).toBeInTheDocument();
-	});
-
-	it('renders an error alert when the metrics request fails', () => {
-		mockResult({error: new Error('Boom')});
-
-		render(<ActivityDashboard />);
-
-		expect(
-			screen.getByText('an-unexpected-error-occurred')
-		).toBeInTheDocument();
-
-		expect(
-			screen.queryByRole('heading', {level: 1, name: 'activity'})
-		).not.toBeInTheDocument();
-	});
-
-	it('renders the page heading and every metric card once data is loaded', () => {
-		mockResult({data: SAMPLE_METRICS});
-
-		const {container} = render(<ActivityDashboard />);
+	it('renders the page heading', () => {
+		renderDashboard();
 
 		expect(
 			screen.getByRole('heading', {level: 1, name: 'activity'})
 		).toBeInTheDocument();
+	});
+
+	it('renders the agents and chatbots cards with their counts', () => {
+		renderDashboard();
 
 		['agents', 'chatbots'].forEach((name) => {
 			expect(
@@ -117,19 +48,19 @@ describe('ActivityDashboard', () => {
 			).toBeInTheDocument();
 		});
 
+		expect(screen.getByText('18')).toBeInTheDocument();
+
+		expect(screen.getByText('4')).toBeInTheDocument();
+	});
+
+	it('renders the remaining balance card', () => {
+		renderDashboard();
+
 		expect(
 			screen.getByRole('heading', {
 				level: 2,
 				name: 'remaining-balance-liferay-tokens',
 			})
 		).toBeInTheDocument();
-
-		expect(screen.getByText('18')).toBeInTheDocument();
-
-		expect(
-			container.querySelector('.loading-animation')
-		).not.toBeInTheDocument();
-
-		expect(container.querySelector('.alert')).not.toBeInTheDocument();
 	});
 });
