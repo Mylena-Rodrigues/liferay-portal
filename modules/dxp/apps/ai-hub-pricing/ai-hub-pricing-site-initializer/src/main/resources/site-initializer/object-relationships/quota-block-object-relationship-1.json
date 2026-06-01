@@ -4,7 +4,7 @@
 	"label": {
 		"en_US": "AI Hub Quota to AI Hub Quota Blocks"
 	},
-	"name": "quotaToQuotaBlocks",
+	"name": "aiHubQuotaToAIHubQuotaBlocks",
 	"objectDefinitionId1": "[$OBJECT_DEFINITION_ID:AIHubQuota$]",
 	"objectDefinitionId2": "[$OBJECT_DEFINITION_ID:AIHubQuotaBlock$]",
 	"objectDefinitionName2": "AIHubQuotaBlock",
