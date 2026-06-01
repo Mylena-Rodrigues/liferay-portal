@@ -81,7 +81,7 @@
 			"indexed": true,
 			"indexedAsKeyword": true,
 			"label": {
-				"en_US": "Transaction Id"
+				"en_US": "Transaction ID"
 			},
 			"name": "transactionId",
 			"objectFieldSettings": [
