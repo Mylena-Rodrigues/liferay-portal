@@ -20,6 +20,16 @@ import java.util.Map;
  */
 public class TokenConverterUtil {
 
+	public static long convertBytesToTokens(long byteCount) {
+		if (byteCount <= 0) {
+			return 0;
+		}
+
+		return Math.round(
+			(byteCount * _BODY_FRACTION * _CHUNKING_OVERHEAD) /
+				_CHARS_PER_TOKEN);
+	}
+
 	public static BigDecimal convertLRTToToken(
 		Map<String, Serializable> conversionTableValues, BigDecimal lrtCount,
 		Source source) {
@@ -47,6 +57,12 @@ public class TokenConverterUtil {
 			MapUtil.getLong(
 				conversionTableValues, sourceConverter.getObjectFieldName()));
 	}
+
+	private static final double _BODY_FRACTION = 0.8;
+
+	private static final double _CHARS_PER_TOKEN = 4.0;
+
+	private static final double _CHUNKING_OVERHEAD = 1.2;
 
 	private enum SourceConverter {
 
