@@ -136,11 +136,7 @@ public class AIHubPricingQuotaManagerImpl implements QuotaManager {
 			HashMapBuilder.<String, Serializable>put(
 				"externalReferenceCode", externalReferenceCode
 			).put(
-				"limit", _QUOTA_TOKEN_LIMIT
-			).put(
 				"r_accountToAIHubQuotas_accountEntryId", accountEntryId
-			).put(
-				"usage", 0
 			).build(),
 			_getServiceContext(companyId, userId));
 	}
@@ -264,8 +260,6 @@ public class AIHubPricingQuotaManagerImpl implements QuotaManager {
 			).build(),
 			_getServiceContext(companyId, userId));
 	}
-
-	private static final int _QUOTA_TOKEN_LIMIT = 33333333;
 
 	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
