@@ -1,5 +1,6 @@
 {
 	"deletionType": "cascade",
+	"edge": true,
 	"externalReferenceCode": "L_AI_HUB_QUOTA_TO_L_AI_HUB_QUOTA_BLOCKS",
 	"label": {
 		"en_US": "AI Hub Quota to AI Hub Quota Blocks"
