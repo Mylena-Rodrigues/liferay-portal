@@ -9,12 +9,13 @@ import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.CountTokensResponse;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 
-import com.liferay.account.model.AccountEntry;
 import com.liferay.ai.hub.configuration.VertexAIConfiguration;
 import com.liferay.ai.hub.quota.QuotaManager;
-import com.liferay.ai.hub.util.AccountEntryUtil;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.rest.dto.v1_0.ObjectEntry;
+import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManager;
+import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
+import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
@@ -22,17 +23,16 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.Serializable;
 
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
@@ -55,12 +55,27 @@ public class AIHubPricingQuotaManagerImpl implements QuotaManager {
 				getObjectDefinitionByExternalReferenceCode(
 					"L_AI_HUB_QUOTA", companyId);
 
-		_addQuotaObjectEntry(
-			accountEntryId, companyId, "guest-quota-" + accountEntryId,
-			objectDefinition, userId);
-		_addQuotaObjectEntry(
-			accountEntryId, companyId, "quota-" + accountEntryId,
-			objectDefinition, userId);
+		DefaultObjectEntryManager defaultObjectEntryManager =
+			_getDefaultObjectEntryManager(objectDefinition);
+
+		try {
+			defaultObjectEntryManager.updateObjectEntry(
+				companyId, _getDefaultDTOConverterContext(userId),
+				"quota-" + accountEntryId, objectDefinition,
+				new ObjectEntry() {
+					{
+						setProperties(
+							() -> HashMapBuilder.<String, Object>put(
+								"r_accountToAIHubQuotas_accountEntryId",
+								accountEntryId
+							).build());
+					}
+				},
+				null);
+		}
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	@Override
@@ -118,69 +133,23 @@ public class AIHubPricingQuotaManagerImpl implements QuotaManager {
 		}
 	}
 
-	private void _addQuotaObjectEntry(
-			long accountEntryId, long companyId, String externalReferenceCode,
-			ObjectDefinition objectDefinition, long userId)
+	private DefaultDTOConverterContext _getDefaultDTOConverterContext(
+			long userId)
 		throws PortalException {
-
-		ObjectEntry objectEntry = _objectEntryLocalService.fetchObjectEntry(
-			externalReferenceCode, 0, objectDefinition.getObjectDefinitionId());
-
-		if (objectEntry != null) {
-			return;
-		}
-
-		_objectEntryLocalService.addObjectEntry(
-			0, userId, objectDefinition.getObjectDefinitionId(), 0,
-			LocaleUtil.toLanguageId(LocaleUtil.getDefault()),
-			HashMapBuilder.<String, Serializable>put(
-				"externalReferenceCode", externalReferenceCode
-			).put(
-				"r_accountToAIHubQuotas_accountEntryId", accountEntryId
-			).build(),
-			_getServiceContext(companyId, userId));
-	}
-
-	private ObjectEntry _fetchQuotaObjectEntry(long companyId, long userId)
-		throws PortalException {
-
-		AccountEntry accountEntry = AccountEntryUtil.getUserAccountEntry(
-			userId);
-
-		if (accountEntry == null) {
-			return null;
-		}
-
-		ObjectDefinition objectDefinition =
-			_objectDefinitionLocalService.
-				fetchObjectDefinitionByExternalReferenceCode(
-					"L_AI_HUB_QUOTA", companyId);
-
-		if (objectDefinition == null) {
-			return null;
-		}
 
 		User user = _userLocalService.getUser(userId);
 
-		String externalReferenceCode =
-			"quota-" + accountEntry.getAccountEntryId();
-
-		if (user.isServiceAccountUser()) {
-			externalReferenceCode =
-				"guest-quota-" + accountEntry.getAccountEntryId();
-		}
-
-		return _objectEntryLocalService.fetchObjectEntry(
-			externalReferenceCode, 0, objectDefinition.getObjectDefinitionId());
+		return new DefaultDTOConverterContext(
+			_dtoConverterRegistry, null, user.getLocale(), null, user);
 	}
 
-	private ServiceContext _getServiceContext(long companyId, long userId) {
-		ServiceContext serviceContext = new ServiceContext();
+	private DefaultObjectEntryManager _getDefaultObjectEntryManager(
+		ObjectDefinition objectDefinition) {
 
-		serviceContext.setCompanyId(companyId);
-		serviceContext.setUserId(userId);
-
-		return serviceContext;
+		return DefaultObjectEntryManagerProvider.provide(
+			_objectEntryManagerRegistry.getObjectEntryManager(
+				objectDefinition.getCompanyId(),
+				objectDefinition.getStorageType()));
 	}
 
 	private long _getTokensCount(long companyId, String text)
@@ -249,23 +218,17 @@ public class AIHubPricingQuotaManagerImpl implements QuotaManager {
 			String.valueOf(objectEntryId), updatedOwner);
 	}
 
-	private void _partialUpdateObjectEntry(
-			long companyId, ObjectEntry objectEntry, long usage, long userId)
-		throws PortalException {
-
-		_objectEntryLocalService.partialUpdateObjectEntry(
-			userId, objectEntry.getObjectEntryId(), 0,
-			HashMapBuilder.<String, Serializable>put(
-				"usage", usage
-			).build(),
-			_getServiceContext(companyId, userId));
-	}
+	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
 
 	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private ObjectEntryLocalService _objectEntryLocalService;
+
+	@Reference
+	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
 
 	@Reference
 	private UserLocalService _userLocalService;
