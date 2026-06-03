@@ -8,16 +8,19 @@ package com.liferay.ai.hub.pricing.rest.internal.resource.v1_0;
 import com.liferay.ai.hub.pricing.rest.dto.v1_0.QuotaBlock;
 import com.liferay.ai.hub.pricing.rest.resource.v1_0.QuotaBlockResource;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.rest.dto.v1_0.ObjectEntry;
+import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManager;
+import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
+import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
-import com.liferay.object.service.ObjectEntryService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.search.Sort;
-import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 
 import java.io.Serializable;
 
@@ -52,77 +55,85 @@ public class QuotaBlockResourceImpl extends BaseQuotaBlockResourceImpl {
 			throw new UnsupportedOperationException();
 		}
 
-		ObjectDefinition objectDefinition =
-			_objectDefinitionLocalService.
-				getObjectDefinitionByExternalReferenceCode(
-					"L_AI_HUB_QUOTA_BLOCK", contextCompany.getCompanyId());
-
 		Map<String, Serializable> conversionTableValues =
 			_getConversionTableValues();
+
+		ObjectDefinition quotaObjectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					"L_AI_HUB_QUOTA", contextCompany.getCompanyId());
+
+		DefaultObjectEntryManager defaultObjectEntryManager =
+			DefaultObjectEntryManagerProvider.provide(
+				_objectEntryManagerRegistry.getObjectEntryManager(
+					contextCompany.getCompanyId(),
+					quotaObjectDefinition.getStorageType()));
+
 		Date purchaseDate = new Date();
 
-		ObjectEntry objectEntry = _objectEntryService.addObjectEntry(
-			0, objectDefinition.getObjectDefinitionId(), 0,
-			LocaleUtil.toLanguageId(LocaleUtil.getDefault()),
-			HashMapBuilder.<String, Serializable>put(
-				"externalReferenceCode", quotaBlock.getTransactionId()
-			).put(
-				"purchaseDate", purchaseDate
-			).put(
-				"purchaseExpirationDate",
-				() -> {
-					Calendar calendar = Calendar.getInstance();
+		ObjectEntry quotaBlockObjectEntry =
+			defaultObjectEntryManager.addRelatedObjectEntry(
+				new DefaultDTOConverterContext(
+					contextAcceptLanguage.isAcceptAllLanguages(), null, null,
+					contextHttpServletRequest, null,
+					contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+					contextUser),
+				"quota-" + accountId,
+				new ObjectEntry() {
+					{
+						setExternalReferenceCode(quotaBlock::getTransactionId);
+						setProperties(
+							() -> HashMapBuilder.<String, Object>put(
+								"purchaseDate", purchaseDate
+							).put(
+								"purchaseExpirationDate",
+								() -> {
+									Calendar calendar = Calendar.getInstance();
 
-					calendar.setTime(purchaseDate);
+									calendar.setTime(purchaseDate);
 
-					calendar.add(Calendar.MONTH, 12);
+									calendar.add(Calendar.MONTH, 12);
 
-					return calendar.getTime();
-				}
-			).put(
-				"r_aiHubQuotaCTToAIHubQuotaBlocks_l_" +
-					"aiHubQuotaConversionTableId",
-				MapUtil.getLong(
-					conversionTableValues, "l_aiHubQuotaConversionTableId")
-			).put(
-				"r_aiHubQuotaToAIHubQuotaBlocks_l_aiHubQuotaId",
-				() -> {
-					ObjectDefinition quotaObjectDefinition =
-						_objectDefinitionLocalService.
-							getObjectDefinitionByExternalReferenceCode(
-								"L_AI_HUB_QUOTA",
-								contextCompany.getCompanyId());
+									return calendar.getTime();
+								}
+							).put(
+								"r_aiHubQuotaCTToAIHubQuotaBlocks_l_" +
+									"aiHubQuotaConversionTableId",
+								MapUtil.getLong(
+									conversionTableValues,
+									"l_aiHubQuotaConversionTableId")
+							).put(
+								"remainingBalance", quotaBlock.getSize()
+							).put(
+								"size", quotaBlock.getSize()
+							).put(
+								"transactionId", quotaBlock.getTransactionId()
+							).build());
+					}
+				},
+				_objectRelationshipLocalService.getObjectRelationship(
+					quotaObjectDefinition.getObjectDefinitionId(),
+					"aiHubQuotaToAIHubQuotaBlocks"),
+				null);
 
-					ObjectEntry quotaObjectEntry =
-						_objectEntryService.getObjectEntry(
-							"quota-" + accountId, 0,
-							quotaObjectDefinition.getObjectDefinitionId());
-
-					return quotaObjectEntry.getObjectEntryId();
-				}
-			).put(
-				"remainingBalance", quotaBlock.getSize()
-			).put(
-				"size", quotaBlock.getSize()
-			).put(
-				"transactionId", quotaBlock.getTransactionId()
-			).build(),
-			_getServiceContext());
-
-		Map<String, Serializable> values = objectEntry.getValues();
+		Map<String, Object> properties = quotaBlockObjectEntry.getProperties();
 
 		return new QuotaBlock() {
 			{
-				setExternalReferenceCode(objectEntry::getExternalReferenceCode);
-				setId(objectEntry::getObjectEntryId);
-				setPurchaseDate(() -> (Date)values.get("purchaseDate"));
+				setExternalReferenceCode(
+					quotaBlockObjectEntry::getExternalReferenceCode);
+				setId(quotaBlockObjectEntry::getId);
+				setPurchaseDate(
+					() -> _parseDate(
+						MapUtil.getString(properties, "purchaseDate")));
 				setPurchaseExpirationDate(
-					() -> (Date)values.get("purchaseExpirationDate"));
-				setRemainingBalance(
-					() -> (BigDecimal)values.get("remainingBalance"));
-				setSize(() -> (BigDecimal)values.get("size"));
+					() -> _parseDate(
+						MapUtil.getString(
+							properties, "purchaseExpirationDate")));
+				setRemainingBalance(() -> (BigDecimal)properties.get("size"));
+				setSize(() -> (BigDecimal)properties.get("size"));
 				setTransactionId(
-					() -> MapUtil.getString(values, "transactionId"));
+					() -> MapUtil.getString(properties, "transactionId"));
 				setVersion(
 					() -> MapUtil.getDouble(conversionTableValues, "version"));
 			}
@@ -147,13 +158,10 @@ public class QuotaBlockResourceImpl extends BaseQuotaBlockResourceImpl {
 		return valuesList.get(0);
 	}
 
-	private ServiceContext _getServiceContext() {
-		ServiceContext serviceContext = new ServiceContext();
-
-		serviceContext.setCompanyId(contextCompany.getCompanyId());
-		serviceContext.setUserId(contextUser.getUserId());
-
-		return serviceContext;
+	private Date _parseDate(String dateString) throws Exception {
+		return DateUtil.parseDate(
+			"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", dateString,
+			contextAcceptLanguage.getPreferredLocale());
 	}
 
 	@Reference
@@ -163,6 +171,9 @@ public class QuotaBlockResourceImpl extends BaseQuotaBlockResourceImpl {
 	private ObjectEntryLocalService _objectEntryLocalService;
 
 	@Reference
-	private ObjectEntryService _objectEntryService;
+	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
+
+	@Reference
+	private ObjectRelationshipLocalService _objectRelationshipLocalService;
 
 }
