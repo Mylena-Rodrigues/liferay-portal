@@ -1,0 +1,21 @@
+{
+	"object-actions": [
+		{
+			"active": true,
+			"conditionExpression": "crawlerJobStatus == \"succeeded\" && oldValue(\"crawlerJobStatus\") != \"succeeded\"",
+			"errorMessage": {
+				"en_US": "Unable to update embedding token usage for the crawler job."
+			},
+			"externalReferenceCode": "L_AI_HUB_CRAWLER_JOB_UPDATE_EMBEDDING_TOKEN_USAGE",
+			"label": {
+				"en_US": "Update Embedding Token Usage"
+			},
+			"name": "updateEmbeddingTokenUsage",
+			"objectActionExecutorKey": "update-embedding-token-usage",
+			"objectActionTriggerKey": "onAfterUpdate",
+			"parameters": {
+			}
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubCrawlerJob$]"
+}
