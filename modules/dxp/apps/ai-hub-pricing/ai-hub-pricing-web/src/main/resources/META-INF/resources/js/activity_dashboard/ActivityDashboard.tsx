@@ -9,7 +9,6 @@ import React from 'react';
 import AgentsCard from './components/AgentsCard';
 import ChatbotsCard from './components/ChatbotsCard';
 import RemainingBalanceCard from './components/RemainingBalanceCard';
-import TokenManagementCard from './components/TokenManagementCard';
 
 import './ActivityDashboard.scss';
 
@@ -41,15 +40,11 @@ export default function ActivityDashboard({
 			</ClayLayout.Row>
 
 			<ClayLayout.Row>
-				<ClayLayout.Col className="mb-4" md={6}>
+				<ClayLayout.Col className="mb-4" md={12}>
 					<RemainingBalanceCard
 						balance={totalLRT}
 						expiresAt={expiresAt}
 					/>
-				</ClayLayout.Col>
-
-				<ClayLayout.Col className="mb-4" md={6}>
-					<TokenManagementCard />
 				</ClayLayout.Col>
 			</ClayLayout.Row>
 		</ClayLayout.ContainerFluid>
