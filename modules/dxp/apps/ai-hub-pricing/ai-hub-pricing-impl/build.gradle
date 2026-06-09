@@ -21,6 +21,4 @@ dependencies {
 	compileOnly project(":core:petra:petra-string")
 	compileOnly project(":dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-api")
 	compileOnly project(":dxp:apps:ai-hub:ai-hub-api")
-	testImplementation project(":apps:account:account-api")
-	testImplementation project(":core:petra:petra-function")
 }
