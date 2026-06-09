@@ -6,14 +6,17 @@ dependencies {
 	compileOnly group: "com.google.protobuf", name: "protobuf-java", version: "3.25.5"
 	compileOnly group: "com.liferay", name: "jakarta.ws.rs", version: "3.1.0.LIFERAY-PATCHED-1"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "jakarta.persistence", name: "jakarta.persistence-api", version: "3.1.0"
 	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.4.0"
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
 	compileOnly project(":apps:account:account-api")
 	compileOnly project(":apps:object:object-api")
 	compileOnly project(":apps:object:object-rest-api")
 	compileOnly project(":apps:portal-configuration:portal-configuration-module-configuration-api")
+	compileOnly project(":apps:portal-lock:portal-lock-api")
 	compileOnly project(":apps:portal-odata:portal-odata-api")
 	compileOnly project(":apps:portal-vulcan:portal-vulcan-api")
+	compileOnly project(":core:petra:petra-concurrent")
 	compileOnly project(":core:petra:petra-function")
 	compileOnly project(":core:petra:petra-string")
 	compileOnly project(":dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-api")
