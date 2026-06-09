@@ -36,6 +36,7 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Carolina Barbosa
@@ -67,7 +68,8 @@ public class ObjectEntryUtil {
 					new DefaultDTOConverterContext(
 						dtoConverterRegistry, null, user.getLocale(), null,
 						user),
-					(String)null, Pagination.of(1, 1), null, null);
+					_getFilterString(objectDefinitionExternalReferenceCode),
+					Pagination.of(1, 1), null, null);
 
 			return objectEntriesPage.getTotalCount();
 		}
@@ -146,6 +148,19 @@ public class ObjectEntryUtil {
 		}
 
 		return Collections.emptyList();
+	}
+
+	private static String _getFilterString(
+		String objectDefinitionExternalReferenceCode) {
+
+		if (!Objects.equals(
+				objectDefinitionExternalReferenceCode,
+				"L_AI_HUB_AGENT_DEFINITION")) {
+
+			return null;
+		}
+
+		return "externalReferenceCode ne 'L_PAGE_BUILDER'";
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
