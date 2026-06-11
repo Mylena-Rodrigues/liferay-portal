@@ -16,7 +16,10 @@ import com.liferay.object.action.executor.ObjectActionExecutor;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -40,10 +43,10 @@ public class UpdateEmbeddingTokenUsageObjectActionExecutorImpl
 			JSONObject payloadJSONObject, long userId)
 		throws Exception {
 
-		JSONObject objectEntryJSONObject = payloadJSONObject.getJSONObject(
-			"objectEntry");
+		Map<String, Object> objectEntryMap =
+			(Map<String, Object>)payloadJSONObject.get("objectEntry");
 
-		JSONObject valuesJSONObject = objectEntryJSONObject.getJSONObject(
+		Map<String, Object> valuesMap = (Map<String, Object>)objectEntryMap.get(
 			"values");
 
 		_quotaManager.updateUsage(
@@ -53,11 +56,11 @@ public class UpdateEmbeddingTokenUsageObjectActionExecutorImpl
 				Source.EMBEDDING
 			).tokenCount(
 				TokenConverterUtil.convertBytesToTokens(
-					valuesJSONObject.getLong("indexedDocumentBytes"))
+					MapUtil.getLong(valuesMap, "indexedDocumentBytes"))
 			).build(),
 			_getUserId(
-				valuesJSONObject.getLong(
-					"r_accountToAIHubCrawlerJobs_accountEntryId")));
+				MapUtil.getLong(
+					valuesMap, "r_accountToAIHubCrawlerJobs_accountEntryId")));
 	}
 
 	private long _getUserId(long accountEntryId) throws Exception {

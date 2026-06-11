@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
@@ -61,14 +62,15 @@ public class UpdateEmbeddingTokenUsageObjectActionExecutorImplTest {
 	private JSONObject _createPayloadJSONObject(long indexedDocumentBytes) {
 		return JSONUtil.put(
 			"objectEntry",
-			JSONUtil.put(
+			HashMapBuilder.<String, Object>put(
 				"values",
-				JSONUtil.put(
+				HashMapBuilder.<String, Object>put(
 					"indexedDocumentBytes", indexedDocumentBytes
 				).put(
 					"r_accountToAIHubCrawlerJobs_accountEntryId",
 					_ACCOUNT_ENTRY_ID
-				)));
+				).build()
+			).build());
 	}
 
 	private void _setUpAccountEntryUserRelLocalService() throws Exception {
