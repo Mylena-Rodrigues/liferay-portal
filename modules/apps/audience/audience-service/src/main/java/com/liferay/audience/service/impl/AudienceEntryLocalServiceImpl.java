@@ -5,18 +5,21 @@
 
 package com.liferay.audience.service.impl;
 
+import com.liferay.audience.exception.AudienceEntryJSONException;
+import com.liferay.audience.exception.AudienceEntryNameException;
 import com.liferay.audience.model.AudienceEntry;
 import com.liferay.audience.service.base.AudienceEntryLocalServiceBaseImpl;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
+import com.liferay.portal.json.validator.JSONValidator;
+import com.liferay.portal.json.validator.JSONValidatorException;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
 
@@ -39,7 +42,7 @@ public class AudienceEntryLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		// Audience entry
+		_validate(json, name);
 
 		AudienceEntry audienceEntry = audienceEntryPersistence.create(
 			counterLocalService.increment());
@@ -55,29 +58,7 @@ public class AudienceEntryLocalServiceImpl
 		audienceEntry.setJSON(json);
 		audienceEntry.setName(name);
 
-		audienceEntry = audienceEntryPersistence.update(audienceEntry);
-
-		// Resources
-
-		_resourceLocalService.addModelResources(audienceEntry, serviceContext);
-
-		return audienceEntry;
-	}
-
-	@Override
-	public AudienceEntry deleteAudienceEntry(AudienceEntry audienceEntry)
-		throws PortalException {
-
-		// Audience entry
-
-		audienceEntryPersistence.remove(audienceEntry);
-
-		// Resources
-
-		_resourceLocalService.deleteResource(
-			audienceEntry, ResourceConstants.SCOPE_INDIVIDUAL);
-
-		return audienceEntry;
+		return audienceEntryPersistence.update(audienceEntry);
 	}
 
 	@Override
@@ -128,7 +109,7 @@ public class AudienceEntryLocalServiceImpl
 			long audienceEntryId, String json, String name)
 		throws PortalException {
 
-		// Audience entry
+		_validate(json, name);
 
 		AudienceEntry audienceEntry = audienceEntryPersistence.findByPrimaryKey(
 			audienceEntryId);
@@ -139,11 +120,27 @@ public class AudienceEntryLocalServiceImpl
 		return audienceEntryPersistence.update(audienceEntry);
 	}
 
-	@Reference
-	private CustomSQL _customSQL;
+	private void _validate(String json, String name) throws PortalException {
+		try {
+			_criteriaJSONValidator.validate(json);
+		}
+		catch (JSONValidatorException jsonValidatorException) {
+			throw new AudienceEntryJSONException(
+				jsonValidatorException.getMessage(), jsonValidatorException);
+		}
+
+		if (Validator.isNull(name)) {
+			throw new AudienceEntryNameException();
+		}
+	}
+
+	private static final JSONValidator _criteriaJSONValidator =
+		new JSONValidator(
+			AudienceEntryLocalServiceImpl.class.getResource(
+				"dependencies/criteria-json-schema.json"));
 
 	@Reference
-	private ResourceLocalService _resourceLocalService;
+	private CustomSQL _customSQL;
 
 	@Reference
 	private UserLocalService _userLocalService;

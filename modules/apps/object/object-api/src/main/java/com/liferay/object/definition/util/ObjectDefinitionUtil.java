@@ -192,11 +192,13 @@ public class ObjectDefinitionUtil {
 		).put(
 			"AIHubCrawlerJob", "/ai-hub/crawler-jobs"
 		).put(
+			"AIHubGuardrail", "/ai-hub/guardrails"
+		).put(
 			"AIHubInstructionDefinition", "/ai-hub/instruction-definitions"
 		).put(
 			"AIHubMCPServer", "/ai-hub/mcp-servers"
 		).put(
-			"AIHubModelArmorTemplate", "/ai-hub/model-armor-templates"
+			"AIHubReport", "/ai-hub/reports"
 		).put(
 			"APIApplication", "/headless-builder/applications"
 		).put(
@@ -284,6 +286,8 @@ public class ObjectDefinitionUtil {
 			"PersonalizationCookieEntry", "/personalization-cookies-entries"
 		).put(
 			"SEOStudioDomain", "/seo-studio/domains"
+		).put(
+			"SEOStudioGSCCredentials", "/seo-studio/gsc-credentials"
 		).put(
 			"SEOStudioInsightType", "/seo-studio/insight-types"
 		).put(

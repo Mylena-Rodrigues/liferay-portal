@@ -11,6 +11,8 @@ jobs:
                 uses: actions/checkout@v4
                 with:
                     fetch-depth: 1
+                    filter: tree:0
+                    show-progress: false
                     sparse-checkout: |
                         cloud/scripts
                         cloud/terraform/${{inputs.provider}}
@@ -88,11 +90,19 @@ jobs:
                             --verbose \
                             "${files[@]}"
 
+                        (cd /tmp && sha256sum "${OBJECT_BASENAME}" > "${OBJECT_BASENAME}.sha256")
+
                         gcloud \
                             storage \
                             cp \
                             "/tmp/${OBJECT_BASENAME}" \
                             "${OBJECT_NAME}"
+
+                        gcloud \
+                            storage \
+                            cp \
+                            "/tmp/${OBJECT_BASENAME}.sha256" \
+                            "${OBJECT_NAME}.sha256"
                     }
 
                     main "${@}"
