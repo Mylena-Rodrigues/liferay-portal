@@ -23,7 +23,7 @@ import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
-import com.liferay.petra.concurrent.DCLSingleton;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -60,9 +61,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeoutException;
 
 import org.osgi.service.component.annotations.Component;
@@ -73,6 +71,69 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = QuotaManager.class)
 public class DefaultQuotaManager implements QuotaManager {
+
+	@Override
+	public String acquireAgentInstancePermit(long userId)
+		throws PortalException {
+
+		AccountEntry accountEntry = AccountEntryUtil.getUserAccountEntry(
+			userId);
+
+		String prefix = accountEntry.getAccountEntryId() + ":";
+
+		Set<String> keys = new HashSet<>(
+			_lockLocalService.dynamicQuery(
+				_lockLocalService.dynamicQuery(
+				).add(
+					PropertyFactoryUtil.forName(
+						"className"
+					).eq(
+						DefaultQuotaManager.class.getName()
+					)
+				).add(
+					PropertyFactoryUtil.forName(
+						"expirationDate"
+					).gt(
+						new Date()
+					)
+				).add(
+					PropertyFactoryUtil.forName(
+						"key"
+					).like(
+						prefix + "%"
+					)
+				).setProjection(
+					ProjectionFactoryUtil.property("key")
+				)));
+
+		String owner = PortalUUIDUtil.generate();
+
+		for (int i = 0; i < 10; i++) {
+			String key = prefix + Math.floorMod(owner.hashCode() + i, 10);
+
+			if (keys.contains(key)) {
+				continue;
+			}
+
+			try {
+				Lock lock = LockManagerUtil.lock(
+					userId, DefaultQuotaManager.class.getName(), key, owner, false,
+					Time.MINUTE, false);
+
+				if (Objects.equals(lock.getOwner(), owner)) {
+					return key + CharPool.POUND + owner;
+				}
+			}
+			catch (DuplicateLockException | PersistenceException exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception);
+				}
+			}
+		}
+
+		throw new UnsupportedOperationException(
+			"You have exceeded your concurrent request limit");
+	}
 
 	@Override
 	public void addQuotas(long accountEntryId, long companyId, long userId)
@@ -109,80 +170,6 @@ public class DefaultQuotaManager implements QuotaManager {
 	}
 
 	@Override
-	public Closeable checkConcurrentRequests(long userId)
-		throws PortalException {
-
-		long currentTimeMillis = System.currentTimeMillis();
-
-		Semaphore semaphore = _semaphoreDCLSingleton.getSingleton(
-			() -> new Semaphore(10 - _expirationTimes.size()));
-
-		for (Map.Entry<String, Long> entry : _expirationTimes.entrySet()) {
-			if ((entry.getValue() < currentTimeMillis) &&
-				_expirationTimes.remove(entry.getKey(), entry.getValue())) {
-
-				semaphore.release();
-			}
-		}
-
-		if (!semaphore.tryAcquire()) {
-			throw new UnsupportedOperationException(
-				"You have exceeded your concurrent request limit");
-		}
-
-		AccountEntry accountEntry = AccountEntryUtil.getUserAccountEntry(
-			userId);
-
-		boolean acquired = false;
-
-		try {
-			String prefix = accountEntry.getAccountEntryId() + ":";
-
-			Set<String> keys = _getKeys(prefix);
-
-			String owner = PortalUUIDUtil.generate();
-
-			for (int i = 0; i < 10; i++) {
-				String key = prefix + Math.floorMod(owner.hashCode() + i, 10);
-
-				if (keys.contains(key)) {
-					continue;
-				}
-
-				try {
-					Lock lock = LockManagerUtil.lock(
-						userId, QuotaManager.class.getName(), key, owner, false,
-						Time.MINUTE, false);
-
-					if (Objects.equals(lock.getOwner(), owner)) {
-						_expirationTimes.put(
-							owner, System.currentTimeMillis() + Time.MINUTE);
-
-						acquired = true;
-
-						return () -> _release(lock);
-					}
-				}
-				catch (DuplicateLockException | PersistenceException
-							exception) {
-
-					if (_log.isDebugEnabled()) {
-						_log.debug(exception);
-					}
-				}
-			}
-
-			throw new UnsupportedOperationException(
-				"You have exceeded your concurrent request limit");
-		}
-		finally {
-			if (!acquired) {
-				semaphore.release();
-			}
-		}
-	}
-
-	@Override
 	public void checkTokensUsage(long companyId, long userId)
 		throws PortalException {
 
@@ -194,6 +181,14 @@ public class DefaultQuotaManager implements QuotaManager {
 			throw new UnsupportedOperationException(
 				"You have exceeded your token quota");
 		}
+	}
+
+	@Override
+	public void releaseAgentInstancePermit(String permit) {
+		String[] permitParts = StringUtil.split(permit, CharPool.POUND);
+
+		LockManagerUtil.unlock(
+			DefaultQuotaManager.class.getName(), permitParts[0], permitParts[1]);
 	}
 
 	@Override
@@ -288,33 +283,6 @@ public class DefaultQuotaManager implements QuotaManager {
 				objectDefinition.getStorageType()));
 	}
 
-	private Set<String> _getKeys(String keyPrefix) {
-		return new HashSet<>(
-			_lockLocalService.dynamicQuery(
-				_lockLocalService.dynamicQuery(
-				).add(
-					PropertyFactoryUtil.forName(
-						"className"
-					).eq(
-						QuotaManager.class.getName()
-					)
-				).add(
-					PropertyFactoryUtil.forName(
-						"expirationDate"
-					).gt(
-						new Date()
-					)
-				).add(
-					PropertyFactoryUtil.forName(
-						"key"
-					).like(
-						keyPrefix + "%"
-					)
-				).setProjection(
-					ProjectionFactoryUtil.property("key")
-				)));
-	}
-
 	private BigDecimal _getTokenCount(long companyId, Usage usage)
 		throws PortalException {
 
@@ -385,27 +353,11 @@ public class DefaultQuotaManager implements QuotaManager {
 			updatedOwner);
 	}
 
-	private void _release(Lock lock) {
-		LockManagerUtil.unlock(
-			QuotaManager.class.getName(), lock.getKey(), lock.getOwner());
-
-		Semaphore semaphore = _semaphoreDCLSingleton.getSingleton(() -> null);
-
-		if ((semaphore != null) &&
-			(_expirationTimes.remove(lock.getOwner()) != null)) {
-
-			semaphore.release();
-		}
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		DefaultQuotaManager.class);
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
-
-	private final ConcurrentMap<String, Long> _expirationTimes =
-		new ConcurrentHashMap<>();
 
 	@Reference
 	private LockLocalService _lockLocalService;
@@ -418,9 +370,6 @@ public class DefaultQuotaManager implements QuotaManager {
 
 	@Reference
 	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
-
-	private final DCLSingleton<Semaphore> _semaphoreDCLSingleton =
-		new DCLSingleton<>();
 
 	@Reference
 	private UserLocalService _userLocalService;
