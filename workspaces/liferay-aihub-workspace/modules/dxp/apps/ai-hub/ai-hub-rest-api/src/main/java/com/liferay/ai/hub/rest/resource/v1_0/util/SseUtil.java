@@ -20,11 +20,36 @@ import jakarta.ws.rs.sse.SseEventSink;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * @author Feliphe Marinho
  */
 public class SseUtil {
+
+	public static void broadcastHeartbeat(Consumer<String> consumer) {
+		for (Map.Entry<String, SseEventSink> entry :
+				_sseEventSinks.entrySet()) {
+
+			SseEventSink sseEventSink = entry.getValue();
+
+			if (sseEventSink.isClosed()) {
+				_remove(entry.getKey());
+
+				consumer.accept(entry.getKey());
+
+				continue;
+			}
+
+			Sse sse = _sses.get(entry.getKey());
+
+			sseEventSink.send(
+				sse.newEventBuilder(
+				).comment(
+					"heartbeat"
+				).build());
+		}
+	}
 
 	public static void closeAll() {
 		if (_sseEventSinks.isEmpty() || !PortalRunMode.isTestMode()) {
@@ -99,11 +124,11 @@ public class SseUtil {
 		);
 
 		Sse sse = _sses.get(sseEventSinkKey);
+
 		SseEventSink sseEventSink = _sseEventSinks.get(sseEventSinkKey);
 
 		if (sseEventSink.isClosed()) {
-			_sseEventSinks.remove(sseEventSinkKey);
-			_sses.remove(sseEventSinkKey);
+			_remove(sseEventSinkKey);
 
 			if (_log.isWarnEnabled()) {
 				_log.warn("SSE Event Sink is closed " + sseEventSinkKey);
@@ -128,6 +153,11 @@ public class SseUtil {
 		send(
 			agentDefinitionExternalReferenceCodes, data, name, nodeName, null,
 			sseEventSinkKey, "text");
+	}
+
+	private static void _remove(String sseEventSinkKey) {
+		_sseEventSinks.remove(sseEventSinkKey);
+		_sses.remove(sseEventSinkKey);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(SseUtil.class);
