@@ -179,7 +179,7 @@ public class TaxonomyCategoryResourceImpl
 
 			@Override
 			public String getSectionKey() {
-				return ExportImportConstants.SECTION_KEY_CONTENT;
+				return ExportImportConstants.SECTION_KEY_CONTENT_AND_DATA;
 			}
 
 			@Override
@@ -953,7 +953,8 @@ public class TaxonomyCategoryResourceImpl
 					_assetVocabularyGroupRelLocalService.
 						setAssetVocabularyGroupRels(
 							assetVocabulary.getVocabularyId(),
-							new long[] {GroupConstants.GROUP_ID_ALL});
+							new long[] {GroupConstants.GROUP_ID_ALL},
+							DepotConstants.TYPE_SPACE);
 				}
 			}
 

@@ -7,12 +7,15 @@ package com.liferay.exportimport.web.internal.display.context;
 
 import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate.Scope;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.group.capability.GroupCapabilityUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.staging.StagingGroupHelper;
 
@@ -29,16 +32,16 @@ import java.nio.charset.StandardCharsets;
 public class ExportImportPreviewDisplayContext {
 
 	public ExportImportPreviewDisplayContext(
-		String backMVCRenderCommandName, HttpServletRequest httpServletRequest,
-		LiferayPortletResponse liferayPortletResponse, Group group,
-		long groupId, long liveGroupId, boolean privateLayout,
-		StagingGroupHelper stagingGroupHelper) {
+		String backMVCRenderCommandName, Group group, long groupId,
+		HttpServletRequest httpServletRequest,
+		LiferayPortletResponse liferayPortletResponse, long liveGroupId,
+		boolean privateLayout, StagingGroupHelper stagingGroupHelper) {
 
 		_backMVCRenderCommandName = backMVCRenderCommandName;
-		_httpServletRequest = httpServletRequest;
-		_liferayPortletResponse = liferayPortletResponse;
 		_group = group;
 		_groupId = groupId;
+		_httpServletRequest = httpServletRequest;
+		_liferayPortletResponse = liferayPortletResponse;
 		_liveGroupId = liveGroupId;
 		_privateLayout = privateLayout;
 		_stagingGroupHelper = stagingGroupHelper;
@@ -93,6 +96,10 @@ public class ExportImportPreviewDisplayContext {
 		return _exportProcessAPIURL;
 	}
 
+	public String getExportTitle() {
+		return _getTitle("new-export-process");
+	}
+
 	public String getImportPreviewAPIURL() {
 		if (_importPreviewAPIURL != null) {
 			return _importPreviewAPIURL;
@@ -113,10 +120,12 @@ public class ExportImportPreviewDisplayContext {
 		return _importProcessAPIURL;
 	}
 
-	public Scope getScope() {
-		if (Validator.isNotNull(
-				ParamUtil.getString(_httpServletRequest, "portletResource"))) {
+	public String getImportTitle() {
+		return _getTitle("new-import-process");
+	}
 
+	public Scope getScope() {
+		if (!Validator.isBlank(_getPortletId())) {
 			return Scope.PORTLET;
 		}
 
@@ -143,7 +152,8 @@ public class ExportImportPreviewDisplayContext {
 	}
 
 	public boolean isLookAndFeelEnabled() {
-		if (GroupCapabilityUtil.isSupportsPages(_group) &&
+		if ((getScope() != Scope.PORTLET) &&
+			GroupCapabilityUtil.isSupportsPages(_group) &&
 			!_group.isCompany() && !_group.isLayoutPrototype()) {
 
 			return true;
@@ -160,20 +170,49 @@ public class ExportImportPreviewDisplayContext {
 		return URLEncoder.encode(value, StandardCharsets.UTF_8);
 	}
 
+	private String _getPortletId() {
+		return ParamUtil.getString(_httpServletRequest, "portletId");
+	}
+
 	private String _getResourceAPIURL(String endpoint) {
+		String portletId = _getPortletId();
+
+		if (!Validator.isBlank(portletId)) {
+			return StringBundler.concat(
+				_BASE_PATH, _getScopePath(), "/portlets/", _encode(portletId),
+				endpoint, "?plid=",
+				ParamUtil.getLong(_httpServletRequest, "plid"));
+		}
+
+		return _BASE_PATH + _getScopePath() + endpoint;
+	}
+
+	private String _getScopePath() {
 		if (_stagingGroupHelper.isCompanyGroup(_group)) {
-			return _BASE_PATH + endpoint;
+			return StringPool.BLANK;
 		}
 
 		if (_group.isDepot()) {
-			return StringBundler.concat(
-				_BASE_PATH, "/asset-libraries/",
-				_encode(_group.getExternalReferenceCode()), endpoint);
+			return "/asset-libraries/" +
+				_encode(_group.getExternalReferenceCode());
+		}
+
+		return "/sites/" + _encode(_group.getExternalReferenceCode());
+	}
+
+	private String _getTitle(String key) {
+		String label = LanguageUtil.get(_httpServletRequest, key);
+
+		String portletId = _getPortletId();
+
+		if (Validator.isBlank(portletId)) {
+			return label;
 		}
 
 		return StringBundler.concat(
-			_BASE_PATH, "/sites/", _encode(_group.getExternalReferenceCode()),
-			endpoint);
+			label, " - ",
+			PortalUtil.getPortletTitle(
+				portletId, PortalUtil.getLocale(_httpServletRequest)));
 	}
 
 	private static final String _BASE_PATH = "/o/export-import/v1.0";
