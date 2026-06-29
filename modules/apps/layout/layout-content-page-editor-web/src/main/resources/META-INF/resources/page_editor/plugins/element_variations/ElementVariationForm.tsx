@@ -5,6 +5,7 @@
 
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayForm, {ClayInput, ClayToggle} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
 import ClayMultiSelect from '@clayui/multi-select';
 import {useId} from 'frontend-js-components-web';
 import React from 'react';
@@ -21,6 +22,7 @@ interface Props {
 	elementVariation: ElementVariationFormData;
 	onCancel: () => void;
 	onChange: (properties: Partial<ElementVariationFormData>) => void;
+	onReloadPreview: () => void;
 	onSave: () => void;
 }
 
@@ -29,6 +31,7 @@ export default function ElementVariationForm({
 	elementVariation,
 	onCancel,
 	onChange,
+	onReloadPreview,
 	onSave,
 }: Props) {
 	const audienceId = useId();
@@ -59,6 +62,11 @@ export default function ElementVariationForm({
 				<ClayForm.Group small>
 					<label htmlFor={nameId}>
 						{Liferay.Language.get('name')}
+
+						<ClayIcon
+							className="mr-1 reference-mark"
+							symbol="asterisk"
+						/>
 					</label>
 
 					<ClayInput
@@ -72,6 +80,11 @@ export default function ElementVariationForm({
 				<ClayForm.Group small>
 					<label htmlFor={targetElementId}>
 						{Liferay.Language.get('page-element')}
+
+						<ClayIcon
+							className="mr-1 reference-mark"
+							symbol="asterisk"
+						/>
 					</label>
 
 					<ClayInput
@@ -87,6 +100,11 @@ export default function ElementVariationForm({
 				<ClayForm.Group small>
 					<label htmlFor={audienceId}>
 						{Liferay.Language.get('audience')}
+
+						<ClayIcon
+							className="mr-1 reference-mark"
+							symbol="asterisk"
+						/>
 					</label>
 
 					<ClayMultiSelect
@@ -155,12 +173,29 @@ export default function ElementVariationForm({
 						{Liferay.Language.get('javascript')}
 					</label>
 
+					<p className="mb-1 text-2 text-secondary">
+						{Liferay.Language.get(
+							'changes-persist-in-the-preview.-reload-to-update'
+						)}
+					</p>
+
 					<ClayInput
 						component="textarea"
 						defaultValue={elementVariation.js}
 						id={jsId}
 						onBlur={(event) => onChange({js: event.target.value})}
 					/>
+
+					<ClayButton
+						className="mt-2"
+						displayType="secondary"
+						onClick={onReloadPreview}
+						size="sm"
+					>
+						<ClayIcon className="mr-2" symbol="reload" />
+
+						{Liferay.Language.get('reload')}
+					</ClayButton>
 				</ClayForm.Group>
 			</div>
 
