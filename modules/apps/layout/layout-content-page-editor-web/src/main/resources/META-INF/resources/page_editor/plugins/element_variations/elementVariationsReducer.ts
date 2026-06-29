@@ -8,9 +8,9 @@ import {v4 as uuidv4} from 'uuid';
 export interface ElementVariation {
 	audienceEntryERC: string;
 	externalReferenceCode: string;
-	hide: boolean;
-	html: string;
-	js: string;
+	hide: Record<string, boolean>;
+	html: Record<string, string>;
+	js: Record<string, string>;
 	key: string;
 	name: string;
 	segmentsExperienceERC: string;
@@ -18,8 +18,10 @@ export interface ElementVariation {
 }
 
 export interface State {
+	defaultLanguageId: string;
 	draftElementVariation: ElementVariation | null;
 	elementVariations: ElementVariation[];
+	languageId: string;
 }
 
 type Action =
@@ -29,6 +31,7 @@ type Action =
 	  }
 	| {key: string; type: 'DELETE_ELEMENT_VARIATION'}
 	| {key: string; type: 'EDIT_ELEMENT_VARIATION'}
+	| {languageId: string; type: 'SET_LANGUAGE_ID'}
 	| {
 			properties: Partial<ElementVariation>;
 			type: 'UPDATE_ELEMENT_VARIATION_DRAFT';
@@ -41,9 +44,9 @@ export function createElementVariation(
 	return {
 		audienceEntryERC: '',
 		externalReferenceCode: uuidv4(),
-		hide: false,
-		html: '',
-		js: '',
+		hide: {},
+		html: {},
+		js: {},
 		key: uuidv4(),
 		name: '',
 		segmentsExperienceERC,
@@ -51,22 +54,44 @@ export function createElementVariation(
 	};
 }
 
-export function createInitialState(
-	elementVariations: Omit<ElementVariation, 'key'>[]
-): State {
+export type LoadedElementVariation = Omit<ElementVariation, 'hide' | 'key'> & {
+	hide: Record<string, string>;
+};
+
+export function createInitialState({
+	defaultLanguageId,
+	elementVariations,
+}: {
+	defaultLanguageId: string;
+	elementVariations: LoadedElementVariation[];
+}): State {
 	return {
+		defaultLanguageId,
 		draftElementVariation: null,
 		elementVariations: elementVariations.map((elementVariation) => ({
 			...elementVariation,
+			hide: Object.fromEntries(
+				Object.entries(elementVariation.hide).map(
+					([languageId, value]): [string, boolean] => [
+						languageId,
+						value === 'true',
+					]
+				)
+			),
 			key: uuidv4(),
 		})),
+		languageId: defaultLanguageId,
 	};
 }
 
 export function reducer(state: State, action: Action): State {
 	switch (action.type) {
 		case 'CANCEL_ELEMENT_VARIATION_DRAFT':
-			return {...state, draftElementVariation: null};
+			return {
+				...state,
+				draftElementVariation: null,
+				languageId: state.defaultLanguageId,
+			};
 
 		case 'DELETE_ELEMENT_VARIATION':
 			return {
@@ -101,6 +126,7 @@ export function reducer(state: State, action: Action): State {
 			);
 
 			return {
+				...state,
 				draftElementVariation: null,
 				elementVariations: existing
 					? elementVariations.map((elementVariation) =>
@@ -109,6 +135,7 @@ export function reducer(state: State, action: Action): State {
 								: elementVariation
 						)
 					: [...elementVariations, draftElementVariation],
+				languageId: state.defaultLanguageId,
 			};
 		}
 
@@ -117,6 +144,9 @@ export function reducer(state: State, action: Action): State {
 				...state,
 				draftElementVariation: action.draftElementVariation,
 			};
+
+		case 'SET_LANGUAGE_ID':
+			return {...state, languageId: action.languageId};
 
 		case 'UPDATE_ELEMENT_VARIATION_DRAFT':
 			return {
