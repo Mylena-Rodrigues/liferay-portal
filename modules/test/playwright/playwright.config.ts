@@ -118,6 +118,7 @@ import {config as loginWebSetupAdminConfig} from './tests/login-web/setup-admin/
 import {config as mapsConfig} from './tests/maps/main/config';
 import {config as marketplaceAppManagerWebConfig} from './tests/marketplace-app-manager-web/main/config';
 import {config as messageBoardsWebConfig} from './tests/message-boards-web/main/config';
+import {config as multifactorAuthenticationEmailOTPConfig} from './tests/multi-factor-authentication-email-otp-web/main/config';
 import {config as multifactorAuthenticationConfig} from './tests/multi-factor-authentication-timebased-otp-web/main/config';
 import {config as multifactorAuthenticationWebConfig} from './tests/multi-factor-authentication-web/main/config';
 import {config as nestedPortletsWebConfig} from './tests/nested-portlets-web/main/config';
@@ -186,6 +187,7 @@ import {config as searchExperiencesWebConfig} from './tests/search-experiences-w
 import {config as segmentExperimentWebConfig} from './tests/segment-experiment-web/main/config';
 import {config as segmentsWebConfig} from './tests/segments-web/main/config';
 import {config as seoStudioWebConfig} from './tests/seo-studio-web/main/config';
+import {config as serverAdminWebConfig} from './tests/server-admin-web/main/config';
 import {config as pageManagementSiteConfig} from './tests/setup/page-management-site/main/config';
 import {config as pageManagementSiteTeardownConfig} from './tests/setup/page-management-site/teardown/config';
 import {config as siteCmsSiteConfig} from './tests/setup/site-cms-site/main/config';
@@ -352,6 +354,7 @@ export default defineConfig({
 		marketplaceConfig,
 		messageBoardsWebConfig,
 		multifactorAuthenticationConfig,
+		multifactorAuthenticationEmailOTPConfig,
 		multifactorAuthenticationWebConfig,
 		nestedPortletsWebConfig,
 		notificationWebConfig,
@@ -420,6 +423,7 @@ export default defineConfig({
 		segmentExperimentWebConfig,
 		segmentsWebConfig,
 		seoStudioWebConfig,
+		serverAdminWebConfig,
 		siteAdminWebConfig,
 		siteCmpSiteInitializerConfig,
 		siteCmsSiteInitializerConfig,

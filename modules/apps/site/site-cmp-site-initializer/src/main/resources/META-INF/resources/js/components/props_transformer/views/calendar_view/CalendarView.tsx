@@ -6,16 +6,20 @@
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayDatePicker from '@clayui/date-picker';
 import ClayIcon from '@clayui/icon';
+import ClayLayout from '@clayui/layout';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import FullCalendar from '@fullcalendar/react';
+import {FrontendDataSetContext} from '@liferay/frontend-data-set-web';
+import {useLiferayState} from '@liferay/frontend-js-state-web/react';
 import classNames from 'classnames';
-import {dateUtils} from 'frontend-js-web';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {dateUtils, sub} from 'frontend-js-web';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 
 import {ITask, ITaskObjectEntry} from '../../../../utils/types';
 import {UPDATE_TASKS_QUICK_FILTER_VISIBILITY} from '../../../task/TasksQuickFilters';
-import CalendarMoreLinkPopover from './CalendarMoreLinkPopover';
-import CalendarTaskCard from './CalendarTaskCard';
+import CalendarMoreLinkPopover from './components/CalendarMoreLinkPopover';
+import CalendarTaskCard from './components/CalendarTaskCard';
+import {unscheduledTasksAtom} from './utils/unscheduledTasksAtom';
 
 import './CalendarView.scss';
 
@@ -32,13 +36,19 @@ interface MoreLinkPopover {
 }
 
 export default function CalendarView({items}: CalendarViewProps) {
+	const {onInfoPanelToggleButtonClick} = useContext(FrontendDataSetContext);
+
 	const calendarRef = useRef<FullCalendar>(null);
+	const calendarViewRef = useRef<HTMLDivElement>(null);
 
 	const [datePickerExpanded, setDatePickerExpanded] = useState(false);
 	const [datePickerValue, setDatePickerValue] = useState('');
 	const [moreLinkPopover, setMoreLinkPopover] =
 		useState<MoreLinkPopover | null>(null);
 	const [title, setTitle] = useState('');
+
+	const [, setUnscheduledTasks] =
+		useLiferayState<ITaskObjectEntry[]>(unscheduledTasksAtom);
 
 	const events = useMemo(
 		() =>
@@ -59,8 +69,21 @@ export default function CalendarView({items}: CalendarViewProps) {
 		[items]
 	);
 
-	const currentYear = new Date().getFullYear();
-	const locale = Liferay.ThemeDisplay.getBCP47LanguageId();
+	const unscheduledTasks = useMemo(
+		() =>
+			items
+				.filter((item) => !item.embedded?.dueDate)
+				.map((item) => item.embedded)
+				.filter(Boolean),
+		[items]
+	);
+
+	// Share the unscheduled tasks with the info panel component, since the FDS
+	// core provides the info panel with only the currently selected items.
+
+	useEffect(() => {
+		setUnscheduledTasks(unscheduledTasks);
+	}, [setUnscheduledTasks, unscheduledTasks]);
 
 	useEffect(() => {
 		Liferay.fire(UPDATE_TASKS_QUICK_FILTER_VISIBILITY, {visible: false});
@@ -70,107 +93,177 @@ export default function CalendarView({items}: CalendarViewProps) {
 		};
 	}, []);
 
+	// Properly resize the calendar width when the unscheduled tasks panel is
+	// opened or closed. FullCalendar caches its layout and only recomputes on a
+	// window resize, so its width can go stale. Watch the container instead and
+	// recompute on every width change.
+
+	useEffect(() => {
+		const element = calendarViewRef.current;
+
+		if (!element) {
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver(() => {
+			requestAnimationFrame(() => {
+				calendarRef.current?.getApi().updateSize();
+			});
+		});
+
+		resizeObserver.observe(element);
+
+		return () => resizeObserver.disconnect();
+	}, []);
+
+	const currentYear = new Date().getFullYear();
+	const locale = Liferay.ThemeDisplay.getBCP47LanguageId();
+
 	return (
-		<div className="lfr__calendar-view">
-			<div className="lfr__calendar-view-toolbar">
-				<ClayButtonWithIcon
-					aria-label={Liferay.Language.get('previous-month')}
-					borderless
-					displayType="secondary"
-					onClick={() => calendarRef.current?.getApi().prev()}
-					size="sm"
-					symbol="angle-left"
-				/>
-
-				<div className="lfr__calendar-view-toolbar-date-picker">
-					<ClayButton
-						aria-expanded={datePickerExpanded}
-						aria-haspopup="dialog"
-						borderless
-						className={classNames(
-							'lfr__calendar-view-toolbar-title',
-							{
-								active: datePickerExpanded,
-							}
-						)}
-						data-testid="calendarTitle"
-						displayType="secondary"
-						onClick={() =>
-							setDatePickerExpanded((expanded) => !expanded)
-						}
-					>
-						{title}
-
-						<span className="inline-item inline-item-after">
-							<ClayIcon symbol="caret-bottom" />
-						</span>
-					</ClayButton>
-
-					{/* "inert" is spread because React 18.2 lacks JSX support for it (added in 18.3) and the build's DOM types omit the property. */}
-
-					<div {...{inert: ''}}>
-						<ClayDatePicker
-							ariaLabels={{
-								buttonChooseDate:
-									Liferay.Language.get('select-date'),
-								buttonDot: Liferay.Language.get(
-									'select-current-date'
-								),
-								buttonNextMonth:
-									Liferay.Language.get('select-next-month'),
-								buttonPreviousMonth: Liferay.Language.get(
-									'select-previous-month'
-								),
-								dialog: Liferay.Language.get('select-date'),
-								selectMonth:
-									Liferay.Language.get('select-a-month'),
-								selectYear:
-									Liferay.Language.get('select-a-year'),
-							}}
-							dateFormat="yyyy-MM-dd"
-							expanded={datePickerExpanded}
-							firstDayOfWeek={dateUtils.getFirstDayOfWeek(
-								locale as FirstDayOfWeekLocale
-							)}
-							months={dateUtils.getMonthsLong(locale)}
-							onChange={(value) => {
-								setDatePickerValue(value);
-
-								if (value) {
-									calendarRef.current
-										?.getApi()
-										.gotoDate(value);
-
-									setDatePickerExpanded(false);
-								}
-							}}
-							onExpandedChange={setDatePickerExpanded}
-							value={datePickerValue}
-							weekdaysShort={dateUtils.getWeekdaysShort(locale)}
-							years={{
-								end: currentYear + 10,
-								start: currentYear - 10,
-							}}
-						/>
-					</div>
-				</div>
-
-				<ClayButtonWithIcon
-					aria-label={Liferay.Language.get('next-month')}
-					borderless
-					displayType="secondary"
-					onClick={() => calendarRef.current?.getApi().next()}
-					symbol="angle-right"
-				/>
-
-				<ClayButton
-					displayType="secondary"
-					onClick={() => calendarRef.current?.getApi().today()}
-					size="sm"
+		<div className="lfr__calendar-view" ref={calendarViewRef}>
+			<ClayLayout.Row className="lfr__calendar-view-toolbar">
+				<ClayLayout.Col
+					className="lfr__calendar-view-toolbar-start"
+					md={3}
 				>
-					{Liferay.Language.get('today')}
-				</ClayButton>
-			</div>
+					{!!unscheduledTasks.length && (
+						<ClayButton
+							displayType="warning"
+							onClick={() => onInfoPanelToggleButtonClick()}
+							outline
+							size="sm"
+						>
+							<span className="inline-item inline-item-before">
+								<ClayIcon symbol="warning-full" />
+							</span>
+
+							{sub(
+								unscheduledTasks.length === 1
+									? Liferay.Language.get('x-unscheduled-task')
+									: Liferay.Language.get(
+											'x-unscheduled-tasks'
+										),
+								[unscheduledTasks.length]
+							)}
+						</ClayButton>
+					)}
+				</ClayLayout.Col>
+
+				<ClayLayout.Col
+					className="lfr__calendar-view-toolbar-center"
+					md={6}
+				>
+					<ClayButtonWithIcon
+						aria-label={Liferay.Language.get('previous-month')}
+						borderless
+						displayType="secondary"
+						onClick={() => calendarRef.current?.getApi().prev()}
+						size="sm"
+						symbol="angle-left"
+					/>
+
+					<div className="lfr__calendar-view-toolbar-date-picker">
+						<ClayButton
+							aria-expanded={datePickerExpanded}
+							aria-haspopup="dialog"
+							borderless
+							className={classNames(
+								'lfr__calendar-view-toolbar-title',
+								{
+									active: datePickerExpanded,
+								}
+							)}
+							data-testid="calendarTitle"
+							displayType="secondary"
+							onClick={() =>
+								setDatePickerExpanded((expanded) => !expanded)
+							}
+						>
+							{title}
+
+							<span className="inline-item inline-item-after">
+								<ClayIcon symbol="caret-bottom" />
+							</span>
+						</ClayButton>
+
+						{/* "inert" is spread because React 18.2 lacks JSX support for it (added in 18.3) and the build's DOM types omit the property. */}
+
+						<div {...{inert: ''}}>
+							<ClayDatePicker
+								ariaLabels={{
+									buttonChooseDate:
+										Liferay.Language.get('select-date'),
+									buttonDot: Liferay.Language.get(
+										'select-current-date'
+									),
+									buttonNextMonth:
+										Liferay.Language.get(
+											'select-next-month'
+										),
+									buttonPreviousMonth: Liferay.Language.get(
+										'select-previous-month'
+									),
+									dialog: Liferay.Language.get('select-date'),
+									selectMonth:
+										Liferay.Language.get('select-a-month'),
+									selectYear:
+										Liferay.Language.get('select-a-year'),
+								}}
+								dateFormat="yyyy-MM-dd"
+								expanded={datePickerExpanded}
+								firstDayOfWeek={dateUtils.getFirstDayOfWeek(
+									locale as FirstDayOfWeekLocale
+								)}
+								months={dateUtils.getMonthsLong(locale)}
+								onChange={(value) => {
+									setDatePickerValue(value);
+
+									if (value) {
+										calendarRef.current
+											?.getApi()
+											.gotoDate(value);
+
+										setDatePickerExpanded(false);
+									}
+								}}
+								onExpandedChange={setDatePickerExpanded}
+								value={datePickerValue}
+								weekdaysShort={dateUtils.getWeekdaysShort(
+									locale
+								)}
+								years={{
+									end: currentYear + 10,
+									start: currentYear - 10,
+								}}
+							/>
+						</div>
+					</div>
+
+					<ClayButtonWithIcon
+						aria-label={Liferay.Language.get('next-month')}
+						borderless
+						displayType="secondary"
+						onClick={() => calendarRef.current?.getApi().next()}
+						symbol="angle-right"
+					/>
+
+					<ClayButton
+						displayType="secondary"
+						onClick={() => calendarRef.current?.getApi().today()}
+						size="sm"
+					>
+						{Liferay.Language.get('today')}
+					</ClayButton>
+				</ClayLayout.Col>
+
+				{/* Reserved for future toolbar actions; keeping the column
+				    balances the start column so the center stays centered. */}
+
+				<ClayLayout.Col
+					className="lfr__calendar-view-toolbar-end"
+					md={3}
+				/>
+			</ClayLayout.Row>
 
 			<FullCalendar
 				datesSet={({view}) => setTitle(view.title)}

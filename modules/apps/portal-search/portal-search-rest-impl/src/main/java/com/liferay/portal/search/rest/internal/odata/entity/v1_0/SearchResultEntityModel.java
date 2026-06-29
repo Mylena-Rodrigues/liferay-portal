@@ -27,6 +27,7 @@ public class SearchResultEntityModel implements EntityModel {
 	public SearchResultEntityModel() {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new BooleanEntityField("cmsRoot", locale -> "cms_root"),
+			new BooleanEntityField("completed", locale -> "completed"),
 			new BooleanEntityField(
 				"rootDescendantNode", locale -> "rootDescendantNode"),
 			new CollectionEntityField(
@@ -67,6 +68,9 @@ public class SearchResultEntityModel implements EntityModel {
 				"dateReview",
 				locale -> Field.getSortableFieldName("reviewDate"),
 				locale -> "reviewDate"),
+			new DateTimeEntityField(
+				"dueDate", locale -> Field.getSortableFieldName("dueDate"),
+				locale -> "dueDate"),
 			new EntityField(
 				"classNameId", EntityField.Type.INTEGER,
 				locale -> Field.ENTRY_CLASS_NAME,
