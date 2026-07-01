@@ -6,19 +6,19 @@
 import {Option, Picker} from '@clayui/core';
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 
-import TagService from '../../../common/services/TagService';
-import {ViewDashboardContext} from '../ViewDashboardContext';
+import VocabularyService from '../../../../common/services/VocabularyService';
+import PickerTrigger from '../../common/PickerTrigger';
+import {InventoryContext} from '../InventoryContext';
 import {Item} from './FilterDropdown';
 import {
 	IAllFiltersDropdown,
 	filterBySpaces,
 	initialFilters,
 } from './InventoryAnalysisCard';
-import PickerTrigger from './PickerTrigger';
 
-type Keyword = {assetLibraries: {id: number}[]; id: string; name: string};
+type Vocabulary = {assetLibraries: {id: number}[]; id: string; name: string};
 
-const AllTagsDropdown: React.FC<IAllFiltersDropdown> = ({
+const AllVocabulariesDropdown: React.FC<IAllFiltersDropdown> = ({
 	className,
 	item,
 	onSelectItem,
@@ -26,13 +26,14 @@ const AllTagsDropdown: React.FC<IAllFiltersDropdown> = ({
 	const {
 		constants: {cmsGroupId},
 		filters: {space},
-	} = useContext(ViewDashboardContext);
+	} = useContext(InventoryContext);
 
-	const [keywords, setKeywords] = useState<Keyword[]>([]);
+	const [rawVocabularies, setRawVocabularies] = useState<Vocabulary[]>([]);
 
 	useEffect(() => {
-		const fetchTags = async () => {
-			const {data, error} = await TagService.getTags(cmsGroupId);
+		const fetchVocabularies = async () => {
+			const {data, error} =
+				await VocabularyService.getVocabularies(cmsGroupId);
 
 			if (error) {
 				console.error(error);
@@ -41,17 +42,17 @@ const AllTagsDropdown: React.FC<IAllFiltersDropdown> = ({
 			}
 
 			if (data) {
-				setKeywords(data.items);
+				setRawVocabularies(data.items);
 			}
 		};
 
-		fetchTags();
+		fetchVocabularies();
 	}, [cmsGroupId]);
 
-	const tags: Item[] = useMemo(
+	const vocabularies: Item[] = useMemo(
 		() => [
-			initialFilters.tag,
-			...keywords
+			initialFilters.vocabulary,
+			...rawVocabularies
 				.filter(
 					({assetLibraries}) =>
 						space.value === 'all' ||
@@ -62,37 +63,39 @@ const AllTagsDropdown: React.FC<IAllFiltersDropdown> = ({
 					value: String(id),
 				})),
 		],
-		[keywords, space.value]
+		[rawVocabularies, space.value]
 	);
 
 	return (
 		<Picker
-			aria-label={Liferay.Language.get('filter-by-tag')}
+			aria-label={Liferay.Language.get('filter-by-vocabulary')}
 			as={PickerTrigger}
 			borderless
 			filterKey="label"
-			items={tags}
+			items={vocabularies}
 			messages={{
 				noResultsFound: Liferay.Language.get('no-results-were-found'),
 				searchPlaceholder: Liferay.Language.get('search'),
 			}}
 			onSelectionChange={(key) => {
-				const selectedTag = tags.find(
+				const selectedVocabulary = vocabularies.find(
 					({value}) => value === String(key)
 				);
 
-				if (selectedTag) {
-					onSelectItem(selectedTag);
+				if (selectedVocabulary) {
+					onSelectItem(selectedVocabulary);
 				}
 			}}
 			searchable
 			selectedKey={item.value}
 			triggerClassName={className}
-			triggerIcon="tag"
+			triggerIcon="vocabulary"
 		>
-			{(tag: Item) => <Option key={tag.value}>{tag.label}</Option>}
+			{(vocabulary: Item) => (
+				<Option key={vocabulary.value}>{vocabulary.label}</Option>
+			)}
 		</Picker>
 	);
 };
 
-export {AllTagsDropdown};
+export {AllVocabulariesDropdown};

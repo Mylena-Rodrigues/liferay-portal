@@ -6,9 +6,9 @@
 import {Option, Picker} from '@clayui/core';
 import React, {useContext, useEffect, useState} from 'react';
 
-import SpaceService from '../../../common/services/SpaceService';
-import {ViewDashboardContext, initialLanguage} from '../ViewDashboardContext';
-import PickerTrigger from './PickerTrigger';
+import SpaceService from '../../../../common/services/SpaceService';
+import PickerTrigger from '../../common/PickerTrigger';
+import {InventoryContext, initialLanguage} from '../InventoryContext';
 
 type AvailableLocales = Exclude<
 	Liferay.Language.Locale,
@@ -51,7 +51,7 @@ const LanguagesDropdown: React.FC<React.HTMLAttributes<HTMLElement>> = ({
 	const {
 		changeLanguage,
 		filters: {language, space},
-	} = useContext(ViewDashboardContext);
+	} = useContext(InventoryContext);
 
 	const [languages, setLanguages] = useState(initialLanguages);
 

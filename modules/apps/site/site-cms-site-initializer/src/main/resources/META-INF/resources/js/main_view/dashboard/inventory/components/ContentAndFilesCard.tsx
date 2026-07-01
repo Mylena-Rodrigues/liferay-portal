@@ -19,8 +19,8 @@ import {
 import {sub} from 'frontend-js-web';
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 
-import ApiHelper from '../../../common/services/ApiHelper';
-import {ViewDashboardContext} from '../ViewDashboardContext';
+import ApiHelper from '../../../../common/services/ApiHelper';
+import {InventoryContext} from '../InventoryContext';
 
 export interface IMetricsProps {
 	categoriesCount: number;
@@ -46,7 +46,7 @@ const ContentAndFilesCard: React.FC<IContentAndFilesCard> = ({
 }) => {
 	const {
 		filters: {language, space},
-	} = useContext(ViewDashboardContext);
+	} = useContext(InventoryContext);
 
 	const [loading, setLoading] = useState(true);
 	const [metrics, setMetrics] = useState<IMetricsProps>();

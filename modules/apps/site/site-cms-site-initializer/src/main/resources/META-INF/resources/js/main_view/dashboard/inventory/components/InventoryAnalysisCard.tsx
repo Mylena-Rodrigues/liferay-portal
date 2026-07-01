@@ -9,8 +9,9 @@ import ClayIcon from '@clayui/icon';
 import {buildQueryString} from '@liferay/analytics-reports-js-components-web';
 import React, {useContext, useEffect, useState} from 'react';
 
-import ApiHelper from '../../../common/services/ApiHelper';
-import {ViewDashboardContext} from '../ViewDashboardContext';
+import ApiHelper from '../../../../common/services/ApiHelper';
+import PickerTrigger from '../../common/PickerTrigger';
+import {InventoryContext} from '../InventoryContext';
 import usePagination from '../utils/usePagination';
 import {AllCategoriesDropdown} from './AllCategoriesDropdown';
 import {AllStructureTypesDropdown} from './AllStructureTypesDropdown';
@@ -20,7 +21,6 @@ import {BaseCard} from './BaseCard';
 import {Item} from './FilterDropdown';
 import {GroupByDropdown} from './GroupByDropdown';
 import PaginatedTable from './PaginatedTable';
-import PickerTrigger from './PickerTrigger';
 
 export interface IAllFiltersDropdown extends React.HTMLAttributes<HTMLElement> {
 	item: Item;
@@ -151,7 +151,7 @@ const dropdownItems: DropdownItem[] = [
 export function InventoryAnalysisCard() {
 	const {
 		filters: {language, space},
-	} = useContext(ViewDashboardContext);
+	} = useContext(InventoryContext);
 
 	const [filters, setFilters] = useState<{
 		category: Item;

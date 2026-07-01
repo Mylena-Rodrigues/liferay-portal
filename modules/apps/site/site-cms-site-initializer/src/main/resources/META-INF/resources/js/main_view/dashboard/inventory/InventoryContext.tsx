@@ -5,6 +5,8 @@
 
 import React, {createContext, useCallback, useReducer} from 'react';
 
+import {initialSpace} from '../common/SpacesDropdown';
+
 type Item = {
 	externalReferenceCode?: string;
 	label: string;
@@ -37,11 +39,6 @@ export const initialLanguage = {
 	value: 'all',
 };
 
-export const initialSpace = {
-	label: Liferay.Language.get('all-spaces'),
-	value: 'all',
-};
-
 const initialState: State = {
 	changeLanguage: () => {},
 	changeSpace: () => {},
@@ -52,9 +49,9 @@ const initialState: State = {
 	},
 };
 
-export const ViewDashboardContext = createContext(initialState);
+export const InventoryContext = createContext(initialState);
 
-ViewDashboardContext.displayName = 'ViewDashboardContext';
+InventoryContext.displayName = 'InventoryContext';
 
 const reducer = (state: State, action: Action): State => {
 	switch (action.type) {
@@ -84,12 +81,11 @@ const reducer = (state: State, action: Action): State => {
 	}
 };
 
-interface IViewDashboardContextProvider
-	extends React.HTMLAttributes<HTMLElement> {
+interface IInventoryContextProvider extends React.HTMLAttributes<HTMLElement> {
 	value: Partial<State>;
 }
 
-const ViewDashboardContextProvider: React.FC<IViewDashboardContextProvider> = ({
+const InventoryContextProvider: React.FC<IInventoryContextProvider> = ({
 	children,
 	value,
 }) => {
@@ -110,7 +106,7 @@ const ViewDashboardContextProvider: React.FC<IViewDashboardContextProvider> = ({
 	}, []);
 
 	return (
-		<ViewDashboardContext.Provider
+		<InventoryContext.Provider
 			value={{
 				...state,
 				...value,
@@ -119,8 +115,8 @@ const ViewDashboardContextProvider: React.FC<IViewDashboardContextProvider> = ({
 			}}
 		>
 			{children}
-		</ViewDashboardContext.Provider>
+		</InventoryContext.Provider>
 	);
 };
 
-export {ViewDashboardContextProvider};
+export {InventoryContextProvider};
