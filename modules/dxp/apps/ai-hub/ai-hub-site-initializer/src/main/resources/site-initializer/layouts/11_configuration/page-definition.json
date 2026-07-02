@@ -63,15 +63,88 @@
 					},
 					{
 						"definition": {
+							"cssClasses": [
+								"ai-hub-tabs"
+							],
 							"fragment": {
-								"key": "com.liferay.ai.hub.web.internal.fragment.renderer.EditConfigurationFragmentRenderer"
+								"key": "BASIC_COMPONENT-tabs"
 							},
 							"fragmentConfig": {
+								"numberOfTabs": 2,
+								"persistSelectedTab": true
 							},
 							"fragmentFields": [
+								{
+									"id": "title1",
+									"value": {
+										"fragmentLink": {
+										},
+										"text": {
+											"value_i18n": {
+												"en_US": "AI Features"
+											}
+										}
+									}
+								},
+								{
+									"id": "title2",
+									"value": {
+										"fragmentLink": {
+										},
+										"text": {
+											"value_i18n": {
+												"en_US": "Credentials"
+											}
+										}
+									}
+								}
 							],
 							"indexed": true
 						},
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentDropZoneId": "1"
+								},
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "com.liferay.ai.hub.web.internal.fragment.renderer.AIFeaturesFragmentRenderer"
+											},
+											"fragmentConfig": {
+											},
+											"fragmentFields": [
+											],
+											"indexed": true
+										},
+										"type": "Fragment"
+									}
+								],
+								"type": "FragmentDropZone"
+							},
+							{
+								"definition": {
+									"fragmentDropZoneId": "2"
+								},
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "com.liferay.ai.hub.web.internal.fragment.renderer.EditConfigurationFragmentRenderer"
+											},
+											"fragmentConfig": {
+											},
+											"fragmentFields": [
+											],
+											"indexed": true
+										},
+										"type": "Fragment"
+									}
+								],
+								"type": "FragmentDropZone"
+							}
+						],
 						"type": "Fragment"
 					}
 				],
