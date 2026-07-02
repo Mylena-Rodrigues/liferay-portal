@@ -85,6 +85,8 @@ public class OpenAPIResourceImpl {
 
 	private final Set<Class<?>> _resourceClasses = new HashSet<Class<?>>() {
 		{
+			add(AIFeaturesResourceImpl.class);
+
 			add(AgentDefinitionResourceImpl.class);
 
 			add(AgentInstanceResourceImpl.class);
@@ -112,4 +114,4 @@ public class OpenAPIResourceImpl {
 	};
 
 }
-// LIFERAY-REST-BUILDER-HASH:-329516948
+// LIFERAY-REST-BUILDER-HASH:-483084555
