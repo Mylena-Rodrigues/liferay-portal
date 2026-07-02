@@ -5,6 +5,7 @@
 
 package com.liferay.ai.hub.web.internal.fragment.renderer;
 
+import com.liferay.ai.hub.agent.AIFeaturesStateResolver;
 import com.liferay.ai.hub.web.internal.display.context.ViewAgentDefinitionsDisplayContext;
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.portal.kernel.language.Language;
@@ -59,13 +60,16 @@ public class ViewAgentDefinitionsFragmentRenderer
 		HttpServletRequest httpServletRequest) {
 
 		return new ViewAgentDefinitionsDisplayContext(
-			_groupLocalService, httpServletRequest);
+			_aiFeaturesStateResolver, _groupLocalService, httpServletRequest);
 	}
 
 	@Override
 	protected String getJSPPath() {
 		return "/view_agent_definitions.jsp";
 	}
+
+	@Reference
+	private AIFeaturesStateResolver _aiFeaturesStateResolver;
 
 	@Reference
 	private GroupLocalService _groupLocalService;
