@@ -1,0 +1,13 @@
+{
+	"deletionType": "cascade",
+	"externalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_FEATURES",
+	"label": {
+		"en_US": "Account to AI Hub Features"
+	},
+	"name": "accountToAIHubFeatures",
+	"objectDefinitionId1": "[$OBJECT_DEFINITION_ID:AccountEntry$]",
+	"objectDefinitionId2": "[$OBJECT_DEFINITION_ID:AIHubFeature$]",
+	"objectDefinitionName2": "AIHubFeature",
+	"system": true,
+	"type": "oneToMany"
+}

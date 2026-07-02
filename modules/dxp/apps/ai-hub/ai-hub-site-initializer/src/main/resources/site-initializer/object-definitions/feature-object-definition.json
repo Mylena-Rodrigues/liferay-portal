@@ -1,0 +1,118 @@
+{
+	"accountEntryRestricted": true,
+	"accountEntryRestrictedObjectFieldName": "r_accountToAIHubFeatures_accountEntryId",
+	"className": "com.liferay.object.model.ObjectDefinition#F8A1",
+	"enableFormContainer": false,
+	"enableIndexSearch": true,
+	"enableObjectEntryHistory": true,
+	"externalReferenceCode": "L_AI_HUB_FEATURE",
+	"friendlyURLSeparator": "l",
+	"label": {
+		"en_US": "AI Hub Feature"
+	},
+	"modifiable": true,
+	"name": "AIHubFeature",
+	"objectFields": [
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "COMMENT",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Comment"
+			},
+			"name": "comment",
+			"readOnly": false,
+			"required": false,
+			"system": false,
+			"type": "String"
+		},
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"defaultValue": false,
+			"externalReferenceCode": "ENABLE",
+			"indexed": true,
+			"label": {
+				"en_US": "Enable"
+			},
+			"name": "enable",
+			"required": false,
+			"system": true,
+			"type": "Boolean"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "FEATURE_NAME",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Feature Name"
+			},
+			"name": "featureName",
+			"readOnly": false,
+			"required": true,
+			"system": false,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"defaultValue": "null",
+			"externalReferenceCode": "REASON",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Reason"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_FEATURE_REASONS",
+			"name": "reason",
+			"readOnly": false,
+			"required": false,
+			"system": false,
+			"type": "String"
+		},
+		{
+			"DBType": "Long",
+			"businessType": "Relationship",
+			"defaultValue": "null",
+			"externalReferenceCode": "ACCOUNT_TO_AI_HUB_FEATURES",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Account to AI Hub Features"
+			},
+			"name": "r_accountToAIHubFeatures_accountEntryId",
+			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
+			"objectFieldSettings": [
+				{
+					"name": "objectDefinition1ShortName",
+					"value": "AccountEntry"
+				},
+				{
+					"name": "objectRelationshipERCObjectFieldName",
+					"value": "r_accountToAIHubFeatures_accountEntryERC"
+				}
+			],
+			"objectRelationshipExternalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_FEATURES",
+			"readOnly": false,
+			"relationshipType": "oneToMany",
+			"required": true,
+			"system": false,
+			"type": "Long"
+		}
+	],
+	"objectFolderExternalReferenceCode": "default",
+	"panelCategoryKey": "control_panel.object",
+	"pluralLabel": {
+		"en_US": "AI Hub Features"
+	},
+	"portlet": true,
+	"scope": "company",
+	"system": true,
+	"titleObjectFieldName": "featureName"
+}

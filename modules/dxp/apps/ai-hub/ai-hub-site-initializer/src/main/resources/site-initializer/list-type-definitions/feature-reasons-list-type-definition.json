@@ -1,0 +1,37 @@
+{
+	"externalReferenceCode": "L_AI_HUB_FEATURE_REASONS",
+	"listTypeEntries": [
+		{
+			"externalReferenceCode": "EXPOSURE_OF_PERSONAL_OR_SENSITIVE_DATA",
+			"key": "exposureOfPersonalOrSensitiveData",
+			"name": "Exposure of personal / Sensitive Data (PII)",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "INAPPROPRIATE_OR_UNETHICAL_CONTENT",
+			"key": "inappropriateOrUnethicalContent",
+			"name": "Inappropriate or Unethical Content",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "INCIDENT_OR_DATA_LEAK_RESPONSE",
+			"key": "incidentOrDataLeakResponse",
+			"name": "Incident or Data Leak Response",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "LEGAL_OR_SERVICE_DEPLOYMENT",
+			"key": "legalOrServiceDeployment",
+			"name": "Legal/Service Deployment",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "OTHER",
+			"key": "other",
+			"name": "Other",
+			"system": true
+		}
+	],
+	"name": "AI Hub Feature Reasons",
+	"system": true
+}

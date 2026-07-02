@@ -194,6 +194,8 @@ public class ObjectDefinitionUtil {
 		).put(
 			"AIHubCrawlerJob", "/ai-hub/crawler-jobs"
 		).put(
+			"AIHubFeature", "/ai-hub/features"
+		).put(
 			"AIHubGuardrail", "/ai-hub/guardrails"
 		).put(
 			"AIHubInstructionDefinition", "/ai-hub/instruction-definitions"
