@@ -1,5 +1,23 @@
 components:
     schemas:
+        AIFeatures:
+            properties:
+                comment:
+                    type: string
+                    writeOnly: true
+                enable:
+                    type: boolean
+                lastModifiedBy:
+                    readOnly: true
+                    type: string
+                lastModifiedDate:
+                    format: date-time
+                    readOnly: true
+                    type: string
+                reason:
+                    type: string
+                    writeOnly: true
+            type: object
         AgentDefinition:
             properties:
                 actions:
@@ -457,6 +475,39 @@ paths:
                     content:
                         text/event-stream: {}
             tags: ["AgentInstance"]
+    "/ai-features":
+        get:
+            operationId: getAIFeatures
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/AIFeatures"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/AIFeatures"
+            tags: ["AIFeatures"]
+        patch:
+            operationId: patchAIFeatures
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/AIFeatures"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/AIFeatures"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/AIFeatures"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/AIFeatures"
+            tags: ["AIFeatures"]
     "/chatbots/by-external-reference-code/{externalReferenceCode}":
         get:
             operationId: getChatbotByExternalReferenceCode
