@@ -5,9 +5,12 @@
 
 package com.liferay.ai.hub.rest.internal.resource.v1_0;
 
+import com.liferay.account.model.AccountEntry;
+import com.liferay.ai.hub.agent.AIFeaturesStateResolver;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentDefinition;
 import com.liferay.ai.hub.rest.manager.v1_0.AgentDefinitionManager;
 import com.liferay.ai.hub.rest.resource.v1_0.AgentDefinitionResource;
+import com.liferay.ai.hub.util.AccountEntryUtil;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
@@ -19,6 +22,7 @@ import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.osgi.service.component.annotations.Component;
@@ -85,6 +89,8 @@ public class AgentDefinitionResourceImpl
 			throw new UnsupportedOperationException();
 		}
 
+		_checkAIFeaturesEnabled(externalReferenceCode);
+
 		return _agentDefinitionManager.patchAgentDefinitionUpdateActive(
 			active, contextCompany.getCompanyId(), _createDTOConverterContext(),
 			externalReferenceCode);
@@ -106,6 +112,32 @@ public class AgentDefinitionResourceImpl
 			externalReferenceCode);
 	}
 
+	private void _checkAIFeaturesEnabled(String externalReferenceCode)
+		throws Exception {
+
+		AccountEntry accountEntry = AccountEntryUtil.getUserAccountEntry(
+			contextUser.getUserId());
+
+		if ((accountEntry == null) ||
+			_aiFeaturesStateResolver.isEnabled(
+				contextCompany.getCompanyId(),
+				accountEntry.getAccountEntryId())) {
+
+			return;
+		}
+
+		AgentDefinition agentDefinition =
+			_agentDefinitionManager.getAgentDefinition(
+				contextCompany.getCompanyId(), _createDTOConverterContext(),
+				externalReferenceCode);
+
+		if (Boolean.TRUE.equals(agentDefinition.getSystem())) {
+			throw new BadRequestException(
+				"Unable to change a system agent while AI features are " +
+					"disabled");
+		}
+	}
+
 	private DTOConverterContext _createDTOConverterContext() {
 		return new DefaultDTOConverterContext(
 			contextAcceptLanguage.isAcceptAllLanguages(), null,
@@ -116,6 +148,9 @@ public class AgentDefinitionResourceImpl
 
 	@Reference
 	private AgentDefinitionManager _agentDefinitionManager;
+
+	@Reference
+	private AIFeaturesStateResolver _aiFeaturesStateResolver;
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
