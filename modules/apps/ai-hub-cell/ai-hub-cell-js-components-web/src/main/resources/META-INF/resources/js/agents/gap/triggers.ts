@@ -8,41 +8,48 @@ import {EAgent} from '../../shared/types';
 import {
 	GAP_GENERATE_RENDERER,
 	GAP_MATRIX_UPDATE_EVENT,
-	Gap,
 	GapAnalysisContext,
 	MatrixUpdatePayload,
 } from './types';
 
-/** Standalone "Get GAP Insights" button and Quick Action (94215). */
+/** Standalone "Get AI-Insights" button and Quick Action (94215). */
 export function getGapInsights(context: GapAnalysisContext) {
 	fireInvokeAgent({
 		agent: EAgent.GAP_ANALYSIS,
 		context: context as Record<string, unknown>,
-		label: Liferay.Language.get('get-gap-insights'),
+		label: Liferay.Language.get('get-ai-insights'),
 	});
 }
 
-/** Per-gap "Find matching assets in CMS" follow-up (94219). */
-export function findMatchingAssets(gap: Gap) {
+/** "Find matching assets in CMS" for the project's gaps (94219). */
+export function findMatchingAssets(context: GapAnalysisContext) {
 	fireInvokeAgent({
 		agent: EAgent.GAP_FIND_ASSETS,
-		context: {gap} as Record<string, unknown>,
+		context: context as Record<string, unknown>,
 		label: Liferay.Language.get('find-matching-assets-in-cms'),
 	});
 }
 
 /**
- * Per-gap "Generate content for gaps" follow-up (94221). Reuses the content
- * agent through the event layer (never imports the content balloons); the
- * gap-owned balloon renders the result and attaches drafts to the matrix.
+ * "Generate content for gaps" (94221). Reuses the content agent through the
+ * event layer (never imports the content balloons); the gap-owned balloon
+ * renders the result and attaches drafts to the matrix.
  */
-export function generateForGap(gap: Gap) {
+export function generateForGaps(context: GapAnalysisContext) {
 	fireInvokeAgent({
 		agent: EAgent.GENERATE_CONTENT,
-		context: {gap} as Record<string, unknown>,
+		context: context as Record<string, unknown>,
 		label: Liferay.Language.get('generate-content-for-gaps'),
 		renderAs: GAP_GENERATE_RENDERER,
 	});
+}
+
+/**
+ * "Create tasks for gaps" is a separately scoped epic; this placeholder keeps
+ * the option present in the follow-up list until that work lands.
+ */
+export function createTasksForGaps(context: GapAnalysisContext) {
+	Liferay.fire('cms:aiAssistant:createTasksForGaps', context);
 }
 
 /** Live matrix update after attaching or generating (94219 / 94221). */

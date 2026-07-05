@@ -8,45 +8,45 @@ import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {openToast} from 'frontend-js-components-web';
 import React, {useEffect, useState} from 'react';
 
+import AgentResultCard from '../../shared/components/AgentResultCard';
+import OptionsList from '../../shared/components/OptionsList';
 import {EAgent} from '../../shared/types';
 import useAgent from '../../shared/useAgent';
-import {generateForGap, updateMatrixCell} from './triggers';
-import {Gap} from './types';
-
-interface MatchingAsset {
-	cellId: string;
-	id: string;
-	reason: string;
-	relevance: number;
-	space: string;
-	title: string;
-	type: string;
-	url: string;
-}
+import {generateForGaps, updateMatrixCell} from './triggers';
+import {GapAnalysisContext, MatchingAssetsResult} from './types';
 
 /**
- * Story 94219: searches the broader CMS for assets that could fill a gap and
- * lets the user attach them to the project matrix. Dedicated list because the
- * per-asset shape (relevance, why-it-matches, Attach) is specific to this flow.
+ * Story 94219: scans the broader CMS for assets that fill the project's gaps,
+ * lists them with the shared result card, and offers to attach them all at
+ * once. On confirmation each asset updates its matrix cell.
  */
-export default function FindAssetsBalloon({payload}: {payload: {gap: Gap}}) {
-	const [attached, setAttached] = useState<string[]>([]);
+export default function FindAssetsBalloon({
+	payload,
+}: {
+	payload: GapAnalysisContext;
+}) {
+	const [added, setAdded] = useState(false);
 
-	const {data, run, status} = useAgent<MatchingAsset[]>(
+	const {data, run, status} = useAgent<MatchingAssetsResult>(
 		EAgent.GAP_FIND_ASSETS
 	);
 
 	useEffect(() => {
-		run({gap: payload.gap});
+		run({
+			projectId: payload.projectId,
+			selectedCells: payload.selectedCells,
+		});
 	}, [payload, run]);
 
-	function attach(asset: MatchingAsset) {
-		setAttached((previous) => [...previous, asset.id]);
+	function addAll(assets: MatchingAssetsResult['assets']) {
+		assets.forEach((asset) =>
+			updateMatrixCell({cellId: asset.cellId, delta: 1})
+		);
 
-		updateMatrixCell({cellId: asset.cellId, delta: 1});
+		setAdded(true);
 
 		openToast({
-			message: Liferay.Language.get('asset-attached-to-project'),
+			message: Liferay.Language.get('assets-attached-to-project'),
 			type: 'success',
 		});
 	}
@@ -61,49 +61,83 @@ export default function FindAssetsBalloon({payload}: {payload: {gap: Gap}}) {
 		);
 	}
 
-	const assets = data ?? [];
+	const assets = data?.assets ?? [];
 
 	if (!assets.length) {
 		return (
 			<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
 				<p>{Liferay.Language.get('no-matching-assets-were-found')}</p>
 
-				<ClayButton
-					displayType="primary"
-					onClick={() => generateForGap(payload.gap)}
-					size="sm"
-				>
-					{Liferay.Language.get('generate-content-for-gaps')}
-				</ClayButton>
+				<OptionsList
+					options={[
+						{
+							label: Liferay.Language.get(
+								'generate-content-for-gaps'
+							),
+							onClick: () => generateForGaps(payload),
+						},
+					]}
+				/>
 			</div>
 		);
 	}
 
 	return (
 		<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
+			<p>
+				{Liferay.Util.sub(
+					Liferay.Language.get(
+						'ive-scanned-your-library-and-found-x-assets-that-match-some-gaps-of-your-project'
+					),
+					`${assets.length}`
+				)}
+			</p>
+
 			{assets.map((asset) => (
-				<div
-					className="align-items-center border-top d-flex justify-content-between py-2"
+				<AgentResultCard
+					href={asset.url}
 					key={asset.id}
-				>
-					<div className="mr-2 text-truncate">
-						<a href={asset.url}>{asset.title}</a>
-
-						<div className="small text-secondary text-truncate">
-							{asset.type} · {asset.space} — {asset.reason}
-						</div>
-					</div>
-
-					<ClayButton
-						disabled={attached.includes(asset.id)}
-						displayType="secondary"
-						onClick={() => attach(asset)}
-						size="sm"
-					>
-						{Liferay.Language.get('attach-to-project')}
-					</ClayButton>
-				</div>
+					labels={[
+						{
+							displayType: asset.statusApproved
+								? 'success'
+								: 'info',
+							text: asset.status,
+						},
+						{displayType: 'secondary', text: asset.dimensions},
+					]}
+					title={asset.title}
+				/>
 			))}
+
+			{!added && (
+				<>
+					<p className="mt-2">
+						{Liferay.Language.get(
+							'would-you-like-me-to-add-all-suggested-assets'
+						)}
+					</p>
+
+					<div className="d-flex">
+						<ClayButton
+							className="mr-2"
+							displayType="primary"
+							onClick={() => addAll(assets)}
+							size="sm"
+						>
+							{Liferay.Language.get('yes')}
+						</ClayButton>
+
+						<ClayButton
+							displayType="secondary"
+							onClick={() => setAdded(true)}
+							size="sm"
+						>
+							{Liferay.Language.get('no')}
+						</ClayButton>
+					</div>
+				</>
+			)}
 		</div>
 	);
 }
