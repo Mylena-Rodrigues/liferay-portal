@@ -406,6 +406,20 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		};
 	}, []);
 
+	useEffect(() => {
+		setMessages((previousMessages) =>
+			previousMessages.length
+				? previousMessages
+				: [
+						{
+							agentMessage: {type: 'STYLE_GALLERY'},
+							sender: 'assistant',
+							text: '',
+						},
+					]
+		);
+	}, []);
+
 	const chatSurface = (
 		<>
 			<div className="ai-assistant-chat__messages-container flex-grow-1 overflow-auto px-3">

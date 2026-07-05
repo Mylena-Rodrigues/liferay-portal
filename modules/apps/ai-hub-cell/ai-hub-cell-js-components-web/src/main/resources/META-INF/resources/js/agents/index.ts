@@ -9,6 +9,8 @@
  * registration import below.
  */
 
+import './_demo/register';
+
 import './content/quickActions';
 
 import './content/register';
