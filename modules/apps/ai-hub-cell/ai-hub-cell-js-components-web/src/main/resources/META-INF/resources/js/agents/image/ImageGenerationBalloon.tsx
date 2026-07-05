@@ -4,84 +4,76 @@
  */
 
 import ClayButton from '@clayui/button';
+import {ClayCheckbox} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {openToast} from 'frontend-js-components-web';
 import React, {useEffect, useState} from 'react';
 
-import AIGeneratedBadge from '../../shared/components/AIGeneratedBadge';
-import ChipPicker from '../../shared/components/ChipPicker';
+import {cancelUserInput, requestUserInput} from '../../shared/agentInput';
 import {EAgent} from '../../shared/types';
 import useAgent from '../../shared/useAgent';
 import {saveGeneratedImages} from './triggers';
-import {
-	GeneratedImage,
-	IMAGE_STYLE_OPTIONS,
-	ImageGenerationContext,
-} from './types';
+import {GeneratedImage, ImageGenerationContext} from './types';
 
 /**
  * Stories 93953 (dataset / Quick Action) and 93954 (File field sparkle): a
  * single conversational flow whose only difference is the save destination
- * carried in the context. Ask for prompt, then style, then generate, then let
- * the user Save / Regenerate / Cancel.
+ * carried in the context. The Assistant asks the user to describe the image;
+ * the prompt (including any desired style) is typed in the main chat input.
  */
 export default function ImageGenerationBalloon({
 	payload,
 }: {
 	payload: ImageGenerationContext;
 }) {
-	const [draft, setDraft] = useState(payload.prompt ?? '');
 	const [prompt, setPrompt] = useState(payload.prompt ?? '');
-	const [style, setStyle] = useState(payload.style ?? '');
+	const [selected, setSelected] = useState<Record<string, boolean>>({});
 
 	const {data, regenerate, run, status} = useAgent<GeneratedImage[]>(
 		EAgent.GENERATE_IMAGE
 	);
 
 	useEffect(() => {
-		if (prompt && style && status === 'idle') {
-			run({destination: payload.destination, prompt, style});
+		if (prompt) {
+			return;
 		}
-	}, [payload.destination, prompt, run, status, style]);
+
+		let active = true;
+
+		requestUserInput().then((text) => {
+			if (active) {
+				setPrompt(text);
+			}
+		});
+
+		return () => {
+			active = false;
+
+			cancelUserInput();
+		};
+	}, [prompt]);
+
+	useEffect(() => {
+		if (prompt && status === 'idle') {
+			run({destination: payload.destination, prompt});
+		}
+	}, [payload.destination, prompt, run, status]);
+
+	useEffect(() => {
+		if (data) {
+			setSelected(
+				Object.fromEntries(data.map((image) => [image.id, true]))
+			);
+		}
+	}, [data]);
 
 	if (!prompt) {
 		return (
 			<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
-				<p>
-					{Liferay.Language.get(
-						'sure-describe-the-image-you-want-me-to-generate'
-					)}
-				</p>
-
-				<textarea
-					className="form-control mb-2"
-					onChange={(event) => setDraft(event.target.value)}
-					rows={2}
-					value={draft}
-				/>
-
-				<ClayButton
-					disabled={!draft.trim()}
-					displayType="primary"
-					onClick={() => setPrompt(draft)}
-					size="sm"
-				>
-					{Liferay.Language.get('continue')}
-				</ClayButton>
-			</div>
-		);
-	}
-
-	if (!style) {
-		return (
-			<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
-				<p>{Liferay.Language.get('choose-a-style')}</p>
-
-				<ChipPicker
-					onChange={(value) => setStyle(value[0])}
-					options={IMAGE_STYLE_OPTIONS}
-					value={style ? [style] : []}
-				/>
+				{Liferay.Language.get(
+					'sure-describe-the-image-you-want-me-to-generate'
+				)}
 			</div>
 		);
 	}
@@ -96,45 +88,78 @@ export default function ImageGenerationBalloon({
 		);
 	}
 
+	const images = data ?? [];
+	const multiple = images.length > 1;
+	const selectedImages = images.filter((image) => selected[image.id]);
+
 	return (
 		<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
+			<p>
+				{Liferay.Language.get(
+					'your-image-is-ready-you-can-regenerate-if-needed-when-it-looks-good-to-you-save-the-image'
+				)}
+			</p>
+
 			<div className="d-flex flex-wrap">
-				{(data ?? []).map((image) => (
-					<img
-						alt={image.alt ?? prompt}
-						className="ai-assistant-chat__generated-image mb-2 mr-2 rounded"
+				{images.map((image) => (
+					<div
+						className="ai-assistant-chat__generated-image-wrapper mb-2 mr-2"
 						key={image.id}
-						src={image.url}
-						style={{maxWidth: 160}}
-					/>
+					>
+						{multiple && (
+							<ClayCheckbox
+								checked={Boolean(selected[image.id])}
+								onChange={() =>
+									setSelected((previous) => ({
+										...previous,
+										[image.id]: !previous[image.id],
+									}))
+								}
+							/>
+						)}
+
+						<img
+							alt={image.alt ?? prompt}
+							className="ai-assistant-chat__generated-image rounded"
+							src={image.url}
+							style={{maxWidth: 160}}
+						/>
+					</div>
 				))}
 			</div>
 
-			<AIGeneratedBadge />
-
-			<div className="mt-2">
+			<div className="align-items-center d-flex justify-content-end">
 				<ClayButton
+					aria-label={Liferay.Language.get('regenerate')}
+					borderless
+					className="mr-2"
+					displayType="secondary"
+					onClick={regenerate}
+				>
+					<ClayIcon
+						spritemap={Liferay.Icons.spritemap}
+						symbol="reload"
+					/>
+				</ClayButton>
+
+				<ClayButton
+					disabled={!selectedImages.length}
 					displayType="primary"
 					onClick={() => {
-						saveGeneratedImages(payload, data ?? []);
+						saveGeneratedImages(payload, selectedImages);
 
 						openToast({
-							message: Liferay.Language.get('images-saved'),
+							message: multiple
+								? Liferay.Language.get('images-saved')
+								: Liferay.Language.get('image-saved'),
 							type: 'success',
 						});
 					}}
 					size="sm"
 				>
-					{Liferay.Language.get('save')}
-				</ClayButton>
-
-				<ClayButton
-					className="ml-2"
-					displayType="secondary"
-					onClick={regenerate}
-					size="sm"
-				>
-					{Liferay.Language.get('regenerate')}
+					{multiple
+						? Liferay.Language.get('save-images')
+						: Liferay.Language.get('save-image')}
 				</ClayButton>
 			</div>
 		</div>

@@ -5,19 +5,21 @@
 
 import ClayButton from '@clayui/button';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
-import AIGeneratedBadge from '../../shared/components/AIGeneratedBadge';
 import BatchSummary from '../../shared/components/BatchSummary';
-import {AgentResultItem, EAgent} from '../../shared/types';
+import DraftLinkList from '../../shared/components/DraftLinkList';
+import {ChipOption, EAgent} from '../../shared/types';
 import useAgent from '../../shared/useAgent';
 import FormatPicker from './FormatPicker';
-import {AdaptContext} from './types';
+import {getChannelFormats} from './services/getChannelFormats';
+import {AdaptContext, AdaptResult} from './types';
 
 /**
- * Stories 93959 (single) and 93961 (bulk). Both share the format picker; the
- * bulk path additionally shows the batch summary with a Resume action. The path
- * is chosen from how many source files the context carries.
+ * Stories 93959 (single) and 93961 (bulk). Both share the format picker, whose
+ * presets are loaded from the Liferay environment; the bulk path shows the
+ * batch summary with a Resume action while the single path links the created
+ * folder.
  */
 export default function AdaptChannelsBalloon({
 	payload,
@@ -25,10 +27,25 @@ export default function AdaptChannelsBalloon({
 	payload: AdaptContext;
 }) {
 	const [formats, setFormats] = useState<string[]>([]);
+	const [options, setOptions] = useState<ChipOption[]>([]);
 
-	const {data, regenerate, run, status} = useAgent<AgentResultItem[]>(
+	const {data, regenerate, run, status} = useAgent<AdaptResult>(
 		EAgent.ADAPT_CHANNELS
 	);
+
+	useEffect(() => {
+		let active = true;
+
+		getChannelFormats().then((channelFormats) => {
+			if (active) {
+				setOptions(channelFormats);
+			}
+		});
+
+		return () => {
+			active = false;
+		};
+	}, []);
 
 	const fileEntryIds = payload.fileEntryIds ?? [payload.fileEntryId];
 	const bulk = fileEntryIds.length > 1;
@@ -38,17 +55,22 @@ export default function AdaptChannelsBalloon({
 			<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
 				<p>{Liferay.Language.get('which-formats-do-you-need')}</p>
 
-				<FormatPicker onChange={setFormats} value={formats} />
+				<FormatPicker
+					onChange={setFormats}
+					options={options}
+					value={formats}
+				/>
 
-				<ClayButton
-					className="mt-2"
-					disabled={!formats.length}
-					displayType="primary"
-					onClick={() => run({fileEntryIds, formats})}
-					size="sm"
-				>
-					{Liferay.Language.get('save-formats')}
-				</ClayButton>
+				<div className="d-flex justify-content-end">
+					<ClayButton
+						disabled={!formats.length}
+						displayType="primary"
+						onClick={() => run({fileEntryIds, formats})}
+						size="sm"
+					>
+						{Liferay.Language.get('save-formats')}
+					</ClayButton>
+				</div>
 			</div>
 		);
 	}
@@ -63,15 +85,23 @@ export default function AdaptChannelsBalloon({
 		);
 	}
 
+	if (bulk) {
+		return (
+			<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
+				<BatchSummary items={data?.items ?? []} onResume={regenerate} />
+			</div>
+		);
+	}
+
 	return (
 		<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
-			{bulk ? (
-				<BatchSummary items={data ?? []} onResume={regenerate} />
-			) : (
-				<p>{Liferay.Language.get('the-adaptations-have-been-saved')}</p>
-			)}
+			<p>
+				{Liferay.Language.get(
+					'done-your-formats-have-been-generated-you-can-review-and-edit-them-in-this-folder'
+				)}
+			</p>
 
-			<AIGeneratedBadge />
+			<DraftLinkList items={data?.folder ? [data.folder] : []} />
 		</div>
 	);
 }

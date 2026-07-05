@@ -23,6 +23,8 @@ import {
 	AI_ASSISTANT_INVOKE_EVENT,
 	InvokeAgentEventPayload,
 } from '../shared/agentEvents';
+import {fulfillUserInput} from '../shared/agentInput';
+import ContextChip from '../shared/components/ContextChip';
 import {
 	ChatContext,
 	createEventSource,
@@ -77,6 +79,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	const [reportContext, setReportContext] = useState<ReportContext | null>(
 		null
 	);
+	const [inputContext, setInputContext] = useState<string | null>(null);
 
 	const handleThumbsUp = (index: number, item: message) => {
 		if (feedbackGiven[index]) {
@@ -125,6 +128,10 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		});
 
 		setMessage('');
+
+		if (fulfillUserInput(text)) {
+			return;
+		}
 
 		if (eventSourceReference.current) {
 			setIsGenerating(true);
@@ -349,6 +356,8 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		const handleInvoke = (payload: InvokeAgentEventPayload) => {
 			setActive(true);
 
+			setInputContext(payload.contextChip ?? null);
+
 			setMessages((previousMessages) => {
 				setTimeout(() => {
 					messagesEndRef.current?.scrollIntoView({
@@ -496,6 +505,15 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 							</ClayButton>
 						))}
 					</div>
+				</div>
+			)}
+
+			{inputContext && (
+				<div className="flex-shrink-0 px-3">
+					<ContextChip
+						label={inputContext}
+						onRemove={() => setInputContext(null)}
+					/>
 				</div>
 			)}
 
