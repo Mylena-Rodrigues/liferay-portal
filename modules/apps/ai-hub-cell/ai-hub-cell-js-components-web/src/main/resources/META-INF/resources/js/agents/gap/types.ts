@@ -20,12 +20,27 @@ export interface Gap {
 
 export interface GapAnalysisContext {
 	projectId?: number | string;
+	projectName?: string;
 	selectedCells?: string[];
 }
 
 export interface GapAnalysisResult {
 	gaps: Gap[];
 	summary: string;
+}
+
+export interface MatchingAsset {
+	cellId: string;
+	dimensions: string;
+	id: string;
+	status: string;
+	statusApproved?: boolean;
+	title: string;
+	url: string;
+}
+
+export interface MatchingAssetsResult {
+	assets: MatchingAsset[];
 }
 
 export interface MatrixCell {
