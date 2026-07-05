@@ -3,20 +3,25 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
+import {ClaySelectWithOption} from '@clayui/form';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
-import AIGeneratedBadge from '../../shared/components/AIGeneratedBadge';
-import ChipPicker from '../../shared/components/ChipPicker';
-import DraftLinkList from '../../shared/components/DraftLinkList';
+import {cancelUserInput, requestUserInput} from '../../shared/agentInput';
 import {EAgent} from '../../shared/types';
 import useAgent from '../../shared/useAgent';
-import {ContentGenerationContext, GeneratedContentResult} from './types';
+import ContentDraftCard from './ContentDraftCard';
+import {getContentTypes} from './services/getContentTypes';
+import {
+	ContentGenerationContext,
+	ContentType,
+	GeneratedContentResult,
+} from './types';
 
 /**
- * Story 94019: single content generation. Resolves the destination space
- * (infer-or-ask), collects the brief, then generates a draft and links to it.
+ * Story 94019: single content generation. When the active instruction requires
+ * it, the user first picks a content type; then the brief is typed in the main
+ * chat input and the resulting draft is shown as a card.
  */
 export default function ContentGenerationBalloon({
 	payload,
@@ -24,29 +29,90 @@ export default function ContentGenerationBalloon({
 	payload: ContentGenerationContext;
 }) {
 	const [brief, setBrief] = useState(payload.brief ?? '');
-	const [spaceId, setSpaceId] = useState(payload.spaceId);
+	const [contentTypes, setContentTypes] = useState<ContentType[]>([]);
+	const [structureId, setStructureId] = useState(payload.structureId);
+	const [structureName, setStructureName] = useState(
+		payload.structureName ?? ''
+	);
 
-	const {data, regenerate, run, status} = useAgent<GeneratedContentResult>(
+	const {data, run, status} = useAgent<GeneratedContentResult>(
 		EAgent.GENERATE_CONTENT
 	);
 
-	const spaceOptions = payload.spaceOptions ?? [];
-	const mustAskSpace = !spaceId && spaceOptions.length > 1;
+	const needsType = Boolean(payload.requiresContentType) && !structureId;
 
-	if (mustAskSpace) {
+	useEffect(() => {
+		if (!needsType) {
+			return;
+		}
+
+		let active = true;
+
+		getContentTypes().then((types) => {
+			if (active) {
+				setContentTypes(types);
+			}
+		});
+
+		return () => {
+			active = false;
+		};
+	}, [needsType]);
+
+	useEffect(() => {
+		if (needsType || brief) {
+			return;
+		}
+
+		let active = true;
+
+		requestUserInput().then((text) => {
+			if (active) {
+				setBrief(text);
+			}
+		});
+
+		return () => {
+			active = false;
+
+			cancelUserInput();
+		};
+	}, [brief, needsType]);
+
+	useEffect(() => {
+		if (!needsType && brief && status === 'idle') {
+			run({brief, spaceId: payload.spaceId, structureId});
+		}
+	}, [brief, needsType, payload.spaceId, run, status, structureId]);
+
+	if (needsType) {
 		return (
 			<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
-				<p>
-					{Liferay.Language.get('which-space-should-i-save-this-in')}
-				</p>
+				<p>{Liferay.Language.get('what-type-of-content')}</p>
 
-				<ChipPicker
-					onChange={(value) => setSpaceId(value[0])}
-					options={spaceOptions.map((space) => ({
-						label: space.name,
-						value: space.id,
-					}))}
-					value={spaceId ? [`${spaceId}`] : []}
+				<ClaySelectWithOption
+					aria-label={Liferay.Language.get('select-content-type')}
+					onChange={(event) => {
+						const selected = contentTypes.find(
+							(contentType) =>
+								`${contentType.id}` === event.target.value
+						);
+
+						if (selected) {
+							setStructureId(selected.id);
+							setStructureName(selected.name);
+						}
+					}}
+					options={[
+						{
+							label: Liferay.Language.get('select-content-type'),
+							value: '',
+						},
+						...contentTypes.map((contentType) => ({
+							label: contentType.name,
+							value: `${contentType.id}`,
+						})),
+					]}
 				/>
 			</div>
 		);
@@ -55,36 +121,10 @@ export default function ContentGenerationBalloon({
 	if (!brief) {
 		return (
 			<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
-				<p>
-					{Liferay.Util.sub(
-						Liferay.Language.get(
-							'what-do-you-want-the-x-to-be-about'
-						),
-						payload.structureName ?? Liferay.Language.get('content')
-					)}
-				</p>
-
-				<textarea
-					className="form-control mb-2"
-					onChange={(event) => setBrief(event.target.value)}
-					rows={2}
-					value={brief}
-				/>
-
-				<ClayButton
-					disabled={!brief}
-					displayType="primary"
-					onClick={() =>
-						run({
-							brief,
-							spaceId,
-							structureId: payload.structureId,
-						})
-					}
-					size="sm"
-				>
-					{Liferay.Language.get('generate')}
-				</ClayButton>
+				{Liferay.Util.sub(
+					Liferay.Language.get('what-do-you-want-the-x-to-be-about'),
+					structureName || Liferay.Language.get('content')
+				)}
 			</div>
 		);
 	}
@@ -94,29 +134,25 @@ export default function ContentGenerationBalloon({
 			<div className="ai-assistant-chat__ai-assistant-message-balloon align-items-center d-flex mb-2 p-2 rounded">
 				<ClayLoadingIndicator className="mr-2" />
 
-				{Liferay.Language.get('generating')}
+				{Liferay.Util.sub(
+					Liferay.Language.get('generating-x'),
+					structureName || Liferay.Language.get('content')
+				)}
 			</div>
 		);
 	}
 
 	return (
 		<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
-			<p>{Liferay.Language.get('here-is-your-new-draft')}</p>
+			<p>
+				{Liferay.Language.get(
+					'done-your-draft-has-been-generated-you-can-review-and-edit-it-here'
+				)}
+			</p>
 
-			<DraftLinkList items={data?.drafts ?? []} />
-
-			<div className="mt-2">
-				<AIGeneratedBadge />
-
-				<ClayButton
-					className="ml-2"
-					displayType="secondary"
-					onClick={regenerate}
-					size="sm"
-				>
-					{Liferay.Language.get('regenerate')}
-				</ClayButton>
-			</div>
+			{(data?.drafts ?? []).map((draft) => (
+				<ContentDraftCard draft={draft} key={draft.id} />
+			))}
 		</div>
 	);
 }

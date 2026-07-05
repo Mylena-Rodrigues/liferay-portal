@@ -6,5 +6,8 @@
 import {registerMessageRenderer} from '../../AIAssistantChat/messageRenderers';
 import {EAgent} from '../../shared/types';
 import ContentBalloon from './ContentBalloon';
+import ContentEditorBalloon from './ContentEditorBalloon';
+import {CONTENT_EDITOR_RENDERER} from './types';
 
 registerMessageRenderer(EAgent.GENERATE_CONTENT, ContentBalloon);
+registerMessageRenderer(CONTENT_EDITOR_RENDERER, ContentEditorBalloon);

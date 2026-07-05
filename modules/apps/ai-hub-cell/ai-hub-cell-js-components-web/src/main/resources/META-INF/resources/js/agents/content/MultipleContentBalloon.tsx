@@ -4,27 +4,24 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {navigate} from 'frontend-js-web';
 import React, {useEffect} from 'react';
 
-import AIGeneratedBadge from '../../shared/components/AIGeneratedBadge';
-import BatchSummary from '../../shared/components/BatchSummary';
-import ResultList from '../../shared/components/ResultList';
-import {AgentResultItem, EAgent} from '../../shared/types';
+import {EAgent} from '../../shared/types';
 import useAgent from '../../shared/useAgent';
+import ContentDraftCard from './ContentDraftCard';
 import {ContentGenerationContext, GeneratedContentResult} from './types';
 
 /**
  * Story 94023: multiple content generation from a single typed prompt. Runs
- * async, shows progress, then a per-draft result list plus a batch summary for
- * partial failures. Each draft is a distinct angle produced server-side.
+ * async, shows progress, then lists each generated draft as a card with a link.
+ * Any failed items are listed separately without blocking the rest.
  */
 export default function MultipleContentBalloon({
 	payload,
 }: {
 	payload: ContentGenerationContext;
 }) {
-	const {data, regenerate, run, status} = useAgent<GeneratedContentResult>(
+	const {data, run, status} = useAgent<GeneratedContentResult>(
 		EAgent.GENERATE_CONTENT
 	);
 
@@ -48,24 +45,30 @@ export default function MultipleContentBalloon({
 	}
 
 	const drafts = data?.drafts ?? [];
-
-	function openDraft(item: AgentResultItem) {
-		if (item.href) {
-			navigate(item.href);
-		}
-	}
+	const generated = drafts.filter((draft) => draft.status !== 'failed');
+	const failed = drafts.filter((draft) => draft.status === 'failed');
 
 	return (
 		<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
-			<ResultList
-				items={drafts.filter((draft) => draft.status !== 'failed')}
-				onOpen={openDraft}
-				onRegenerate={regenerate}
-			/>
+			<p>
+				{Liferay.Language.get('done-your-drafts-have-been-generated')}
+			</p>
 
-			<BatchSummary items={drafts} onResume={regenerate} />
+			{generated.map((draft) => (
+				<ContentDraftCard draft={draft} key={draft.id} />
+			))}
 
-			<AIGeneratedBadge />
+			{!!failed.length && (
+				<ul className="list-unstyled mb-0 mt-2 small text-secondary">
+					{failed.map((draft) => (
+						<li key={draft.id}>
+							{draft.title}
+
+							{draft.reason ? ` — ${draft.reason}` : ''}
+						</li>
+					))}
+				</ul>
+			)}
 		</div>
 	);
 }

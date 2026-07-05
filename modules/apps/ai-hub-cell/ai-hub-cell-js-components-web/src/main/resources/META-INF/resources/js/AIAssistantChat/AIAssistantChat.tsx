@@ -25,6 +25,7 @@ import {
 } from '../shared/agentEvents';
 import {fulfillUserInput} from '../shared/agentInput';
 import ContextChip from '../shared/components/ContextChip';
+import {getQuickActionHandler} from '../shared/quickActions';
 import {
 	ChatContext,
 	createEventSource,
@@ -147,6 +148,20 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 			}).catch(() => setIsGenerating(false));
 		}
 	}, []);
+
+	const handleQuickAction = useCallback(
+		(label: string) => {
+			const handler = getQuickActionHandler(label);
+
+			if (handler) {
+				handler(getContextRef.current());
+			}
+			else {
+				sendMessage(label);
+			}
+		},
+		[sendMessage]
+	);
 
 	function onSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -490,7 +505,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 								disabled={isGenerating}
 								displayType="secondary"
 								key={quickAction}
-								onClick={() => sendMessage(quickAction)}
+								onClick={() => handleQuickAction(quickAction)}
 								size="xs"
 							>
 								<ClayIcon
