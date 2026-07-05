@@ -6,6 +6,7 @@
 import {EventSource} from 'eventsource';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
+import {DEMO_ENABLED, getMockAgentData} from '../agents/_demo/mockAgent';
 import {createAgentEventSource, postAgentInstance} from './agentApi';
 import {AgentStatus, EAgent} from './types';
 
@@ -152,6 +153,21 @@ export default function useAgent<T = unknown>(agent: EAgent) {
 			setError(undefined);
 			setStatus('loading');
 
+			if (DEMO_ENABLED) {
+				setTimeout(() => {
+					if (!mountedRef.current) {
+						return;
+					}
+
+					const mock = getMockAgentData(agent) as T;
+
+					setData(mock);
+					setStatus(mock ? 'ready' : 'empty');
+				}, 900);
+
+				return;
+			}
+
 			if (sseEventSinkKeyRef.current) {
 				invoke(context);
 			}
@@ -161,7 +177,7 @@ export default function useAgent<T = unknown>(agent: EAgent) {
 				connect();
 			}
 		},
-		[connect, invoke]
+		[agent, connect, invoke]
 	);
 
 	const regenerate = useCallback(() => {

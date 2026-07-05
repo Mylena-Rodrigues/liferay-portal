@@ -18,9 +18,16 @@ import ContextChip from '../../shared/components/ContextChip';
 import DraftLinkList from '../../shared/components/DraftLinkList';
 import OptionsList from '../../shared/components/OptionsList';
 import {AgentResultItem} from '../../shared/types';
-import FormatPicker from '../image/FormatPicker';
-import {DEFAULT_CHANNEL_FORMAT_OPTIONS} from '../image/types';
+import {generateContent, generateInEditor} from '../content/triggers';
 import GapMatrix from '../gap/GapMatrix';
+import {
+	findMatchingAssets,
+	generateForGaps,
+	getGapInsights,
+} from '../gap/triggers';
+import FormatPicker from '../image/FormatPicker';
+import {adaptForChannels, generateImageFromFolder} from '../image/triggers';
+import {DEFAULT_CHANNEL_FORMAT_OPTIONS} from '../image/types';
 
 const IMAGE_SRC =
 	"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='120'><rect width='160' height='120' fill='%23c9d3e0'/><circle cx='80' cy='60' r='34' fill='%23f08a3c'/></svg>";
@@ -85,8 +92,77 @@ export default function StyleGallery() {
 		{img1: true, img2: true}
 	);
 
+	const launchers = [
+		{
+			label: 'Generate Image',
+			onClick: () => generateImageFromFolder('demo-folder'),
+		},
+		{
+			label: 'Adapt for Channels (single)',
+			onClick: () =>
+				adaptForChannels({fileEntryId: '1', sourceName: 'Madrid.jpg'}),
+		},
+		{
+			label: 'Adapt for Channels (bulk)',
+			onClick: () =>
+				adaptForChannels({
+					fileEntryIds: ['1', '2', '3'],
+					sourceName: '3 items',
+				}),
+		},
+		{
+			label: 'Generate Content',
+			onClick: () => generateContent({requiresContentType: true}),
+		},
+		{
+			label: 'Generate multiple content',
+			onClick: () =>
+				generateContent({
+					brief: 'trips around Japan',
+					count: 3,
+					structureId: 2,
+				}),
+		},
+		{
+			label: 'Generate Title (editor)',
+			onClick: () => generateInEditor('title', {assetId: '1'}),
+		},
+		{
+			label: 'Get AI-Insights',
+			onClick: () =>
+				getGapInsights({
+					projectId: 'demo',
+					projectName: 'EuroRoad Construction',
+				}),
+		},
+		{
+			label: 'Find Matching Assets',
+			onClick: () => findMatchingAssets({projectId: 'demo'}),
+		},
+		{
+			label: 'Generate for Gaps',
+			onClick: () => generateForGaps({projectId: 'demo'}),
+		},
+	];
+
 	return (
 		<div className="ai-assistant-chat__ai-assistant-message-balloon mb-2 p-2 rounded">
+			<Section title="Launch real flows (mocked backend)">
+				<div className="d-flex flex-wrap">
+					{launchers.map((launcher) => (
+						<ClayButton
+							className="mb-1 mr-1"
+							displayType="primary"
+							key={launcher.label}
+							onClick={launcher.onClick}
+							size="sm"
+						>
+							{launcher.label}
+						</ClayButton>
+					))}
+				</div>
+			</Section>
+
 			<Section title="Message balloons">
 				<AIAssistantMessageBalloon
 					error={false}

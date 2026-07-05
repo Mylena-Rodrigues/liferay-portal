@@ -5,6 +5,7 @@
 
 import {fetch} from 'frontend-js-web';
 
+import {DEMO_ENABLED} from '../../_demo/mockAgent';
 import {ContentType} from '../types';
 
 /**
@@ -13,6 +14,13 @@ import {ContentType} from '../types';
  * error rather than inventing options.
  */
 export async function getContentTypes(): Promise<ContentType[]> {
+	if (DEMO_ENABLED) {
+		return [
+			{id: 1, name: 'Basic Web Content'},
+			{id: 2, name: 'Blog'},
+		];
+	}
+
 	try {
 		const response = await fetch('/o/ai-hub-cell/v1.0/content-types');
 
