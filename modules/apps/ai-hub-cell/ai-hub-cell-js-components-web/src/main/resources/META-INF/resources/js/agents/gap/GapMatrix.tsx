@@ -16,6 +16,8 @@ import {
 	MatrixUpdatePayload,
 } from './types';
 
+import './GapMatrix.scss';
+
 interface GapMatrixProps {
 	cells: MatrixCell[];
 	columns: string[];

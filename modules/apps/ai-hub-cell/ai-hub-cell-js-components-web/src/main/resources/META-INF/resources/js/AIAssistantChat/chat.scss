@@ -105,3 +105,55 @@
 		max-width: 70%;
 	}
 }
+
+.ai-assistant-chat__dropdown-container,
+.ai-assistant-chat__embedded {
+	.ai-assistant-chat__agent-result-card {
+		background: #fff;
+		border-color: #e7e7ed;
+
+		a {
+			font-weight: 600;
+		}
+	}
+
+	.ai-assistant-chat__context-chip {
+		max-width: 100%;
+	}
+
+	.ai-assistant-chat__format-group {
+		border-color: #e7e7ed;
+	}
+
+	.ai-assistant-chat__generated-image {
+		display: block;
+		height: 120px;
+		object-fit: cover;
+		width: 160px;
+	}
+
+	.ai-assistant-chat__generated-image-wrapper {
+		position: relative;
+
+		.custom-control {
+			background: #fff;
+			border-radius: 4px;
+			left: 0.5rem;
+			margin: 0;
+			padding: 0.125rem;
+			position: absolute;
+			top: 0.5rem;
+			z-index: 1;
+		}
+	}
+
+	.ai-assistant-chat__options-list {
+		margin-top: 0.5rem;
+	}
+
+	.ai-assistant-chat__result-item {
+		&:hover {
+			background: #f1f2f5;
+		}
+	}
+}
