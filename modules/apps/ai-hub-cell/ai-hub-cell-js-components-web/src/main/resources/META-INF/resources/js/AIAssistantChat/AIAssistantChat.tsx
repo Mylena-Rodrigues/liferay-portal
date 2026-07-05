@@ -19,6 +19,12 @@ import {
 import {ECategorizationAgent} from '../Categorization/types';
 import ReportFeedbackModal from '../ReportFeedback/ReportFeedbackModal';
 import submitPositiveReportFeedback from '../ReportFeedback/submitPositiveReportFeedback';
+import {getRenderer} from '../framework/messageRegistry';
+import {AgentMessage} from '../framework/types';
+import {
+	AI_ASSISTANT_INVOKE_EVENT,
+	InvokeAgentEventPayload,
+} from '../shared/agentEvents';
 import {
 	ChatContext,
 	createEventSource,
@@ -29,10 +35,13 @@ import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
 
+import '../agents';
+
 import './chat.scss';
 
 interface message {
 	agentDefinitionExternalReferenceCodes?: string[];
+	agentMessage?: AgentMessage;
 	categorization?: CategorizeEventPayload;
 	error?: boolean;
 	sender: string;
@@ -337,6 +346,43 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		};
 	}, []);
 
+	useEffect(() => {
+		const handleInvoke = (payload: InvokeAgentEventPayload) => {
+			setActive(true);
+
+			setMessages((previousMessages) => {
+				setTimeout(() => {
+					messagesEndRef.current?.scrollIntoView({
+						behavior: 'smooth',
+					});
+				}, 0);
+
+				const nextMessages = [...previousMessages];
+
+				if (payload.label) {
+					nextMessages.push({sender: 'user', text: payload.label});
+				}
+
+				nextMessages.push({
+					agentMessage: {
+						payload: payload.context ?? {},
+						type: payload.renderAs ?? payload.agent,
+					},
+					sender: 'assistant',
+					text: '',
+				});
+
+				return nextMessages;
+			});
+		};
+
+		Liferay.on(AI_ASSISTANT_INVOKE_EVENT, handleInvoke);
+
+		return () => {
+			Liferay.detach(AI_ASSISTANT_INVOKE_EVENT, handleInvoke);
+		};
+	}, []);
+
 	const chatSurface = (
 		<>
 			<div className="ai-assistant-chat__messages-container flex-grow-1 overflow-auto px-3">
@@ -365,6 +411,19 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 								{...item.categorization}
 							/>
 						);
+					}
+
+					if (item.agentMessage) {
+						const Renderer = getRenderer(item.agentMessage.type);
+
+						if (Renderer) {
+							return (
+								<Renderer
+									key={index}
+									payload={item.agentMessage.payload}
+								/>
+							);
+						}
 					}
 
 					return (
