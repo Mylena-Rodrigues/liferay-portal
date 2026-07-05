@@ -40,6 +40,12 @@ export function adaptForChannels(context: AdaptContext) {
 	fireInvokeAgent({
 		agent: EAgent.ADAPT_CHANNELS,
 		context: context as Record<string, unknown>,
+		contextChip: context.sourceName
+			? Liferay.Util.sub(
+					Liferay.Language.get('context-x'),
+					context.sourceName
+				)
+			: undefined,
 		label: Liferay.Language.get('adapt-for-channels'),
 	});
 }

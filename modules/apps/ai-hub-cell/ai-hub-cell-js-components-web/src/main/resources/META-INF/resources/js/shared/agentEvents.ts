@@ -16,6 +16,13 @@ export const AI_ASSISTANT_INVOKE_EVENT = 'cms:aiAssistant:invoke';
 export interface InvokeAgentEventPayload {
 	agent: EAgent;
 	context?: Record<string, unknown>;
+
+	/**
+	 * Removable chip shown above the input to identify the active scope (for
+	 * example "Context: Madrid.jpg").
+	 */
+	contextChip?: string;
+
 	initialMessage?: string;
 	label?: string;
 
