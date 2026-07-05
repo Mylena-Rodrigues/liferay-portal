@@ -9,9 +9,13 @@
  * registration import below.
  */
 
+import './content/quickActions';
+
 import './content/register';
 
 import './gap/register';
+
+import './image/quickActions';
 
 import './image/register';
 

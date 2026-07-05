@@ -6,7 +6,12 @@
 import {registerAgent} from '../../framework/agentRegistry';
 import {EAgent} from '../../shared/types';
 import ContentBalloon from './ContentBalloon';
+import ContentEditorBalloon from './ContentEditorBalloon';
+import {CONTENT_EDITOR_RENDERER} from './types';
 
 registerAgent({
-	renderers: [{renderer: ContentBalloon, type: EAgent.GENERATE_CONTENT}],
+	renderers: [
+		{renderer: ContentBalloon, type: EAgent.GENERATE_CONTENT},
+		{renderer: ContentEditorBalloon, type: CONTENT_EDITOR_RENDERER},
+	],
 });

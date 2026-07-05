@@ -29,7 +29,10 @@ export type {
 } from './ReportFeedback/api';
 export {default as WritingAssistant} from './WritingAssistant/WritingAssistant';
 export {generateContent} from './agents/content/triggers';
-export {CONTENT_EDITOR_QUICK_ACTIONS} from './agents/content/types';
+export {
+	CONTENT_EDITOR_APPLY_EVENT,
+	CONTENT_EDITOR_QUICK_ACTIONS,
+} from './agents/content/types';
 export {default as GapMatrix} from './agents/gap/GapMatrix';
 export {getGapInsights} from './agents/gap/triggers';
 export type {MatrixCell} from './agents/gap/types';

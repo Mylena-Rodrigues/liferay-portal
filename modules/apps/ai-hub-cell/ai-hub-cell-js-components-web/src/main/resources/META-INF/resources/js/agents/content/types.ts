@@ -5,23 +5,44 @@
 
 import {AgentResultItem} from '../../shared/types';
 
-export interface SpaceOption {
-	id: string;
+export const CONTENT_EDITOR_RENDERER = 'CONTENT_EDITOR';
+
+export const CONTENT_EDITOR_APPLY_EVENT = 'cms:aiAssistant:contentEditorApply';
+
+export type ContentEditorAction = 'content' | 'title';
+
+export interface ContentType {
+	id: number | string;
 	name: string;
 }
 
 export interface ContentGenerationContext {
 	brief?: string;
 	count?: number;
+
+	/**
+	 * When true, the active instruction asks the user to pick a content type
+	 * before generating; the type Select is shown only then.
+	 */
+	requiresContentType?: boolean;
+
 	spaceId?: number | string;
-	spaceOptions?: SpaceOption[];
 	structureId?: number | string;
 	structureName?: string;
-	submitToWorkflow?: boolean;
+}
+
+export interface ContentEditorContext {
+	action: ContentEditorAction;
+	assetId?: number | string;
+	structureId?: number | string;
 }
 
 export interface GeneratedContentResult {
 	drafts: AgentResultItem[];
+}
+
+export interface ContentEditorResult {
+	value: string;
 }
 
 export const CONTENT_EDITOR_QUICK_ACTIONS: string[] = [
