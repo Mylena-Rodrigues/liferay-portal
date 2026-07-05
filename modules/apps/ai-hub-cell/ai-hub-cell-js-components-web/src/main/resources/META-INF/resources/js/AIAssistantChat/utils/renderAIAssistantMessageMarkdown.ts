@@ -31,9 +31,14 @@ export function renderAIAssistantMessageMarkdown(markdown: string) {
 		escapeReservedCharacters,
 		renderHeaders,
 		renderInlineFormatting,
+		renderLinks,
 		renderLists,
 		wrapParagraphs
 	);
+}
+
+export function renderLinks(markdown: string) {
+	return markdown.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 }
 
 export function renderHeaders(markdown: string) {

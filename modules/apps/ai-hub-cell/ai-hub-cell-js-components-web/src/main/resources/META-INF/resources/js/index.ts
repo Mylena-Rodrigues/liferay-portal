@@ -28,3 +28,18 @@ export type {
 	ReportFeedbackSurface,
 } from './ReportFeedback/api';
 export {default as WritingAssistant} from './WritingAssistant/WritingAssistant';
+export {generateContent} from './agents/content/triggers';
+export {CONTENT_EDITOR_QUICK_ACTIONS} from './agents/content/types';
+export {default as GapMatrix} from './agents/gap/GapMatrix';
+export {getGapInsights} from './agents/gap/triggers';
+export type {MatrixCell} from './agents/gap/types';
+export {
+	adaptForChannels,
+	generateImageForField,
+	generateImageFromFolder,
+} from './agents/image/triggers';
+export {AI_ASSISTANT_INVOKE_EVENT, fireInvokeAgent} from './shared/agentEvents';
+export type {InvokeAgentEventPayload} from './shared/agentEvents';
+export {EAgent} from './shared/types';
+export type {AgentResultItem, AgentStatus, ChipOption} from './shared/types';
+export {default as useAgent} from './shared/useAgent';
