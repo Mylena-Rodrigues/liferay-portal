@@ -25,3 +25,12 @@
 /modules/dxp/apps/*
 !/modules/dxp/apps/ai-hub-pricing
 /modules/dxp/apps/ai-hub-pricing/*/build
+
+#
+# Include workspaces/liferay-aihub-workspace
+#
+
+!/workspaces
+/workspaces/*
+!/workspaces/liferay-aihub-workspace
+/workspaces/liferay-aihub-workspace/.gradle
