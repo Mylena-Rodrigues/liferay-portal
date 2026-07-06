@@ -4,6 +4,7 @@
  */
 
 export {default as Breadcrumb} from './common/components/Breadcrumb';
+export {default as CMSAIAssistant} from './common/components/CMSAIAssistant';
 export {default as EnterpriseProductMenuBanner} from './common/components/EnterpriseProductMenuBanner';
 export {default as SpaceSelector} from './common/components/SpaceSelector';
 export {default as SpaceSticker} from './common/components/SpaceSticker';
@@ -20,6 +21,7 @@ export {
 } from './common/types/BulkActionTask';
 export {ObjectField, StateFlowValue} from './common/types/ObjectDefinition';
 export {type Space} from './common/types/Space';
+
 export {
 	displayCreateSuccessToast,
 	displayCreateTaskErrorToast,
@@ -31,15 +33,15 @@ export {
 	displaySystemErrorToast,
 	displayNameInUseErrorToast,
 } from './common/utils/toastUtil';
-
 export {default as ContentEditorPreview} from './content_editor/components/ContentEditorPreview';
+
 export {default as ContentEditorSidePanel} from './content_editor/components/ContentEditorSidePanel';
 
 // Content Editor
 
 export {default as ContentEditorToolbar} from './content_editor/components/ContentEditorToolbar';
-export {default as Spaces} from './content_editor/components/Spaces';
 
+export {default as Spaces} from './content_editor/components/Spaces';
 export {default as CommentsPanel} from './content_editor/components/panels/CommentsPanel';
 export {default as BulkActionTaskAssets} from './main_view/bulk_action_task/BulkActionTaskAssets';
 export {default as BulkActionTaskDuration} from './main_view/bulk_action_task/BulkActionTaskDuration';

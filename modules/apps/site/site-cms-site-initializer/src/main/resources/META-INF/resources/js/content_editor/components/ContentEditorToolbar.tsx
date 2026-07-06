@@ -10,7 +10,6 @@ import {ClayDropDownWithItems} from '@clayui/drop-down';
 import {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
-import {AIAssistantChat} from '@liferay/ai-hub-cell-js-components-web';
 import {isCtrlOrMeta} from '@liferay/layout-js-components-web';
 import classNames from 'classnames';
 import {openToast, useSessionState} from 'frontend-js-components-web';
@@ -18,6 +17,7 @@ import {sessionStorage, sub} from 'frontend-js-web';
 import React, {useCallback, useEffect, useId, useRef, useState} from 'react';
 import {flushSync} from 'react-dom';
 
+import CMSAIAssistant from '../../common/components/CMSAIAssistant';
 import Toolbar from '../../common/components/Toolbar';
 import {toMomentDate} from './ScheduleField';
 import SchedulePublicationModal from './SchedulePublicationModal';
@@ -215,10 +215,7 @@ export default function ContentEditorToolbar({
 			{Liferay.FeatureFlags['LPD-62272'] && (
 				<>
 					<Toolbar.Item>
-						<AIAssistantChat
-							getContext={() => ({})}
-							instructionDefinitionScope="cms"
-						/>
+						<CMSAIAssistant />
 					</Toolbar.Item>
 
 					<div

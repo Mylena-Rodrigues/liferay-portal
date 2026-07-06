@@ -9,6 +9,7 @@ import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
+import classNames from 'classnames';
 import {EventSource} from 'eventsource';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
@@ -47,17 +48,21 @@ interface ReportContext {
 interface AIAssistantChatProps {
 	embedded?: boolean;
 	getContext: () => ChatContext;
+	hideTriggerLabel?: boolean;
 	initialMessage?: string;
 	instructionDefinitionScope: string;
 	quickActions?: string[];
+	triggerClassName?: string;
 }
 
 const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	embedded = false,
 	getContext,
+	hideTriggerLabel = false,
 	initialMessage,
 	instructionDefinitionScope,
 	quickActions,
+	triggerClassName,
 }) => {
 	const [active, setActive] = useState<boolean>(false);
 	const [feedbackGiven, setFeedbackGiven] = useState<Record<number, boolean>>(
@@ -510,19 +515,22 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 				<ClayButton
 					aria-label={Liferay.Language.get('ai-assistant')}
 					borderless
-					className="text-primary"
+					className={classNames('text-primary', triggerClassName)}
 					displayType="secondary"
 					ref={triggerRef}
 				>
 					<ClayIcon
-						className="mr-2"
 						height={16}
 						spritemap={Liferay.Icons.spritemap}
 						symbol="stars"
 						width={16}
 					/>
 
-					{Liferay.Language.get('ai-assistant')}
+					{!hideTriggerLabel && (
+						<span className="ml-2">
+							{Liferay.Language.get('ai-assistant')}
+						</span>
+					)}
 				</ClayButton>
 			}
 		>

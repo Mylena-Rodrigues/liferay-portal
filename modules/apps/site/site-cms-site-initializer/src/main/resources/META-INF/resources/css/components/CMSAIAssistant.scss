@@ -1,0 +1,15 @@
+.cms-ai-assistant__trigger.btn {
+	align-items: center;
+	border-radius: 50%;
+	display: inline-flex;
+	height: 2.5rem;
+	justify-content: center;
+	padding: 0;
+	width: 2.5rem;
+
+	&:hover,
+	&[aria-expanded='true'] {
+		background: linear-gradient(135.99deg, #aa33ff 4.37%, #0b5fff 98.53%);
+		color: #fff;
+	}
+}
