@@ -1,11 +1,11 @@
 dependencies {
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.account.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.layout.utility.page.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.list.type.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.notification.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.object.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.workflow.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.site.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "jakarta.ws.rs", version: "3.1.0.LIFERAY-PATCHED-1"
-	testIntegrationImplementation project(":apps:account:account-api")
-	testIntegrationImplementation project(":apps:layout:layout-utility-page-api")
-	testIntegrationImplementation project(":apps:list-type:list-type-api")
-	testIntegrationImplementation project(":apps:notification:notification-api")
-	testIntegrationImplementation project(":apps:object:object-api")
-	testIntegrationImplementation project(":apps:portal-workflow:portal-workflow-api")
-	testIntegrationImplementation project(":apps:site:site-api")
-	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
 }
