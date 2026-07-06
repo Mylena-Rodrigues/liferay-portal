@@ -1,6 +1,5 @@
 dependencies {
 	compileOnly group: "com.liferay", name: "com.liferay.account.api", version: "default"
-	compileOnly group: "com.liferay", name: "com.liferay.ai.hub.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.batch.engine.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.fragment.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.frontend.data.set.api", version: "default"
@@ -28,4 +27,5 @@ dependencies {
 	compileOnly group: "jakarta.servlet", name: "jakarta.servlet-api", version: "6.0.0"
 	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.4.0"
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
+	compileOnly project(":modules:dxp:apps:ai-hub:ai-hub-api")
 }

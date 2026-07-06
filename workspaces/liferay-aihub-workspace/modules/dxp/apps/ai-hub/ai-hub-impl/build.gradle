@@ -69,8 +69,6 @@ dependencies {
 	compileInclude group: "org.threeten", name: "threetenbp", version: "1.7.0"
 	compileOnly group: "com.liferay", name: "biz.aQute.bnd.annotation", version: "4.2.0.LIFERAY-PATCHED-2"
 	compileOnly group: "com.liferay", name: "com.liferay.account.api", version: "default"
-	compileOnly group: "com.liferay", name: "com.liferay.ai.hub.api", version: "default"
-	compileOnly group: "com.liferay", name: "com.liferay.ai.hub.rest.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.batch.engine.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.configuration.admin.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.layout.utility.page.api", version: "default"
@@ -109,4 +107,6 @@ dependencies {
 	compileOnly group: "org.osgi", name: "org.osgi.service.cm", version: "1.6.0"
 	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.4.0"
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
+	compileOnly project(":modules:dxp:apps:ai-hub:ai-hub-api")
+	compileOnly project(":modules:dxp:apps:ai-hub:ai-hub-rest-api")
 }
