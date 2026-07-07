@@ -1,0 +1,5 @@
+# Hot-deploy and pre-boot drop folders hold runtime artifacts, not source.
+/liferay/deploy/*
+!/liferay/deploy/.gitkeep
+/liferay/scripts/*
+!/liferay/scripts/.gitkeep
