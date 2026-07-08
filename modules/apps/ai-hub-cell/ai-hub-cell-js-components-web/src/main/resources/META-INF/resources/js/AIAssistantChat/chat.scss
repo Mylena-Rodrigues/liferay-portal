@@ -39,6 +39,34 @@ html#{$cadmin-selector} {
 }
 
 html#{$cadmin-selector} .cadmin {
+	&.ai-assistant-chat__panel {
+		height: 552px;
+		max-height: none;
+		max-width: none;
+		overflow: hidden;
+		transition:
+			height 0.3s ease,
+			width 0.3s ease;
+		width: 448px;
+
+		&[aria-expanded='true'] {
+			--ai-assistant-panel-top: calc(
+				var(--control-menu-container-height, 0px) +
+					var(--ai-assistant-panel-top-offset, 0px)
+			);
+
+			border-radius: 0;
+			height: calc(100vh - var(--ai-assistant-panel-top));
+			left: auto !important;
+			margin: 0 !important;
+			position: fixed !important;
+			right: 0 !important;
+			top: var(--ai-assistant-panel-top) !important;
+			transform: none !important;
+			width: 480px;
+		}
+	}
+
 	.ai-assistant-chat__embedded {
 		height: 100%;
 
@@ -59,12 +87,20 @@ html#{$cadmin-selector} .cadmin {
 
 		.ai-assistant-chat__dropdown-title {
 			color: $cadmin-gray-900;
+			font-weight: 600;
 		}
 
-		.ai-assistant-chat__dropdown-close-button {
+		.ai-assistant-chat__dropdown-close-button,
+		.ai-assistant-chat__dropdown-minmax-button {
 			color: $cadmin-gray-600;
-			height: 12;
-			width: 12;
+		}
+
+		.ai-assistant-chat__separator {
+			background-color: $cadmin-gray-500;
+			height: 16px;
+			margin-left: 0.5rem;
+			margin-right: 0.5rem;
+			width: 1px;
 		}
 
 		.ai-assistant-chat__footer-disclaimer {

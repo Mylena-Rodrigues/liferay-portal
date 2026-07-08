@@ -73,6 +73,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	triggerLabel = Liferay.Language.get('ai-assistant'),
 }) => {
 	const [active, setActive] = useState<boolean>(false);
+	const [expanded, setExpanded] = useState<boolean>(false);
 	const [feedbackGiven, setFeedbackGiven] = useState<Record<number, boolean>>(
 		{}
 	);
@@ -513,16 +514,16 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 			className="d-flex p-0"
 			hasRightSymbols={false}
 			menuElementAttrs={{
-				className: 'cadmin',
-				style: {
-					height: 552,
-					maxHeight: 'none',
-					maxWidth: 'none',
-					overflow: 'hidden',
-					width: 448,
-				},
+				'aria-expanded': expanded,
+				'className': 'cadmin ai-assistant-chat__panel',
 			}}
-			onActiveChange={setActive}
+			onActiveChange={(nextActive) => {
+				setActive(nextActive);
+
+				if (!nextActive) {
+					setExpanded(false);
+				}
+			}}
 			trigger={
 				<ClayButton
 					aria-label={triggerLabel}
@@ -552,25 +553,53 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 			}
 		>
 			<div className="ai-assistant ai-assistant-chat__dropdown-container d-flex flex-column">
-				<div className="flex-shrink-0 p-3">
-					<ClayLayout.ContentRow className="align-items-center border-bottom justify-content-between mb-3 pb-2">
-						<ClayLayout.ContentCol className="ai-assistant-chat__dropdown-title font-weight-semi-bold">
+				<div className="flex-shrink-0 mb-3 pt-2 px-4">
+					<ClayLayout.ContentRow className="align-items-center border-bottom justify-content-between pb-2">
+						<ClayLayout.ContentCol className="ai-assistant-chat__dropdown-title">
 							{Liferay.Language.get('ai-assistant')}
 						</ClayLayout.ContentCol>
 
 						<ClayLayout.ContentCol>
-							<ClayButton
-								aria-label={Liferay.Language.get('close')}
-								borderless
-								displayType="unstyled"
-								onClick={() => setActive(false)}
-							>
-								<ClayIcon
-									className="ai-assistant-chat__dropdown-close-button"
-									spritemap={Liferay.Icons.spritemap}
-									symbol="times"
-								/>
-							</ClayButton>
+							<div className="align-items-center d-flex">
+								<ClayButton
+									aria-expanded={expanded}
+									aria-label={
+										expanded
+											? Liferay.Language.get('minimize')
+											: Liferay.Language.get('maximize')
+									}
+									borderless
+									className="ai-assistant-chat__dropdown-minmax-button"
+									displayType="unstyled"
+									onClick={() =>
+										setExpanded(
+											(expandedValue) => !expandedValue
+										)
+									}
+								>
+									<ClayIcon
+										spritemap={Liferay.Icons.spritemap}
+										symbol={
+											expanded ? 'compress' : 'full-size'
+										}
+									/>
+								</ClayButton>
+
+								<div className="ai-assistant-chat__separator align-self-center" />
+
+								<ClayButton
+									aria-label={Liferay.Language.get('close')}
+									borderless
+									displayType="unstyled"
+									onClick={() => setActive(false)}
+								>
+									<ClayIcon
+										className="ai-assistant-chat__dropdown-close-button"
+										spritemap={Liferay.Icons.spritemap}
+										symbol="times"
+									/>
+								</ClayButton>
+							</div>
 						</ClayLayout.ContentCol>
 					</ClayLayout.ContentRow>
 				</div>
