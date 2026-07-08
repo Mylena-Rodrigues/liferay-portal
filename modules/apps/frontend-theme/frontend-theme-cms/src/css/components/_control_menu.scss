@@ -1,3 +1,8 @@
+body:has(.cms-control-menu) {
+	--ai-assistant-panel-top-offset: var(--top-bar-height);
+	--top-bar-height: 3.5rem;
+}
+
 .cms-control-menu {
 	border-bottom-width: 0.05rem;
 	border-color: $secondary-l0;
