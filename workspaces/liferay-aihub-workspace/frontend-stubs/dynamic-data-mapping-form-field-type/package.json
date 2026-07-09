@@ -1,0 +1,6 @@
+{
+	"description": "Build-time stub. This package is provided by the portal at runtime (resolved by the Liferay module loader); it is never bundled. The stub exists only so that yarn can resolve the workspace dependency graph.",
+	"main": "index.js",
+	"name": "dynamic-data-mapping-form-field-type",
+	"version": "1.0.0"
+}

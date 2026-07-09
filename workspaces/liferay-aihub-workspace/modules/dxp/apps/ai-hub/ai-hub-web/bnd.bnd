@@ -1,5 +1,9 @@
 Bundle-Name: Liferay AI Hub Web
 Bundle-SymbolicName: com.liferay.ai.hub.web
 Bundle-Version: 1.0.2
+Provide-Capability: osgi.webresource;osgi.webresource="@liferay/ai-hub-web";version:Version="1.0.2"
 Web-ContextPath: /ai-hub-web
 -dsannotations-options: inherit
+-includeresource:\
+	META-INF/resources=build/node/packageRunBuild/resources/META-INF/resources,\
+	package.json

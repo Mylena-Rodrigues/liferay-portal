@@ -21,4 +21,12 @@ dependencies {
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
 	compileOnly project(":modules:dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-api")
 	compileOnly project(":modules:dxp:apps:ai-hub:ai-hub-api")
+
+	portalCommonCSS files("../../../../../node_modules/@clayui/css/src/scss")
+}
+
+// The Clay SCSS used as a buildCSS import path lives in node_modules
+
+tasks.named("buildCSS") {
+	dependsOn rootProject.tasks.named("yarnInstall")
 }
