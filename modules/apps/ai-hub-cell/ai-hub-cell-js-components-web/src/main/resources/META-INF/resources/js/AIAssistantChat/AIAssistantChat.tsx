@@ -492,7 +492,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 
 	if (embedded) {
 		return (
-			<div className="ai-assistant ai-assistant-chat__embedded d-flex flex-column pt-3">
+			<div className="ai-assistant ai-assistant-chat__embedded">
 				{chatSurface}
 			</div>
 		);
@@ -535,15 +535,15 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 				</ClayButton>
 			}
 		>
-			<div className="ai-assistant ai-assistant-chat__dropdown-container d-flex flex-column">
-				<div className="flex-shrink-0 mb-3 pt-2 px-4">
-					<ClayLayout.ContentRow className="align-items-center border-bottom justify-content-between pb-2">
+			<div className="ai-assistant ai-assistant-chat__dropdown-container">
+				<div className="ai-assistant-chat__dropdown-header">
+					<ClayLayout.ContentRow className="ai-assistant-chat__dropdown-header-row">
 						<ClayLayout.ContentCol className="ai-assistant-chat__dropdown-title">
 							{Liferay.Language.get('ai-assistant')}
 						</ClayLayout.ContentCol>
 
 						<ClayLayout.ContentCol>
-							<div className="align-items-center d-flex">
+							<div className="ai-assistant-chat__dropdown-actions">
 								<ClayButton
 									aria-expanded={expanded}
 									aria-label={
@@ -568,7 +568,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 									/>
 								</ClayButton>
 
-								<div className="ai-assistant-chat__separator align-self-center" />
+								<div className="ai-assistant-chat__separator" />
 
 								<ClayButton
 									aria-label={Liferay.Language.get('close')}
