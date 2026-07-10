@@ -74,6 +74,16 @@
 	}
 }
 
+.cms-generate-content-with-ai {
+	color: #aa33ff;
+
+	&:focus,
+	&:hover {
+		background-color: #f2e5ff;
+		color: #aa33ff;
+	}
+}
+
 .cms-related-assets {
 	padding-top: 1px;
 	position: relative;
