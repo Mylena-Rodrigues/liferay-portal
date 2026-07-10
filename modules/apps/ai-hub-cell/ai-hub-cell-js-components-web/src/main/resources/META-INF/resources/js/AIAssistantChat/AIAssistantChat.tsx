@@ -28,6 +28,9 @@ import {
 import AIAssistantFooterDisclaimer from './components/AIAssistantFooterDisclaimer';
 import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
+import ContentTypeSelectorMessageBalloon, {
+	ContentType,
+} from './components/ContentTypeSelectorMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
 
 import './chat.scss';
@@ -35,6 +38,7 @@ import './chat.scss';
 interface message {
 	agentDefinitionExternalReferenceCodes?: string[];
 	categorization?: CategorizeEventPayload;
+	contentTypes?: ContentType[];
 	error?: boolean;
 	sender: string;
 	text: string;
@@ -105,6 +109,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	const eventSourceReference = useRef<string | null>(null);
 	const contextRef = useRef<ChatContext | undefined>(context);
 	const getContextRef = useRef<(() => ChatContext) | undefined>(getContext);
+	const runtimeContextRef = useRef<ChatContext>({});
 	const initialMessageRef = useRef<string | undefined>(initialMessage);
 	const initialMessageSentRef = useRef<boolean>(false);
 	const instructionDefinitionScopeRef = useRef<string>(
@@ -142,7 +147,10 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 				getContextRef.current ?? (() => contextRef.current ?? {});
 
 			postChatByExternalReferenceCodeMessage({
-				chatContext: getCurrentContext(),
+				chatContext: {
+					...getCurrentContext(),
+					...runtimeContextRef.current,
+				},
 				eventSourceReference: eventSourceReference.current,
 				instructionDefinitionScope:
 					instructionDefinitionScopeRef.current,
@@ -150,6 +158,17 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 			}).catch(() => setIsGenerating(false));
 		}
 	}, []);
+
+	const selectContentType = useCallback(
+		(objectDefinitionName: string, objectFields: string) => {
+			runtimeContextRef.current = {
+				...runtimeContextRef.current,
+				objectDefinitionName,
+				objectFields,
+			};
+		},
+		[]
+	);
 
 	function onSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -323,6 +342,49 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	}, [closeAIAssistantChatConnection, openAIAssistantChatConnection]);
 
 	useEffect(() => {
+		const handleOpen = (payload: {
+			contentTypes?: ContentType[];
+			context?: ChatContext;
+			message?: string;
+		}) => {
+			setActive(true);
+
+			if (payload?.context) {
+				runtimeContextRef.current = {
+					...runtimeContextRef.current,
+					...payload.context,
+				};
+			}
+
+			if (payload?.contentTypes?.length) {
+				setMessages((previousMessages) => [
+					...previousMessages,
+					{
+						sender: 'user',
+						text: Liferay.Language.get('generate-content'),
+					},
+					{
+						contentTypes: payload.contentTypes,
+						sender: 'assistant',
+						text: Liferay.Language.get(
+							'what-type-of-content-do-you-want-to-generate'
+						),
+					},
+				]);
+			}
+			else if (payload?.message) {
+				sendMessage(payload.message);
+			}
+		};
+
+		Liferay.on('openAIAssistantChat', handleOpen);
+
+		return () => {
+			Liferay.detach('openAIAssistantChat', handleOpen);
+		};
+	}, [sendMessage]);
+
+	useEffect(() => {
 		const handleCategorize = (payload: CategorizeEventPayload) => {
 			setActive(true);
 
@@ -381,6 +443,17 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 							<CategorizationMessageBalloon
 								key={index}
 								{...item.categorization}
+							/>
+						);
+					}
+
+					if (item.contentTypes) {
+						return (
+							<ContentTypeSelectorMessageBalloon
+								contentTypes={item.contentTypes}
+								key={index}
+								message={item.text}
+								onSelect={selectContentType}
 							/>
 						);
 					}
