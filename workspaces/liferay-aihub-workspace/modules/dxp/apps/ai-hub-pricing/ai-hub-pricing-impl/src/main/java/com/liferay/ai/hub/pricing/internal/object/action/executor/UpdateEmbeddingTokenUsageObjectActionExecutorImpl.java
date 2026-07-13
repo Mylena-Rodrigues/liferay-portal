@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Alberto Sousa
@@ -84,7 +83,7 @@ public class UpdateEmbeddingTokenUsageObjectActionExecutorImpl
 	@Reference
 	private AccountEntryUserRelLocalService _accountEntryUserRelLocalService;
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
+	@Reference
 	private QuotaManager _quotaManager;
 
 }

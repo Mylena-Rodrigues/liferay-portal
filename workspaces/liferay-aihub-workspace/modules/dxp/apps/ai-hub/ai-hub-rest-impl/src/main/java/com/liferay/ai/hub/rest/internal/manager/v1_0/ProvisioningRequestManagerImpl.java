@@ -50,7 +50,6 @@ import java.util.Locale;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Davyson Melo
@@ -400,7 +399,7 @@ public class ProvisioningRequestManagerImpl
 	@Reference
 	private Portal _portal;
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
+	@Reference
 	private QuotaManager _quotaManager;
 
 	@Reference

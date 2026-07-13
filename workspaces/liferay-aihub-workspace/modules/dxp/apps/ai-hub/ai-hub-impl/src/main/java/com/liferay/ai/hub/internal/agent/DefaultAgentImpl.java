@@ -17,7 +17,6 @@ import dev.langchain4j.agentic.planner.AgentArgument;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Feliphe Marinho
@@ -47,7 +46,7 @@ public class DefaultAgentImpl implements DefaultAgent {
 		return internalAgentImpl.invoke(agentContext.getInput());
 	}
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
+	@Reference
 	private QuotaManager _quotaManager;
 
 	@Reference

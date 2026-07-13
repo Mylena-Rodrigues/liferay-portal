@@ -54,7 +54,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Feliphe Marinho
@@ -309,7 +308,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 	@Reference
 	private PortalExecutorManager _portalExecutorManager;
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
+	@Reference
 	private QuotaManager _quotaManager;
 
 	@Reference
