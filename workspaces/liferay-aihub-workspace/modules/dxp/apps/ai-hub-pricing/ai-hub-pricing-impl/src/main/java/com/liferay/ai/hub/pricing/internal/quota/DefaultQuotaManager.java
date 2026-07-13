@@ -117,8 +117,8 @@ public class DefaultQuotaManager implements QuotaManager {
 
 			try {
 				Lock lock = LockManagerUtil.lock(
-					userId, DefaultQuotaManager.class.getName(), key, owner, false,
-					Time.MINUTE, false);
+					userId, DefaultQuotaManager.class.getName(), key, owner,
+					false, Time.MINUTE, false);
 
 				if (Objects.equals(lock.getOwner(), owner)) {
 					return key + CharPool.POUND + owner;
@@ -188,7 +188,8 @@ public class DefaultQuotaManager implements QuotaManager {
 		String[] permitParts = StringUtil.split(permit, CharPool.POUND);
 
 		LockManagerUtil.unlock(
-			DefaultQuotaManager.class.getName(), permitParts[0], permitParts[1]);
+			DefaultQuotaManager.class.getName(), permitParts[0],
+			permitParts[1]);
 	}
 
 	@Override
