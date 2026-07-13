@@ -14,19 +14,6 @@
 !/working.dir.properties
 
 #
-# Include modules/dxp/apps/ai-hub-pricing
-#
-
-!/modules
-/modules/*
-!/modules/dxp
-/modules/dxp/*
-!/modules/dxp/apps
-/modules/dxp/apps/*
-!/modules/dxp/apps/ai-hub-pricing
-/modules/dxp/apps/ai-hub-pricing/*/build
-
-#
 # Include workspaces/liferay-aihub-workspace
 #
 

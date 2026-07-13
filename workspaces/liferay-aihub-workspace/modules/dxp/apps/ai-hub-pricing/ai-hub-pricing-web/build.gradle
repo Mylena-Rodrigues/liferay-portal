@@ -1,4 +1,17 @@
 dependencies {
+	compileOnly group: "com.liferay", name: "com.liferay.account.api", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.fragment.api", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.frontend.taglib", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.frontend.taglib.react", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.object.api", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.object.rest.api", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.petra.function", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.petra.io", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.petra.lang", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.petra.sql.dsl.api", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.petra.string", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.portal.odata.api", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.portal.vulcan.api", version: "default"
 	compileOnly group: "com.liferay", name: "jakarta.ws.rs", version: "3.1.0.LIFERAY-PATCHED-1"
 	compileOnly group: "com.liferay.jakarta.portlet", name: "com.liferay.jakarta.portlet-api", version: "4.0.0"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
@@ -6,19 +19,6 @@ dependencies {
 	compileOnly group: "jakarta.servlet", name: "jakarta.servlet-api", version: "6.0.0"
 	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.4.0"
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
-	compileOnly project(":apps:account:account-api")
-	compileOnly project(":apps:fragment:fragment-api")
-	compileOnly project(":apps:frontend-taglib:frontend-taglib")
-	compileOnly project(":apps:frontend-taglib:frontend-taglib-react")
-	compileOnly project(":apps:object:object-api")
-	compileOnly project(":apps:object:object-rest-api")
-	compileOnly project(":apps:portal-odata:portal-odata-api")
-	compileOnly project(":apps:portal-vulcan:portal-vulcan-api")
-	compileOnly project(":core:petra:petra-function")
-	compileOnly project(":core:petra:petra-io")
-	compileOnly project(":core:petra:petra-lang")
-	compileOnly project(":core:petra:petra-sql-dsl-api")
-	compileOnly project(":core:petra:petra-string")
-	compileOnly project(":dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-api")
-	compileOnly project(":dxp:apps:ai-hub:ai-hub-api")
+	compileOnly project(":modules:dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-api")
+	compileOnly project(":modules:dxp:apps:ai-hub:ai-hub-api")
 }

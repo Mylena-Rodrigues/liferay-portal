@@ -2,17 +2,17 @@ dependencies {
 	testIntegrationImplementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.18.6"
 	testIntegrationImplementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.18.6"
 	testIntegrationImplementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.18.6"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.account.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.object.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.object.rest.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.odata.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.vulcan.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.site.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "jakarta.ws.rs", version: "3.1.0.LIFERAY-PATCHED-1"
 	testIntegrationImplementation group: "commons-beanutils", name: "commons-beanutils", version: "1.11.0"
 	testIntegrationImplementation group: "jakarta.annotation", name: "jakarta.annotation-api", version: "2.1.1"
 	testIntegrationImplementation group: "org.skyscreamer", name: "jsonassert", version: "1.2.3"
-	testIntegrationImplementation project(":apps:account:account-api")
-	testIntegrationImplementation project(":apps:object:object-api")
-	testIntegrationImplementation project(":apps:object:object-rest-api")
-	testIntegrationImplementation project(":apps:portal-odata:portal-odata-api")
-	testIntegrationImplementation project(":apps:portal-vulcan:portal-vulcan-api")
-	testIntegrationImplementation project(":apps:site:site-api")
-	testIntegrationImplementation project(":dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-api")
-	testIntegrationImplementation project(":dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-client")
-	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
+	testIntegrationImplementation project(":modules:dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-api")
+	testIntegrationImplementation project(":modules:dxp:apps:ai-hub-pricing:ai-hub-pricing-rest-client")
 }
