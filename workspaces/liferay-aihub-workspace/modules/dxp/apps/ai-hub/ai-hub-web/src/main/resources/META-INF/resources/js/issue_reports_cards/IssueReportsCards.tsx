@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayIcon from '@clayui/icon';
 import React from 'react';
 
-import Card from './components/Card';
+import MetricCard from './components/MetricCard';
 
 interface IssueReportsCardsProps {
 	criticalIssuesCount: number;
@@ -19,30 +20,30 @@ export default function IssueReportsCards({
 	positiveRatingPercent,
 }: IssueReportsCardsProps) {
 	return (
-		<section className="container-fluid issue-reports-user-activity mb-4">
+		<section className="container-fluid issue-reports-user-activity mb-4 mt-4">
 			<h2 className="h4 mb-3">{Liferay.Language.get('user-activity')}</h2>
 
 			<div className="row">
 				<div className="col-12 col-md-4 mb-3">
-					<Card
-						label={Liferay.Language.get('positive-rating')}
-						symbol="thumbs-up"
+					<MetricCard
+						icon={<ClayIcon symbol="thumbs-up" />}
+						title={Liferay.Language.get('positive-rating')}
 						value={`${positiveRatingPercent}%`}
 					/>
 				</div>
 
 				<div className="col-12 col-md-4 mb-3">
-					<Card
-						label={Liferay.Language.get('dislike-rating')}
-						symbol="thumbs-down"
+					<MetricCard
+						icon={<ClayIcon symbol="thumbs-down" />}
+						title={Liferay.Language.get('dislike-rating')}
 						value={`${dislikeRatingPercent}%`}
 					/>
 				</div>
 
 				<div className="col-12 col-md-4 mb-3">
-					<Card
-						label={Liferay.Language.get('critical-issues')}
-						symbol="exclamation-full"
+					<MetricCard
+						icon={<ClayIcon symbol="exclamation-full" />}
+						title={Liferay.Language.get('critical-issues')}
 						value={String(criticalIssuesCount)}
 					/>
 				</div>
