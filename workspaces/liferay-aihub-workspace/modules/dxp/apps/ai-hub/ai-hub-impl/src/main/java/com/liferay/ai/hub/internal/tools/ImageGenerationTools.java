@@ -9,6 +9,7 @@ import com.liferay.ai.hub.internal.langchain4j.model.image.GoogleGenAiImageModel
 import com.liferay.ai.hub.internal.model.GoogleGenAiUtil;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -25,6 +26,7 @@ import dev.langchain4j.model.output.Response;
 
 import java.io.Serializable;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,10 +39,11 @@ public class ImageGenerationTools {
 		_quotaManager = quotaManager;
 	}
 
-	@Tool("Generate an image from a natural language description")
-	public String generateImage(
+	@Tool("Generate multiple images based in a prompt.")
+	public String generateImages(
 		InvocationParameters invocationParameters,
-		@P("Description of the image to be generate") String description) {
+		@P("All information the user request to generate images.") String
+			prompt) {
 
 		try {
 			ExecutionContext executionContext = invocationParameters.get(
@@ -50,19 +53,34 @@ public class ImageGenerationTools {
 				GoogleGenAiUtil.createGoogleGenAiImageModel(
 					_quotaManager, executionContext.getServiceContext());
 
-			Response<Image> response = googleGenAiImageModel.generate(
-				description);
+			Response<List<Image>> response =
+				googleGenAiImageModel.generateImages(prompt);
 
-			Image image = response.content();
+			_sendImages(executionContext, response.content());
 
-			Map<String, Serializable> workflowContext =
-				executionContext.getWorkflowContext();
+			return "The images were generated.";
+		}
+		catch (Exception exception) {
+			_log.error(exception);
 
-			KaleoInstanceToken kaleoInstanceToken =
-				executionContext.getKaleoInstanceToken();
+			return "The image could not be generated. Ask the user to " +
+				"rephrase the request or try again later.";
+		}
+	}
 
-			KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
+	private void _sendImages(
+			ExecutionContext executionContext, List<Image> images)
+		throws PortalException {
 
+		Map<String, Serializable> workflowContext =
+			executionContext.getWorkflowContext();
+
+		KaleoInstanceToken kaleoInstanceToken =
+			executionContext.getKaleoInstanceToken();
+
+		KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
+
+		for (Image image : images) {
 			SseUtil.send(
 				new String[] {
 					GetterUtil.getString(
@@ -70,18 +88,12 @@ public class ImageGenerationTools {
 							"agentDefinitionExternalReferenceCode"))
 				},
 				image.base64Data(),
-				GetterUtil.getString(workflowContext.get("outBoundEventName")),
+				GetterUtil.getString(
+					workflowContext.get("outBoundEventName"),
+					"Chat Message Sent"),
 				kaleoNode.getName(), JSONUtil.put("mimeType", image.mimeType()),
 				GetterUtil.getString(workflowContext.get("sseEventSinkKey")),
 				"image");
-
-			return "The image was generated.";
-		}
-		catch (Exception exception) {
-			_log.error(exception);
-
-			return "The image could not be generated. Ask the user to " +
-				"rephrase the request or try again later.";
 		}
 	}
 

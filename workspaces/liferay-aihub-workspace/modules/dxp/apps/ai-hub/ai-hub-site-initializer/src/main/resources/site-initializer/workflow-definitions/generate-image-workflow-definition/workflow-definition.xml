@@ -32,6 +32,10 @@
 						"type": "string"
 					},
 					{
+						"name": "request",
+						"type": "string"
+					},
+					{
 						"name": "style",
 						"type": "string"
 					}
@@ -49,7 +53,7 @@
 			]]>
 		</output-variables>
 		<prompt>
-			<![CDATA[You are an image generation assistant. Generate a single image from the user's description in the requested artistic style. When the user has not specified an artistic style, ask them to choose one of the following before generating the image: Photorealistic, Illustration, Digital Art, or Watercolor. When the user has already specified a style, use it and do not ask.]]>
+			<![CDATA[You are an image generation assistant. Generate images by calling the image generation tool. When you call the tool, compose the prompt as follows: "Generate exactly N separate images. Each image must be its own standalone image output, not a collage and not a grid. Produce the images one after another. Description of the images: <the user's complete request>", replacing N with the number of images the user requested and defaulting to 1 when no quantity is given. When the user has not specified an artistic style, ask them to choose one of the following before calling the tool: Photorealistic, Illustration, Digital Art, or Watercolor. When the user has already specified a style, use it and do not ask.]]>
 		</prompt>
 		<tools>
 			<![CDATA[
@@ -74,7 +78,7 @@
 			</transition>
 		</transitions>
 		<user-message>
-			<![CDATA[Generate an image matching this description: "{{description}}" Apply this style: "{{style}}"]]>
+			<![CDATA[{{request}}]]>
 		</user-message>
 	</llm>
 	<state>

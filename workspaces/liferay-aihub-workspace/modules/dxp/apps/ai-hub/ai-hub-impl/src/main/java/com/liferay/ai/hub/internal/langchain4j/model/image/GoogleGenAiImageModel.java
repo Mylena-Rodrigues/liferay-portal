@@ -31,6 +31,7 @@ import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -63,6 +64,10 @@ public class GoogleGenAiImageModel implements ImageModel {
 
 	@Override
 	public Response<Image> generate(String prompt) {
+		return null;
+	}
+
+	public Response<List<Image>> generateImages(String prompt) {
 		try (Client client = Client.builder(
 			).location(
 				_modelLocation
@@ -78,13 +83,13 @@ public class GoogleGenAiImageModel implements ImageModel {
 					List.of(
 						Content.builder(
 						).parts(
-							List.of(Part.fromText(prompt))
+							Part.fromText(prompt)
 						).role(
 							"user"
 						).build()),
 					GenerateContentConfig.builder(
 					).responseModalities(
-						List.of("IMAGE")
+						List.of("IMAGE", "TEXT")
 					).safetySettings(
 						_safetySettings
 					).build());
@@ -93,15 +98,32 @@ public class GoogleGenAiImageModel implements ImageModel {
 
 			_updateUsage(tokenUsage);
 
-			return Response.from(_toImage(generateContentResponse), tokenUsage);
+			List<Image> images = new ArrayList<>();
+
+			images.addAll(_toImages(generateContentResponse));
+
+			return Response.from(images, tokenUsage);
 		}
 		catch (Exception exception) {
 			return ReflectionUtil.throwException(exception);
 		}
 	}
 
-	private Image _toImage(GenerateContentResponse generateContentResponse) {
+	private List<Image> _toImages(
+		GenerateContentResponse generateContentResponse) {
+
+		List<Image> images = new ArrayList<>();
+
 		for (Part part : generateContentResponse.parts()) {
+			if (GetterUtil.getBoolean(
+					part.thought(
+					).orElse(
+						false
+					))) {
+
+				continue;
+			}
+
 			Blob blob = part.inlineData(
 			).orElse(
 				null
@@ -122,18 +144,23 @@ public class GoogleGenAiImageModel implements ImageModel {
 
 			Base64.Encoder encoder = Base64.getEncoder();
 
-			return Image.builder(
-			).base64Data(
-				encoder.encodeToString(data)
-			).mimeType(
-				blob.mimeType(
-				).orElse(
-					"image/png"
-				)
-			).build();
+			images.add(
+				Image.builder(
+				).base64Data(
+					encoder.encodeToString(data)
+				).mimeType(
+					blob.mimeType(
+					).orElse(
+						"image/png"
+					)
+				).build());
 		}
 
-		throw new IllegalStateException("The model returned no image");
+		if (images.isEmpty()) {
+			throw new IllegalStateException("The model returned no image");
+		}
+
+		return images;
 	}
 
 	private TokenUsage _toTokenUsage(

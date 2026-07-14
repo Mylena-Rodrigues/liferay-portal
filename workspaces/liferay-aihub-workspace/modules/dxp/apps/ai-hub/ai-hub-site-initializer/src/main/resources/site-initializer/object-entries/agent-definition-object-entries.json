@@ -80,10 +80,10 @@
 		},
 		{
 			"active": false,
-			"description": "Generates an image from a natural-language description and style. When no style is given, ask the user to choose: Photorealistic, Illustration, Digital Art, or Watercolor.",
+			"description": "Generates one or more images from a description and style. When the subject is missing, ask what to show and never invent one. When the style is missing, ask: Photorealistic, Illustration, Digital Art, or Watercolor. Treat a request for multiple images with no number as two.",
 			"externalReferenceCode": "L_GENERATE_IMAGE",
-			"inputVariables": "description,style",
-			"outputVariable": "imageBase64",
+			"inputVariables": "description,request,style",
+			"outputVariable": "brief",
 			"r_accountToAIHubAgentDefinitions_accountEntryERC": "L_AI_HUB",
 			"system": true,
 			"title_i18n": {
