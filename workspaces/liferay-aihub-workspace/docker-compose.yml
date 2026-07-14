@@ -16,6 +16,7 @@ services:
     depends_on:
       - database
     environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/tmp/keys/adc.json
       - LIFERAY_JPDA_ENABLED=true
       - LIFERAY_JVM_OPTS=-Xms3g -Xmx3g
       - LIFERAY_MODULE_PERIOD_FRAMEWORK_PERIOD_PROPERTIES_PERIOD_OSGI_PERIOD_CONSOLE=0.0.0.0:11311
@@ -34,3 +35,4 @@ services:
       - ./bundles/logs:/opt/liferay/logs
       - ./bundles/osgi/modules:/mnt/liferay/deploy
       - ./configs/docker:/mnt/liferay/files
+      - /home/me/.config/gcloud/application_default_credentials.json:/tmp/keys/adc.json:ro
