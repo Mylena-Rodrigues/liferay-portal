@@ -306,13 +306,20 @@ public class AgentInstanceResourceTest
 						TestPropsValues.getCompanyId(),
 						VertexAIConfiguration.class.getName(),
 						HashMapDictionaryBuilder.<String, Object>put(
-							"location", TestPropsUtil.get("vertex.ai.location")
+							"imageModelLocation",
+							TestPropsUtil.get("vertex.ai.image.model.location")
 						).put(
-							"modelName",
-							TestPropsUtil.get("vertex.ai.model.name")
+							"imageModelName",
+							TestPropsUtil.get("vertex.ai.image.model.name")
 						).put(
 							"projectId",
 							TestPropsUtil.get("vertex.ai.project.id")
+						).put(
+							"textModelLocation",
+							TestPropsUtil.get("vertex.ai.text.model.location")
+						).put(
+							"textModelName",
+							TestPropsUtil.get("vertex.ai.text.model.name")
 						).build())) {
 
 			_testPostAgentInstance();

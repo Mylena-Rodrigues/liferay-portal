@@ -43,9 +43,9 @@ public class GoogleGenAiUtil {
 			Collections.singletonList(
 				new AIHubChatModelListenerImpl(quotaManager, serviceContext))
 		).location(
-			vertexAIConfiguration.location()
+			vertexAIConfiguration.textModelLocation()
 		).modelName(
-			vertexAIConfiguration.modelName()
+			vertexAIConfiguration.textModelName()
 		).projectId(
 			vertexAIConfiguration.projectId()
 		).responseFormat(
@@ -72,9 +72,9 @@ public class GoogleGenAiUtil {
 			Collections.singletonList(
 				new AIHubChatModelListenerImpl(quotaManager, serviceContext))
 		).location(
-			vertexAIConfiguration.location()
+			vertexAIConfiguration.textModelLocation()
 		).modelName(
-			vertexAIConfiguration.modelName()
+			vertexAIConfiguration.textModelName()
 		).projectId(
 			vertexAIConfiguration.projectId()
 		).safetySettings(

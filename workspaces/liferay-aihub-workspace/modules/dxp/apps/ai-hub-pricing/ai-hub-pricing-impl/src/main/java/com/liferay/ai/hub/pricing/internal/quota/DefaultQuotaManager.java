@@ -295,8 +295,8 @@ public class DefaultQuotaManager implements QuotaManager {
 			ConfigurationProviderUtil.getCompanyConfiguration(
 				VertexAIConfiguration.class, companyId);
 
-		String location = vertexAIConfiguration.location();
-		String modelName = vertexAIConfiguration.modelName();
+		String location = vertexAIConfiguration.textModelLocation();
+		String modelName = vertexAIConfiguration.textModelName();
 
 		if (Objects.equals(location, "global")) {
 			location = "europe-central2";
