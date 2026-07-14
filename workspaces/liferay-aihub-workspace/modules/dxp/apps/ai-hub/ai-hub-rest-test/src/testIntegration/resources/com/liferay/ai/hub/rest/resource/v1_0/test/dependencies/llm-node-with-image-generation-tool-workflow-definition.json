@@ -2,7 +2,7 @@
 	"#child-nodes": [
 		{
 			"#tag-name": "name",
-			"#value": "AI Decision Node With Tool Workflow Definition"
+			"#value": "LLM Node With Image Generation Tool Workflow Definition"
 		},
 		{
 			"#tag-name": "version",
@@ -59,7 +59,7 @@
 								},
 								{
 									"#tag-name": "target",
-									"#value": "ai-decision"
+									"#value": "llm"
 								},
 								{
 									"#tag-name": "default",
@@ -78,7 +78,7 @@
 			"#child-nodes": [
 				{
 					"#tag-name": "name",
-					"#value": "approved"
+					"#value": "end"
 				},
 				{
 					"#cdata-value": [
@@ -96,7 +96,7 @@
 					"#child-nodes": [
 						{
 							"#tag-name": "label",
-							"#value": "Approved",
+							"#value": "End",
 							"language-id": "en_US"
 						}
 					],
@@ -109,38 +109,7 @@
 			"#child-nodes": [
 				{
 					"#tag-name": "name",
-					"#value": "rejected"
-				},
-				{
-					"#cdata-value": [
-						"{",
-						"    \"terminal\": true,",
-						"    \"xy\": [",
-						"        527,",
-						"        417",
-						"    ]",
-						"}"
-					],
-					"#tag-name": "metadata"
-				},
-				{
-					"#child-nodes": [
-						{
-							"#tag-name": "label",
-							"#value": "Rejected",
-							"language-id": "en_US"
-						}
-					],
-					"#tag-name": "labels"
-				}
-			],
-			"#tag-name": "state"
-		},
-		{
-			"#child-nodes": [
-				{
-					"#tag-name": "name",
-					"#value": "ai-decision"
+					"#value": "llm"
 				},
 				{
 					"#cdata-value": [
@@ -157,7 +126,7 @@
 					"#child-nodes": [
 						{
 							"#tag-name": "label",
-							"#value": "AI Decision",
+							"#value": "LLM",
 							"language-id": "en_US"
 						}
 					],
@@ -167,7 +136,7 @@
 					"#cdata-value": [
 						"[",
 						"    {",
-						"        \"name\": \"question\",",
+						"        \"name\": \"userMessage\",",
 						"        \"type\": \"string\"",
 						"    }",
 						"]"
@@ -176,18 +145,7 @@
 				},
 				{
 					"#cdata-value": [
-						"[",
-						"    {",
-						"        \"name\": \"reason\",",
-						"        \"type\": \"string\"",
-						"    }",
-						"]"
-					],
-					"#tag-name": "output-variables"
-				},
-				{
-					"#cdata-value": [
-						"You are a decision maker. Based on a given question, you MUST use the completeWorkflowNode tool to approve the content if your answer is positive or reject it if your answer is negative. The transition names are: approve and reject."
+						"You are an image generation assistant. Generate an image from the user's description by calling the image generation tool. After the tool runs, reply with a short confirmation sentence."
 					],
 					"#tag-name": "prompt"
 				},
@@ -195,8 +153,8 @@
 					"#cdata-value": [
 						"[",
 						"    {",
-						"        \"externalReferenceCode\": \"L_LIFERAY_AI_HUB_MCP_SERVER\",",
-						"        \"type\": \"mcpServer\"",
+						"        \"externalReferenceCode\": \"L_IMAGE_GENERATION\",",
+						"        \"type\": \"tool\"",
 						"    }",
 						"]"
 					],
@@ -210,7 +168,7 @@
 									"#child-nodes": [
 										{
 											"#tag-name": "label",
-											"#value": "Approve",
+											"#value": "End",
 											"language-id": "en_US"
 										}
 									],
@@ -218,42 +176,15 @@
 								},
 								{
 									"#tag-name": "name",
-									"#value": "approve"
+									"#value": "end"
 								},
 								{
 									"#tag-name": "target",
-									"#value": "approved"
+									"#value": "end"
 								},
 								{
 									"#tag-name": "default",
 									"#value": "true"
-								}
-							],
-							"#tag-name": "transition"
-						},
-						{
-							"#child-nodes": [
-								{
-									"#child-nodes": [
-										{
-											"#tag-name": "label",
-											"#value": "Reject",
-											"language-id": "en_US"
-										}
-									],
-									"#tag-name": "labels"
-								},
-								{
-									"#tag-name": "name",
-									"#value": "reject"
-								},
-								{
-									"#tag-name": "target",
-									"#value": "rejected"
-								},
-								{
-									"#tag-name": "default",
-									"#value": "false"
 								}
 							],
 							"#tag-name": "transition"
@@ -263,12 +194,12 @@
 				},
 				{
 					"#cdata-value": [
-						"This is the question: {{question}}"
+						"{{userMessage}}"
 					],
 					"#tag-name": "user-message"
 				}
 			],
-			"#tag-name": "ai-decision"
+			"#tag-name": "llm"
 		}
 	],
 	"#tag-name": "workflow-definition",

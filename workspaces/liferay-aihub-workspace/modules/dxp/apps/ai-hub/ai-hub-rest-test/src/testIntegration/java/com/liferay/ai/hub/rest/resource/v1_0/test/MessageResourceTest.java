@@ -139,12 +139,6 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 						TestPropsValues.getCompanyId(),
 						VertexAIConfiguration.class.getName(),
 						HashMapDictionaryBuilder.<String, Object>put(
-							"imageModelLocation",
-							TestPropsUtil.get("vertex.ai.image.model.location")
-						).put(
-							"imageModelName",
-							TestPropsUtil.get("vertex.ai.image.model.name")
-						).put(
 							"projectId",
 							TestPropsUtil.get("vertex.ai.project.id")
 						).put(
@@ -263,12 +257,6 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 						TestPropsValues.getCompanyId(),
 						VertexAIConfiguration.class.getName(),
 						HashMapDictionaryBuilder.<String, Object>put(
-							"imageModelLocation",
-							TestPropsUtil.get("vertex.ai.image.model.location")
-						).put(
-							"imageModelName",
-							TestPropsUtil.get("vertex.ai.image.model.name")
-						).put(
 							"projectId",
 							TestPropsUtil.get("vertex.ai.project.id")
 						).put(
