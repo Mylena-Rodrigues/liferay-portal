@@ -28,6 +28,7 @@ import {
 import AIAssistantFooterDisclaimer from './components/AIAssistantFooterDisclaimer';
 import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
+import ImageMessageBalloon from './components/ImageMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
 
 import './chat.scss';
@@ -36,8 +37,16 @@ interface message {
 	agentDefinitionExternalReferenceCodes?: string[];
 	categorization?: CategorizeEventPayload;
 	error?: boolean;
+	images?: string[];
 	sender: string;
 	text: string;
+}
+
+interface ChatMessageSentData {
+	agentDefinitionExternalReferenceCodes?: string[];
+	data?: string;
+	mimeType?: string;
+	type?: string;
 }
 
 interface ReportContext {
@@ -59,6 +68,31 @@ interface AIAssistantChatProps {
 	triggerClassName?: string;
 	triggerLabel?: string;
 	triggerRound?: boolean;
+}
+
+function addAssistantImage(
+	messages: message[],
+	agentDefinitionExternalReferenceCodes: string[],
+	image: string
+): message[] {
+	const lastMessage = messages[messages.length - 1];
+
+	if (lastMessage?.images?.length && !lastMessage.text) {
+		return [
+			...messages.slice(0, -1),
+			{...lastMessage, images: [...lastMessage.images, image]},
+		];
+	}
+
+	return [
+		...messages,
+		{
+			agentDefinitionExternalReferenceCodes,
+			images: [image],
+			sender: 'assistant',
+			text: '',
+		},
+	];
 }
 
 const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
@@ -120,36 +154,44 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		instructionDefinitionScopeRef.current = instructionDefinitionScope;
 	}, [context, getContext, instructionDefinitionScope]);
 
-	const sendMessage = useCallback((text: string) => {
-		if (!text.trim()) {
-			return;
-		}
-
-		setMessages((previousMessages) => {
-			setTimeout(() => {
-				messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
-			}, 0);
-
-			return [...previousMessages, {sender: 'user', text}];
-		});
-
-		setMessage('');
-
-		if (eventSourceReference.current) {
-			setIsGenerating(true);
-
-			postChatByExternalReferenceCodeMessage({
-				chatContext: {
-					...contextRef.current,
-					...getContextRef.current?.(),
-				},
-				eventSourceReference: eventSourceReference.current,
-				instructionDefinitionScope:
-					instructionDefinitionScopeRef.current,
-				message: text,
-			}).catch(() => setIsGenerating(false));
-		}
+	const scrollToBottom = useCallback(() => {
+		setTimeout(() => {
+			messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+		}, 0);
 	}, []);
+
+	const sendMessage = useCallback(
+		(text: string) => {
+			if (!text.trim()) {
+				return;
+			}
+
+			scrollToBottom();
+
+			setMessages((previousMessages) => [
+				...previousMessages,
+				{sender: 'user', text},
+			]);
+
+			setMessage('');
+
+			if (eventSourceReference.current) {
+				setIsGenerating(true);
+
+				postChatByExternalReferenceCodeMessage({
+					chatContext: {
+						...contextRef.current,
+						...getContextRef.current?.(),
+					},
+					eventSourceReference: eventSourceReference.current,
+					instructionDefinitionScope:
+						instructionDefinitionScopeRef.current,
+					message: text,
+				}).catch(() => setIsGenerating(false));
+			}
+		},
+		[scrollToBottom]
+	);
 
 	function onSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -224,37 +266,53 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 			eventSourceRef.current.addEventListener(
 				'Chat Message Sent',
 				(event) => {
+					let dataJSON: ChatMessageSentData;
+
 					try {
-						const dataJSON = JSON.parse(event.data);
-
-						setMessages((previousMessages) => {
-							setTimeout(() => {
-								messagesEndRef.current?.scrollIntoView({
-									behavior: 'smooth',
-								});
-							}, 0);
-
-							return [
-								...previousMessages,
-								{
-									agentDefinitionExternalReferenceCodes:
-										dataJSON[
-											'agentDefinitionExternalReferenceCodes'
-										] ?? [],
-									sender: 'assistant',
-									text: dataJSON['data'],
-								},
-							];
-						});
-
-						setMessage('');
+						dataJSON = JSON.parse(event.data);
 					}
 					catch {
 						setMessages((previousMessages) => [
 							...previousMessages,
 							{error: true, sender: 'assistant', text: ''},
 						]);
+
+						setIsGenerating(false);
+
+						return;
 					}
+
+					const agentDefinitionExternalReferenceCodes =
+						dataJSON.agentDefinitionExternalReferenceCodes ?? [];
+
+					scrollToBottom();
+
+					if (dataJSON.type === 'image') {
+						const image = `data:${
+							dataJSON.mimeType ?? 'image/png'
+						};base64,${dataJSON.data}`;
+
+						setMessages((previousMessages) =>
+							addAssistantImage(
+								previousMessages,
+								agentDefinitionExternalReferenceCodes,
+								image
+							)
+						);
+
+						return;
+					}
+
+					setMessages((previousMessages) => [
+						...previousMessages,
+						{
+							agentDefinitionExternalReferenceCodes,
+							sender: 'assistant',
+							text: dataJSON.data ?? '',
+						},
+					]);
+
+					setMessage('');
 
 					setIsGenerating(false);
 				}
@@ -285,28 +343,22 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 						text = '';
 					}
 
-					setMessages((previousMessages) => {
-						setTimeout(() => {
-							messagesEndRef.current?.scrollIntoView({
-								behavior: 'smooth',
-							});
-						}, 0);
+					scrollToBottom();
 
-						return [
-							...previousMessages,
-							{
-								error: true,
-								sender: 'assistant',
-								text,
-							},
-						];
-					});
+					setMessages((previousMessages) => [
+						...previousMessages,
+						{
+							error: true,
+							sender: 'assistant',
+							text,
+						},
+					]);
 
 					setIsGenerating(false);
 				}
 			);
 		});
-	}, [sendMessage]);
+	}, [scrollToBottom, sendMessage]);
 
 	const closeAIAssistantChatConnection = useCallback(() => {
 		eventSourceRef.current?.close();
@@ -326,26 +378,19 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		const handleCategorize = (payload: CategorizeEventPayload) => {
 			setActive(true);
 
-			setMessages((previousMessages) => {
-				setTimeout(() => {
-					messagesEndRef.current?.scrollIntoView({
-						behavior: 'smooth',
-					});
-				}, 0);
+			scrollToBottom();
 
-				return [
-					...previousMessages,
-					{
-						sender: 'user',
-						text:
-							payload.agent ===
-							ECategorizationAgent.AUTO_CATEGORIZE
-								? Liferay.Language.get('add-categories')
-								: Liferay.Language.get('generate-tags'),
-					},
-					{categorization: payload, sender: 'assistant', text: ''},
-				];
-			});
+			setMessages((previousMessages) => [
+				...previousMessages,
+				{
+					sender: 'user',
+					text:
+						payload.agent === ECategorizationAgent.AUTO_CATEGORIZE
+							? Liferay.Language.get('add-categories')
+							: Liferay.Language.get('generate-tags'),
+				},
+				{categorization: payload, sender: 'assistant', text: ''},
+			]);
 		};
 
 		Liferay.on(CATEGORIZE_EVENT, handleCategorize);
@@ -353,7 +398,33 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		return () => {
 			Liferay.detach(CATEGORIZE_EVENT, handleCategorize);
 		};
-	}, []);
+	}, [scrollToBottom]);
+
+	useEffect(() => {
+		const handleOpen = (payload: {
+			context?: ChatContext;
+			message?: string;
+		}) => {
+			setActive(true);
+
+			if (payload?.context) {
+				contextRef.current = {
+					...contextRef.current,
+					...payload.context,
+				};
+			}
+
+			if (payload?.message) {
+				sendMessage(payload.message);
+			}
+		};
+
+		Liferay.on('openAIAssistantChat', handleOpen);
+
+		return () => {
+			Liferay.detach('openAIAssistantChat', handleOpen);
+		};
+	}, [sendMessage]);
 
 	const chatSurface = (
 		<>
@@ -381,6 +452,35 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 							<CategorizationMessageBalloon
 								key={index}
 								{...item.categorization}
+							/>
+						);
+					}
+
+					if (item.images?.length) {
+						const context = {
+							...contextRef.current,
+							...getContextRef.current?.(),
+						};
+
+						return (
+							<ImageMessageBalloon
+								images={item.images}
+								key={index}
+								message={item.text}
+								saveProps={{
+									groupId: context.groupId as
+										| number
+										| string
+										| undefined,
+									objectEntryFolderExternalReferenceCode:
+										context.objectEntryFolderExternalReferenceCode as
+											| string
+											| undefined,
+									selectFileButton:
+										context.selectFileButton as
+											| string
+											| undefined,
+								}}
 							/>
 						);
 					}
