@@ -1,8 +1,8 @@
-name: liferay-aihub
+name: liferay
 
 services:
   database:
-    container_name: liferay-aihub-database
+    container_name: postgres-16.13
     environment:
       - POSTGRES_DB=lportal
       - POSTGRES_PASSWORD=liferay
@@ -12,7 +12,7 @@ services:
       - "5432:5432"
 
   liferay:
-    container_name: liferay-aihub
+    container_name: liferay
     depends_on:
       - database
     environment:
