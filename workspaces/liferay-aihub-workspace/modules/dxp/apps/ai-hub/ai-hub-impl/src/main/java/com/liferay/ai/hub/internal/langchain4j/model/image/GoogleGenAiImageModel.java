@@ -45,6 +45,9 @@ public class GoogleGenAiImageModel implements ImageModel {
 			ServiceContext serviceContext)
 		throws ConfigurationException {
 
+		_quotaManager = quotaManager;
+		_safetySettings = safetySettings;
+
 		_companyId = serviceContext.getCompanyId();
 
 		VertexAIConfiguration vertexAIConfiguration =
@@ -54,9 +57,6 @@ public class GoogleGenAiImageModel implements ImageModel {
 		_modelLocation = vertexAIConfiguration.imageModelLocation();
 		_modelName = vertexAIConfiguration.imageModelName();
 		_projectId = vertexAIConfiguration.projectId();
-
-		_quotaManager = quotaManager;
-		_safetySettings = safetySettings;
 
 		_userId = serviceContext.getUserId();
 	}
