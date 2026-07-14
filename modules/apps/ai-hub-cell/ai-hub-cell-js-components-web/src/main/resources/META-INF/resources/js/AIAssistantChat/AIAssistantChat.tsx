@@ -77,7 +77,11 @@ function addAssistantImage(
 ): message[] {
 	const lastMessage = messages[messages.length - 1];
 
-	if (lastMessage?.images?.length && !lastMessage.text) {
+	if (
+		lastMessage?.sender === 'assistant' &&
+		lastMessage.images?.length &&
+		!lastMessage.text
+	) {
 		return [
 			...messages.slice(0, -1),
 			{...lastMessage, images: [...lastMessage.images, image]},
@@ -465,7 +469,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 						return (
 							<ImageMessageBalloon
 								images={item.images}
-								key={index}
+								key={`image-${index}-${item.images.length}`}
 								message={item.text}
 								saveProps={{
 									groupId: context.groupId as

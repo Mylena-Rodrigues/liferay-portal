@@ -272,9 +272,13 @@ describe('AIAssistantChat', () => {
 		expect(images[0]).toHaveAttribute('src', 'data:image/png;base64,AAA');
 		expect(images[1]).toHaveAttribute('src', 'data:image/png;base64,BBB');
 
-		expect(
-			screen.getAllByRole('checkbox', {name: 'generated-image'})
-		).toHaveLength(2);
+		const checkboxes = screen.getAllByRole('checkbox', {
+			name: 'generated-image',
+		});
+
+		expect(checkboxes).toHaveLength(2);
+		expect(checkboxes[0]).toBeChecked();
+		expect(checkboxes[1]).toBeChecked();
 	});
 
 	it('defaults the mime type to image/png when the image event omits it', async () => {
