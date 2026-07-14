@@ -25,10 +25,6 @@ export default function ActivityDashboard({
 }) {
 	return (
 		<ClayLayout.ContainerFluid className="ai-hub-activity-dashboard">
-			<h1 className="ai-hub-activity-dashboard-title">
-				{Liferay.Language.get('activity')}
-			</h1>
-
 			<ClayLayout.Row>
 				<ClayLayout.Col className="mb-4" md={6}>
 					<AgentsCard value={agentsCount} />
