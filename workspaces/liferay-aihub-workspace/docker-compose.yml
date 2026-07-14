@@ -33,4 +33,4 @@ services:
             -   ./bundles/logs:/opt/liferay/logs
             -   ./bundles/osgi/modules:/mnt/liferay/deploy
             -   ./configs/docker:/mnt/liferay/files
-            -   /home/me/.config/gcloud/application_default_credentials.json:/tmp/keys/adc.json:ro
+            -   ${GOOGLE_ADC_PATH:-${HOME}/.config/gcloud/application_default_credentials.json}:/tmp/keys/adc.json:ro
