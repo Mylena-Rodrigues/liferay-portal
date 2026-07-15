@@ -28,7 +28,7 @@
 			"type": "Boolean"
 		},
 		{
-			"DBType": "Clob",
+			"DBType": "String",
 			"businessType": "LongText",
 			"defaultValue": "null",
 			"externalReferenceCode": "DESCRIPTION",
@@ -41,7 +41,7 @@
 			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
-			"type": "Clob"
+			"type": "Text"
 		},
 		{
 			"DBType": "String",
