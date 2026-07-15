@@ -28,10 +28,15 @@ import {
 import AIAssistantFooterDisclaimer from './components/AIAssistantFooterDisclaimer';
 import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
+import ContentTypeSelectorMessageBalloon, {
+	ContentType,
+} from './components/ContentTypeSelectorMessageBalloon';
+import ContentsMessageBalloon from './components/ContentsMessageBalloon';
 import ImageMessageBalloon from './components/ImageMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
 import {ChatMessageSentData, message} from './types';
 import buildAssistantMessage from './utils/buildAssistantMessage';
+import parseContentDraftsMessage from './utils/parseContentDraftsMessage';
 
 import './chat.scss';
 
@@ -119,6 +124,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	const eventSourceReference = useRef<string | null>(null);
 	const contextRef = useRef<ChatContext | undefined>(context);
 	const getContextRef = useRef<(() => ChatContext) | undefined>(getContext);
+	const runtimeContextRef = useRef<ChatContext>({});
 	const initialMessageRef = useRef<string | undefined>(initialMessage);
 	const initialMessageSentRef = useRef<boolean>(false);
 	const instructionDefinitionScopeRef = useRef<string>(
@@ -162,6 +168,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 					chatContext: {
 						...contextRef.current,
 						...getContextRef.current?.(),
+						...runtimeContextRef.current,
 					},
 					eventSourceReference: eventSourceReference.current,
 					instructionDefinitionScope:
@@ -342,6 +349,51 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 	}, [closeAIAssistantChatConnection, openAIAssistantChatConnection]);
 
 	useEffect(() => {
+		const handleOpen = (payload: {
+			contentTypes?: ContentType[];
+			context?: ChatContext;
+			message?: string;
+		}) => {
+			setActive(true);
+
+			if (payload?.context) {
+				contextRef.current = {
+					...contextRef.current,
+					...payload.context,
+				};
+			}
+
+			runtimeContextRef.current = payload?.context ?? {};
+
+			if (payload?.contentTypes?.length) {
+				setMessages((previousMessages) => [
+					...previousMessages,
+					{
+						sender: 'user',
+						text: Liferay.Language.get('generate-content'),
+					},
+					{
+						contentTypes: payload.contentTypes,
+						sender: 'assistant',
+						text: Liferay.Language.get(
+							'what-type-of-content-do-you-want-to-generate'
+						),
+					},
+				]);
+			}
+			else if (payload?.message) {
+				sendMessage(payload.message);
+			}
+		};
+
+		Liferay.on('openAIAssistantChat', handleOpen);
+
+		return () => {
+			Liferay.detach('openAIAssistantChat', handleOpen);
+		};
+	}, [sendMessage]);
+
+	useEffect(() => {
 		const handleCategorize = (payload: CategorizeEventPayload) => {
 			setActive(true);
 
@@ -366,32 +418,6 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 			Liferay.detach(CATEGORIZE_EVENT, handleCategorize);
 		};
 	}, [scrollToBottom]);
-
-	useEffect(() => {
-		const handleOpen = (payload: {
-			context?: ChatContext;
-			message?: string;
-		}) => {
-			setActive(true);
-
-			if (payload?.context) {
-				contextRef.current = {
-					...contextRef.current,
-					...payload.context,
-				};
-			}
-
-			if (payload?.message) {
-				sendMessage(payload.message);
-			}
-		};
-
-		Liferay.on('openAIAssistantChat', handleOpen);
-
-		return () => {
-			Liferay.detach('openAIAssistantChat', handleOpen);
-		};
-	}, [sendMessage]);
 
 	const chatSurface = (
 		<>
@@ -448,6 +474,27 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 											| string
 											| undefined,
 								}}
+							/>
+						);
+					}
+
+					if (item.contentTypes) {
+						return (
+							<ContentTypeSelectorMessageBalloon
+								contentTypes={item.contentTypes}
+								contextRef={runtimeContextRef}
+								key={index}
+								message={item.text}
+								sendMessage={sendMessage}
+							/>
+						);
+					}
+
+					if (parseContentDraftsMessage(item.text).drafts.length) {
+						return (
+							<ContentsMessageBalloon
+								key={index}
+								message={item.text}
 							/>
 						);
 					}
