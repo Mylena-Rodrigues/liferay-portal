@@ -30,24 +30,10 @@ import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
 import ImageMessageBalloon from './components/ImageMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
+import {ChatMessageSentData, message} from './types';
+import buildAssistantMessage from './utils/buildAssistantMessage';
 
 import './chat.scss';
-
-interface message {
-	agentDefinitionExternalReferenceCodes?: string[];
-	categorization?: CategorizeEventPayload;
-	error?: boolean;
-	images?: string[];
-	sender: string;
-	text: string;
-}
-
-interface ChatMessageSentData {
-	agentDefinitionExternalReferenceCodes?: string[];
-	data?: string;
-	mimeType?: string;
-	type?: string;
-}
 
 interface ReportContext {
 	agentDefinitionExternalReferenceCodes: string[];
@@ -72,27 +58,21 @@ interface AIAssistantChatProps {
 
 function addAssistantImage(
 	messages: message[],
-	agentDefinitionExternalReferenceCodes: string[],
-	image: string
+	newMessage: message
 ): message[] {
 	const lastMessage = messages[messages.length - 1];
 
 	if (lastMessage?.images?.length && !lastMessage.text) {
 		return [
 			...messages.slice(0, -1),
-			{...lastMessage, images: [...lastMessage.images, image]},
+			{
+				...lastMessage,
+				images: [...lastMessage.images, ...(newMessage.images ?? [])],
+			},
 		];
 	}
 
-	return [
-		...messages,
-		{
-			agentDefinitionExternalReferenceCodes,
-			images: [image],
-			sender: 'assistant',
-			text: '',
-		},
-	];
+	return [...messages, newMessage];
 }
 
 const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
@@ -282,22 +262,13 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 						return;
 					}
 
-					const agentDefinitionExternalReferenceCodes =
-						dataJSON.agentDefinitionExternalReferenceCodes ?? [];
+					const newMessage = buildAssistantMessage(dataJSON);
 
 					scrollToBottom();
 
 					if (dataJSON.type === 'image') {
-						const image = `data:${
-							dataJSON.mimeType ?? 'image/png'
-						};base64,${dataJSON.data}`;
-
 						setMessages((previousMessages) =>
-							addAssistantImage(
-								previousMessages,
-								agentDefinitionExternalReferenceCodes,
-								image
-							)
+							addAssistantImage(previousMessages, newMessage)
 						);
 
 						return;
@@ -305,11 +276,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 
 					setMessages((previousMessages) => [
 						...previousMessages,
-						{
-							agentDefinitionExternalReferenceCodes,
-							sender: 'assistant',
-							text: dataJSON.data ?? '',
-						},
+						newMessage,
 					]);
 
 					setMessage('');
