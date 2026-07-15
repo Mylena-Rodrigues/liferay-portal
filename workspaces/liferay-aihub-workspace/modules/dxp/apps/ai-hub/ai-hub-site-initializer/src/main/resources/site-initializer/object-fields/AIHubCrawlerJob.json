@@ -1,0 +1,114 @@
+{
+	"object-fields": [
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"externalReferenceCode": "CRAWLER_JOB_STATUS",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Crawler Job Status"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_CRAWLER_JOB_STATUSES",
+			"name": "crawlerJobStatus",
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "DateTime",
+			"businessType": "DateTime",
+			"externalReferenceCode": "END_DATE",
+			"indexed": true,
+			"label": {
+				"en_US": "End Date"
+			},
+			"name": "endDate",
+			"objectFieldSettings": [
+				{
+					"name": "timeStorage",
+					"value": "convertToUTC"
+				}
+			],
+			"required": false,
+			"system": true,
+			"type": "DateTime"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"externalReferenceCode": "ERROR_MESSAGE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Error Message"
+			},
+			"name": "errorMessage",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"system": true,
+			"type": "Clob"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"externalReferenceCode": "EXECUTION_ID",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Execution ID"
+			},
+			"name": "executionId",
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"externalReferenceCode": "INDEXED_DOCUMENT_BYTES",
+			"indexed": true,
+			"label": {
+				"en_US": "Indexed Document Bytes"
+			},
+			"name": "indexedDocumentBytes",
+			"required": false,
+			"system": true,
+			"type": "Long"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "INDEXED_DOCUMENTS_COUNT",
+			"indexed": true,
+			"label": {
+				"en_US": "Indexed Documents Count"
+			},
+			"name": "indexedDocumentCount",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "DateTime",
+			"businessType": "DateTime",
+			"externalReferenceCode": "START_DATE",
+			"indexed": true,
+			"label": {
+				"en_US": "Start Date"
+			},
+			"name": "startDate",
+			"objectFieldSettings": [
+				{
+					"name": "timeStorage",
+					"value": "convertToUTC"
+				}
+			],
+			"required": false,
+			"system": true,
+			"type": "DateTime"
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubCrawlerJob$]"
+}

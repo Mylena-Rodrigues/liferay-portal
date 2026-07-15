@@ -4,7 +4,7 @@
 	"label": {
 		"en_US": "Account to AI Hub Agent Definitions"
 	},
-	"name": "accountToAgentDefinitions",
+	"name": "accountToAIHubAgentDefinitions",
 	"objectDefinitionId1": "[$OBJECT_DEFINITION_ID:AccountEntry$]",
 	"objectDefinitionId2": "[$OBJECT_DEFINITION_ID:AIHubAgentDefinition$]",
 	"objectDefinitionName2": "AIHubAgentDefinition",

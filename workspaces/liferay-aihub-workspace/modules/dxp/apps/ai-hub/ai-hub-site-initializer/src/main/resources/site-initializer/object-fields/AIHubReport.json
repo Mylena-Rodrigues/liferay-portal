@@ -1,0 +1,90 @@
+{
+	"object-fields": [
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"defaultValue": "null",
+			"externalReferenceCode": "FEEDBACK",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Feedback"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_REPORT_FEEDBACKS",
+			"name": "feedback",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"defaultValue": "null",
+			"externalReferenceCode": "LEVEL",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Level"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_REPORT_LEVELS",
+			"name": "level",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"defaultValue": "null",
+			"externalReferenceCode": "REASON",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Reason"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_REPORT_REASONS",
+			"name": "reason",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"defaultValue": "null",
+			"externalReferenceCode": "SURFACE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Surface"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_REPORT_SURFACES",
+			"name": "surface",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"defaultValue": "null",
+			"externalReferenceCode": "USER_MESSAGE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "User Message"
+			},
+			"name": "userMessage",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"system": true,
+			"type": "Clob"
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubReport$]"
+}

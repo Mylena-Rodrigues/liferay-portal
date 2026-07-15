@@ -1,0 +1,47 @@
+{
+	"object-fields": [
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "TITLE",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Title"
+			},
+			"localized": true,
+			"name": "title",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"state": false,
+			"system": true,
+			"type": "String",
+			"unique": false
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "URL",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "URL"
+			},
+			"localized": false,
+			"name": "url",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"state": false,
+			"system": true,
+			"type": "String",
+			"unique": false
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubMCPServer$]"
+}

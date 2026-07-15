@@ -1,0 +1,113 @@
+{
+	"object-fields": [
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"defaultValue": true,
+			"externalReferenceCode": "ACTIVE",
+			"indexed": true,
+			"label": {
+				"en_US": "Active"
+			},
+			"name": "active",
+			"required": false,
+			"system": true,
+			"type": "Boolean"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "DESCRIPTION",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Description"
+			},
+			"name": "description",
+			"readOnly": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "INPUT_VARIABLES",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Input Variables"
+			},
+			"name": "inputVariables",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "OUTPUT_VARIABLE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Output Variable"
+			},
+			"name": "outputVariable",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"defaultValue": false,
+			"externalReferenceCode": "SYSTEM",
+			"indexed": true,
+			"label": {
+				"en_US": "System"
+			},
+			"name": "system",
+			"required": false,
+			"system": true,
+			"type": "Boolean"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "TITLE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Title"
+			},
+			"localized": true,
+			"name": "title",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "WORKFLOW_DEFINITION_NAME",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Workflow Definition Name"
+			},
+			"name": "workflowDefinitionName",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubAgentDefinition$]"
+}

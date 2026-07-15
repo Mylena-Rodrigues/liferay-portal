@@ -1,0 +1,108 @@
+{
+	"object-fields": [
+		{
+			"DBType": "DateTime",
+			"businessType": "DateTime",
+			"defaultValue": true,
+			"externalReferenceCode": "CRAWL_DATE",
+			"indexed": true,
+			"label": {
+				"en_US": "Crawl Date"
+			},
+			"name": "crawlDate",
+			"objectFieldSettings": [
+				{
+					"name": "timeStorage",
+					"value": "convertToUTC"
+				}
+			],
+			"required": false,
+			"system": true,
+			"type": "DateTime"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"defaultValue": "null",
+			"externalReferenceCode": "DESCRIPTION",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Description"
+			},
+			"localized": true,
+			"name": "description",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"system": true,
+			"type": "Clob"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "INDEX_NAME",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Index Name"
+			},
+			"name": "indexName",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "TITLE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Title"
+			},
+			"localized": true,
+			"name": "title",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "TYPE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Type"
+			},
+			"name": "type",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"defaultValue": "null",
+			"externalReferenceCode": "URL",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "URL"
+			},
+			"name": "url",
+			"readOnly": false,
+			"required": false,
+			"system": true,
+			"type": "String"
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubContentRetriever$]"
+}

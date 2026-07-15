@@ -1,0 +1,106 @@
+{
+	"object-fields": [
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"defaultValue": true,
+			"externalReferenceCode": "ACTIVE",
+			"label": {
+				"en_US": "Active"
+			},
+			"name": "active",
+			"required": false,
+			"system": true,
+			"type": "Boolean"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"defaultValue": "null",
+			"externalReferenceCode": "DESCRIPTION",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Description"
+			},
+			"name": "description",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"system": true,
+			"type": "Clob"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"externalReferenceCode": "INSTRUCTION",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Instruction"
+			},
+			"name": "instruction",
+			"required": false,
+			"system": true,
+			"type": "Clob"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"externalReferenceCode": "OCCASION",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Occasion"
+			},
+			"name": "occasion",
+			"required": false,
+			"system": true,
+			"type": "Clob"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"externalReferenceCode": "SCOPE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Scope"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_INSTRUCTION_DEFINITION_SCOPES",
+			"name": "scope",
+			"required": false,
+			"system": true,
+			"type": "String"
+		},
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"defaultValue": false,
+			"externalReferenceCode": "SYSTEM",
+			"label": {
+				"en_US": "System"
+			},
+			"name": "system",
+			"required": false,
+			"system": true,
+			"type": "Boolean"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"externalReferenceCode": "TITLE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Title"
+			},
+			"localized": true,
+			"name": "title",
+			"required": false,
+			"system": true,
+			"type": "String"
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubInstructionDefinition$]"
+}

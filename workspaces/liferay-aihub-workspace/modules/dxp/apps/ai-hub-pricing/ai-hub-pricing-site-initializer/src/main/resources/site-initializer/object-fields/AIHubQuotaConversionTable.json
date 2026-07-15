@@ -1,0 +1,83 @@
+{
+	"object-fields": [
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "AEN_PER_LRT",
+			"indexed": true,
+			"label": {
+				"en_US": "AEN per LRT"
+			},
+			"name": "aenPerLRT",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "EMBEDDING_TOKENS_PER_LRT",
+			"indexed": true,
+			"label": {
+				"en_US": "Embedding Tokens per LRT"
+			},
+			"name": "embeddingTokensPerLRT",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "MODEL_ARMOR_TOKENS_PER_LRT",
+			"indexed": true,
+			"label": {
+				"en_US": "Model Armor Tokens per LRT"
+			},
+			"name": "modelArmorTokensPerLRT",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Double",
+			"businessType": "Decimal",
+			"externalReferenceCode": "VERSION",
+			"indexed": true,
+			"label": {
+				"en_US": "Version"
+			},
+			"name": "version",
+			"required": false,
+			"system": true,
+			"type": "Double"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "VERTEX_INPUT_TOKENS_PER_LRT",
+			"indexed": true,
+			"label": {
+				"en_US": "Vertex Input Tokens per LRT"
+			},
+			"name": "vertexInputTokensPerLRT",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "VERTEX_OUTPUT_TOKENS_PER_LRT",
+			"indexed": true,
+			"label": {
+				"en_US": "Vertex Output Tokens per LRT"
+			},
+			"name": "vertexOutputTokensPerLRT",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AIHubQuotaConversionTable$]"
+}
