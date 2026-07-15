@@ -59,17 +59,19 @@ You are a content gap analysis assistant for the Liferay Content Marketing Platf
 
 # Inputs
 
-- content coverage: a JSON string of the shape {"personas": [{"id": "<string>", "name": "<string>", "externalReferenceCode": "<string or null>", "uncategorized": <boolean>}], "funnelStages": [ same shape as personas ], "cells": [{"personaId": "<string>", "funnelStageId": "<string>", "totalCount": <number>}], "totalAssetCount": <number>}. The cells are sparse: a persona and funnel stage pair with no entry means a count of 0.
-- focus scope: either the string "full-matrix", or a JSON array of {"personaId": "<string>", "funnelStageId": "<string>"} identifying the cells the user selected. When cells are listed, analyze ONLY those; otherwise analyze the whole matrix.
-- project context: a JSON string of the shape {"name": "<string>", "description": "<string>", "goals": "<string>"}. Use it only to justify severity and reasons.
+- content coverage: a JSON string of the shape {"personas": [{"id": "<string>", "name": "<string>", "externalReferenceCode": "<string or null>", "uncategorized": <boolean>}], "funnelStages": [ same shape as personas ], "contentCoverageEntries": [{"personaId": "<string>", "funnelStageId": "<string>", "totalCount": <number>}], "totalAssetCount": <number>}. The contentCoverageEntries are sparse: a persona and funnel stage pair with no entry means a count of 0.
+- focus scope: either the string "full-matrix", or a JSON array of {"personaId": "<string>", "funnelStageId": "<string>"} identifying the persona and funnel stage combinations the user selected. When combinations are listed, analyze ONLY those; otherwise analyze the whole matrix.
+- project context: an OPTIONAL JSON string of the shape {"name": "<string>", "description": "<string>", "goals": "<string>"}. It may be empty or absent. When present, use it to sharpen severity and reasons; when empty, judge severity and write every reason from the persona and funnel stage meaning alone.
 
 # Hard rules
 
-- A gap is a real persona and funnel stage combination whose totalCount is 0. Resolve a cell's count by matching personaId and funnelStageId against cells; a missing pair is 0.
+- A gap is a real persona and funnel stage combination whose totalCount is 0. Resolve a combination's count by matching personaId and funnelStageId against contentCoverageEntries; a missing pair is 0.
 - Analyze ONLY real dimensions. Skip any persona or funnel stage whose "uncategorized" is true (the "No Persona" and "No Funnel" buckets); those are not actionable content gaps.
 - Never invent a persona, a funnel stage, or a count. Never alter an id or a name. Use only what is present in the content coverage input.
-- Resolve every personaId and funnelStageId to its name from the personas and funnelStages arrays. Never emit a raw id as a name.
+- For every gap, name the persona and the funnel stage using their names resolved from the personas and funnelStages arrays; never emit a raw id. The single general gap for an empty project is the only exception (see below).
 - This is read-only analysis. Never state or imply that project data was or will be changed.
+- Always give each gap a concrete one sentence reason grounded in the persona and the funnel stage; never leave it blank, even when project context is absent.
+- Empty project: when NO real persona and funnel stage combination has any content (every real combination has a count of 0), do NOT list one gap per combination. Emit EXACTLY ONE gap bullet reading **All personas / All funnel stages** (high) whose reason explains that the project has no categorized content yet and should start by adding and categorizing content across its personas and funnel stages.
 
 # Severity
 
@@ -81,29 +83,17 @@ Order gaps by severity, highest first.
 
 # Output policy
 
-- Output a SINGLE raw JSON object and nothing else.
-- DO NOT wrap the JSON in markdown fences.
-- DO NOT add prose, commentary, or trailing text.
-- Shape:
+- Output human readable Markdown text and NOTHING else. DO NOT output JSON. DO NOT wrap the output in code fences. DO NOT emit any id or count field.
+- Refer to every persona and funnel stage by its name only.
+- FIRST, output a summary line in EXACTLY this form:
 
-{
-	"gaps": [
-		{
-			"currentCount": <number, always 0 for a gap>,
-			"funnelStageId": "<string, from funnelStages>",
-			"funnelStageName": "<string, from funnelStages>",
-			"personaId": "<string, from personas>",
-			"personaName": "<string, from personas>",
-			"reason": "<one sentence on why this combination matters>",
-			"severity": "high, medium, or low"
-		}
-	],
-	"summary": {
-		"funnelStageCount": <number of real funnel stages analyzed>,
-		"gapCount": <number of entries in gaps>,
-		"personaCount": <number of real personas analyzed>
-	}
-}]]>
+**Summary:** <one or two plain language sentences covering how many personas and funnel stages were analyzed, how many combinations are gaps, and the headline gaps>
+
+- THEN, leave a blank line and list the gaps as a Markdown bullet list, highest severity first, one bullet per gap in EXACTLY this form (severity is one of high, medium, or low):
+
+- **<persona name> / <funnel stage name>** (<severity>) — <one sentence reason>
+
+- When there are no gaps at all (every analyzed combination already has content), output the summary line, then a blank line, then the single line "No content gaps found: every persona and funnel stage combination already has content." (no bullet list).]]>
 		</prompt>
 		<tools>
 			<![CDATA[[]]]>
@@ -131,6 +121,53 @@ Focus scope:
 {{focusScope}}]]>
 		</user-message>
 	</llm>
+	<http-request>
+		<name>getContentCoverage</name>
+		<labels>
+			<label language-id="en_US">
+				Get Content Coverage
+			</label>
+		</labels>
+		<http-method>GET</http-method>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "aiHubCellLiferayDXPURL",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "contentCoverage",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<timeout>10000</timeout>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Content Gap Analysis
+					</label>
+				</labels>
+				<name>contentGapAnalysis</name>
+				<target>contentGapAnalysis</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/headless-cmp/v1.0/projects/{{projectId}}/content-coverage</url>
+	</http-request>
 	<state>
 		<name>start</name>
 		<metadata>
@@ -153,11 +190,11 @@ Focus scope:
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Content Gap Analysis
+						Get Content Coverage
 					</label>
 				</labels>
-				<name>contentGapAnalysis</name>
-				<target>contentGapAnalysis</target>
+				<name>getContentCoverage</name>
+				<target>getContentCoverage</target>
 				<default>true</default>
 			</transition>
 		</transitions>

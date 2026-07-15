@@ -41,9 +41,9 @@
 		},
 		{
 			"active": true,
-			"description": "Analyzes a project's content coverage matrix to surface under-covered persona/funnel-stage gaps as a prioritized list, each with severity and a short reason. Read-only; never invents personas or stages.",
+			"description": "Retrieves a project's content coverage across persona and funnel stage combinations and surfaces the under-covered ones as a prioritized list of gaps, each with a severity and a short reason. It never invents personas or funnel stages and never modifies project data.",
 			"externalReferenceCode": "L_CONTENT_GAP_ANALYSIS",
-			"inputVariables": "contentCoverage,focusScope,projectContext",
+			"inputVariables": "request",
 			"outputVariable": "gapAnalysis",
 			"r_accountToAIHubAgentDefinitions_accountEntryERC": "L_AI_HUB",
 			"system": true,
