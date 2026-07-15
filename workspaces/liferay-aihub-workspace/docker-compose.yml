@@ -19,7 +19,7 @@ services:
             -   LIFERAY_RETRY_PERIOD_JDBC_PERIOD_ON_PERIOD_STARTUP_PERIOD_DELAY=10
             -   LIFERAY_RETRY_PERIOD_JDBC_PERIOD_ON_PERIOD_STARTUP_PERIOD_MAX_PERIOD_RETRIES=2
             -   LIFERAY_SESSION_PERIOD_TIMEOUT=120
-        image: liferay/release-candidates:7.4.13-u151-ai-hub-1783952595-d10.0.64-20260713075914
+        image: liferay/release-candidates:7.4.13-u151-ai-hub-1784051387-d10.0.65-snapshot-20260714112350
         ports:
             -   "8000:8000"
             -   "8080:8080"
