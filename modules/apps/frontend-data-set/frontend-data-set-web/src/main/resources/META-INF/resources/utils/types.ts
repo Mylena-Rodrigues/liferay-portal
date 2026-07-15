@@ -133,6 +133,7 @@ export interface IBulkActionItem {
 	target?: 'modal' | 'sidePanel';
 }
 export interface ICreationActionItem {
+	className?: string;
 	data?: {
 		disableHeader?: boolean;
 		permissionKey?: string;
