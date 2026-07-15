@@ -23,7 +23,6 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemBuilder;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
 import com.liferay.info.field.InfoFieldSetEntry;
-import com.liferay.info.field.type.FileInfoFieldType;
 import com.liferay.info.field.type.RelationshipInfoFieldType;
 import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.InfoItemServiceRegistry;
@@ -41,7 +40,6 @@ import com.liferay.layout.util.structure.ColumnLayoutStructureItem;
 import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.FormRelationshipStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
-import com.liferay.layout.util.structure.FragmentDropZoneLayoutStructureItem;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
@@ -92,7 +90,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
-import com.liferay.site.cms.site.initializer.internal.fragment.renderer.AIAssistantIconComponentSectionFragmentRenderer;
 import com.liferay.site.cms.site.initializer.internal.fragment.renderer.SpacesComponentSectionFragmentRenderer;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -1099,45 +1096,6 @@ public class ActionUtil {
 		return getBaseViewFolderURL(themeDisplay) + objectEntryFolderId;
 	}
 
-	private static void _addAIAssistantFragmentDropZone(
-			List<FragmentEntryLink> addedFragmentEntryLinks,
-			FragmentEntryLinkService fragmentEntryLinkService,
-			FragmentRendererRegistry fragmentRendererRegistry,
-			FragmentStyledLayoutStructureItem fragmentStyledLayoutStructureItem,
-			Layout layout, LayoutStructure layoutStructure,
-			long segmentsExperienceId, ServiceContext serviceContext)
-		throws Exception {
-
-		if (fragmentStyledLayoutStructureItem == null) {
-			return;
-		}
-
-		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
-			StringPool.BLANK, fragmentEntryLinkService,
-			fragmentRendererRegistry,
-			AIAssistantIconComponentSectionFragmentRenderer.class.getName(),
-			layout, segmentsExperienceId, serviceContext);
-
-		if (fragmentEntryLink == null) {
-			return;
-		}
-
-		FragmentDropZoneLayoutStructureItem
-			fragmentDropZoneLayoutStructureItem =
-				(FragmentDropZoneLayoutStructureItem)
-					layoutStructure.addFragmentDropZoneLayoutStructureItem(
-						fragmentStyledLayoutStructureItem.getItemId(), -1);
-
-		fragmentDropZoneLayoutStructureItem.setFragmentDropZoneId(
-			"aiAssistant");
-
-		layoutStructure.addFragmentStyledLayoutStructureItem(
-			fragmentEntryLink.getFragmentEntryLinkId(),
-			fragmentDropZoneLayoutStructureItem.getItemId(), 0);
-
-		addedFragmentEntryLinks.add(fragmentEntryLink);
-	}
-
 	private static LayoutPageTemplateEntry
 			_addEditContentDefaultLayoutPageTemplateEntry(
 				long classNameId, FormManager formManager,
@@ -1256,7 +1214,7 @@ public class ActionUtil {
 			0, contributedRendererKey, fragmentEntry.getType(), serviceContext);
 	}
 
-	private static FragmentStyledLayoutStructureItem _addInputFragmentEntryLink(
+	private static void _addInputFragmentEntryLink(
 			List<FragmentEntryLink> addedFragmentEntryLinks,
 			JSONObject configurationJSONObject, FormManager formManager,
 			String fragmentEntryKey, InfoField<?> infoField, Layout layout,
@@ -1267,7 +1225,7 @@ public class ActionUtil {
 		throws Exception {
 
 		if (infoField == null) {
-			return null;
+			return;
 		}
 
 		FragmentStyledLayoutStructureItem fragmentStyledLayoutStructureItem =
@@ -1277,7 +1235,7 @@ public class ActionUtil {
 				serviceContext);
 
 		if (fragmentStyledLayoutStructureItem == null) {
-			return null;
+			return;
 		}
 
 		fragmentStyledLayoutStructureItem.updateItemConfig(
@@ -1308,8 +1266,6 @@ public class ActionUtil {
 		if (fragmentEntryLink != null) {
 			addedFragmentEntryLinks.add(fragmentEntryLink);
 		}
-
-		return fragmentStyledLayoutStructureItem;
 	}
 
 	private static LayoutStructure _addInputFragmentEntryLinks(
@@ -1463,24 +1419,11 @@ public class ActionUtil {
 					}
 				}
 
-				FragmentStyledLayoutStructureItem
-					fragmentStyledLayoutStructureItem =
-						_addInputFragmentEntryLink(
-							addedFragmentEntryLinks, null, formManager, null,
-							infoField, layout, layoutStructure,
-							layoutStructureItem, readOnly, segmentsExperienceId,
-							serviceContext, stylesJSONObject);
-
-				if (!readOnly &&
-					(FileInfoFieldType.INSTANCE ==
-						infoField.getInfoFieldType())) {
-
-					_addAIAssistantFragmentDropZone(
-						addedFragmentEntryLinks, fragmentEntryLinkService,
-						fragmentRendererRegistry,
-						fragmentStyledLayoutStructureItem, layout,
-						layoutStructure, segmentsExperienceId, serviceContext);
-				}
+				_addInputFragmentEntryLink(
+					addedFragmentEntryLinks, null, formManager, null,
+					(InfoField<?>)infoFieldSetEntry, layout, layoutStructure,
+					layoutStructureItem, readOnly, segmentsExperienceId,
+					serviceContext, stylesJSONObject);
 			}
 			else if (infoFieldSetEntry instanceof InfoFieldSet) {
 				layoutStructure = _addInputFragmentEntryLinks(
