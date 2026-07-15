@@ -120,36 +120,44 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		instructionDefinitionScopeRef.current = instructionDefinitionScope;
 	}, [context, getContext, instructionDefinitionScope]);
 
-	const sendMessage = useCallback((text: string) => {
-		if (!text.trim()) {
-			return;
-		}
-
-		setMessages((previousMessages) => {
-			setTimeout(() => {
-				messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
-			}, 0);
-
-			return [...previousMessages, {sender: 'user', text}];
-		});
-
-		setMessage('');
-
-		if (eventSourceReference.current) {
-			setIsGenerating(true);
-
-			postChatByExternalReferenceCodeMessage({
-				chatContext: {
-					...contextRef.current,
-					...getContextRef.current?.(),
-				},
-				eventSourceReference: eventSourceReference.current,
-				instructionDefinitionScope:
-					instructionDefinitionScopeRef.current,
-				message: text,
-			}).catch(() => setIsGenerating(false));
-		}
+	const scrollToBottom = useCallback(() => {
+		setTimeout(() => {
+			messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+		}, 0);
 	}, []);
+
+	const sendMessage = useCallback(
+		(text: string) => {
+			if (!text.trim()) {
+				return;
+			}
+
+			scrollToBottom();
+
+			setMessages((previousMessages) => [
+				...previousMessages,
+				{sender: 'user', text},
+			]);
+
+			setMessage('');
+
+			if (eventSourceReference.current) {
+				setIsGenerating(true);
+
+				postChatByExternalReferenceCodeMessage({
+					chatContext: {
+						...contextRef.current,
+						...getContextRef.current?.(),
+					},
+					eventSourceReference: eventSourceReference.current,
+					instructionDefinitionScope:
+						instructionDefinitionScopeRef.current,
+					message: text,
+				}).catch(() => setIsGenerating(false));
+			}
+		},
+		[scrollToBottom]
+	);
 
 	function onSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -227,25 +235,19 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 					try {
 						const dataJSON = JSON.parse(event.data);
 
-						setMessages((previousMessages) => {
-							setTimeout(() => {
-								messagesEndRef.current?.scrollIntoView({
-									behavior: 'smooth',
-								});
-							}, 0);
+						setMessages((previousMessages) => [
+							...previousMessages,
+							{
+								agentDefinitionExternalReferenceCodes:
+									dataJSON[
+										'agentDefinitionExternalReferenceCodes'
+									] ?? [],
+								sender: 'assistant',
+								text: dataJSON['data'],
+							},
+						]);
 
-							return [
-								...previousMessages,
-								{
-									agentDefinitionExternalReferenceCodes:
-										dataJSON[
-											'agentDefinitionExternalReferenceCodes'
-										] ?? [],
-									sender: 'assistant',
-									text: dataJSON['data'],
-								},
-							];
-						});
+						scrollToBottom();
 
 						setMessage('');
 					}
@@ -285,28 +287,22 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 						text = '';
 					}
 
-					setMessages((previousMessages) => {
-						setTimeout(() => {
-							messagesEndRef.current?.scrollIntoView({
-								behavior: 'smooth',
-							});
-						}, 0);
+					setMessages((previousMessages) => [
+						...previousMessages,
+						{
+							error: true,
+							sender: 'assistant',
+							text,
+						},
+					]);
 
-						return [
-							...previousMessages,
-							{
-								error: true,
-								sender: 'assistant',
-								text,
-							},
-						];
-					});
+					scrollToBottom();
 
 					setIsGenerating(false);
 				}
 			);
 		});
-	}, [sendMessage]);
+	}, [scrollToBottom, sendMessage]);
 
 	const closeAIAssistantChatConnection = useCallback(() => {
 		eventSourceRef.current?.close();
@@ -326,26 +322,19 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		const handleCategorize = (payload: CategorizeEventPayload) => {
 			setActive(true);
 
-			setMessages((previousMessages) => {
-				setTimeout(() => {
-					messagesEndRef.current?.scrollIntoView({
-						behavior: 'smooth',
-					});
-				}, 0);
+			scrollToBottom();
 
-				return [
-					...previousMessages,
-					{
-						sender: 'user',
-						text:
-							payload.agent ===
-							ECategorizationAgent.AUTO_CATEGORIZE
-								? Liferay.Language.get('add-categories')
-								: Liferay.Language.get('generate-tags'),
-					},
-					{categorization: payload, sender: 'assistant', text: ''},
-				];
-			});
+			setMessages((previousMessages) => [
+				...previousMessages,
+				{
+					sender: 'user',
+					text:
+						payload.agent === ECategorizationAgent.AUTO_CATEGORIZE
+							? Liferay.Language.get('add-categories')
+							: Liferay.Language.get('generate-tags'),
+				},
+				{categorization: payload, sender: 'assistant', text: ''},
+			]);
 		};
 
 		Liferay.on(CATEGORIZE_EVENT, handleCategorize);
@@ -353,7 +342,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		return () => {
 			Liferay.detach(CATEGORIZE_EVENT, handleCategorize);
 		};
-	}, []);
+	}, [scrollToBottom]);
 
 	const chatSurface = (
 		<>
