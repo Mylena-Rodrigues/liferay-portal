@@ -4,10 +4,12 @@
  */
 
 import {CategorizeEventPayload} from '../Categorization/events';
+import {ContentType} from './components/ContentTypeSelectorMessageBalloon';
 
 export interface message {
 	agentDefinitionExternalReferenceCodes?: string[];
 	categorization?: CategorizeEventPayload;
+	contentTypes?: ContentType[];
 	error?: boolean;
 	images?: string[];
 	sender: string;
