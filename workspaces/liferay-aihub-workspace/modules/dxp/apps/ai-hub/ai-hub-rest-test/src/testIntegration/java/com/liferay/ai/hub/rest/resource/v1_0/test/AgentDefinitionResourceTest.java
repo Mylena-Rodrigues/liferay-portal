@@ -949,19 +949,7 @@ public class AgentDefinitionResourceTest
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
-								name = "contentCoverage";
-								type = "string";
-							}
-						},
-						new Variable() {
-							{
-								name = "focusScope";
-								type = "string";
-							}
-						},
-						new Variable() {
-							{
-								name = "projectContext";
+								name = "request";
 								type = "string";
 							}
 						}
