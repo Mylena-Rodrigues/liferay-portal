@@ -29,16 +29,12 @@ import AIAssistantFooterDisclaimer from './components/AIAssistantFooterDisclaime
 import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
+import {message} from './types';
+import buildAssistantMessage, {
+	ChatMessageSentData,
+} from './utils/buildAssistantMessage';
 
 import './chat.scss';
-
-interface message {
-	agentDefinitionExternalReferenceCodes?: string[];
-	categorization?: CategorizeEventPayload;
-	error?: boolean;
-	sender: string;
-	text: string;
-}
 
 interface ReportContext {
 	agentDefinitionExternalReferenceCodes: string[];
@@ -225,7 +221,9 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 				'Chat Message Sent',
 				(event) => {
 					try {
-						const dataJSON = JSON.parse(event.data);
+						const dataJSON: ChatMessageSentData = JSON.parse(
+							event.data
+						);
 
 						setMessages((previousMessages) => {
 							setTimeout(() => {
@@ -236,14 +234,7 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 
 							return [
 								...previousMessages,
-								{
-									agentDefinitionExternalReferenceCodes:
-										dataJSON[
-											'agentDefinitionExternalReferenceCodes'
-										] ?? [],
-									sender: 'assistant',
-									text: dataJSON['data'],
-								},
+								buildAssistantMessage(dataJSON),
 							];
 						});
 
