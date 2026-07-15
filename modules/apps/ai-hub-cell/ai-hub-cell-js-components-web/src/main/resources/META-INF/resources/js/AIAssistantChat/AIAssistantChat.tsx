@@ -28,6 +28,7 @@ import {
 import AIAssistantFooterDisclaimer from './components/AIAssistantFooterDisclaimer';
 import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
+import ImageMessageBalloon from './components/ImageMessageBalloon';
 import UserMessageBalloon from './components/UserMessageBalloon';
 import {ChatMessageSentData, message} from './types';
 import buildAssistantMessage from './utils/buildAssistantMessage';
@@ -53,6 +54,25 @@ interface AIAssistantChatProps {
 	triggerClassName?: string;
 	triggerLabel?: string;
 	triggerRound?: boolean;
+}
+
+function addAssistantImage(
+	messages: message[],
+	newMessage: message
+): message[] {
+	const lastMessage = messages[messages.length - 1];
+
+	if (lastMessage?.images?.length && !lastMessage.text) {
+		return [
+			...messages.slice(0, -1),
+			{
+				...lastMessage,
+				images: [...lastMessage.images, ...(newMessage.images ?? [])],
+			},
+		];
+	}
+
+	return [...messages, newMessage];
 }
 
 const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
@@ -226,26 +246,40 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 			eventSourceRef.current.addEventListener(
 				'Chat Message Sent',
 				(event) => {
+					let dataJSON: ChatMessageSentData;
+
 					try {
-						const dataJSON: ChatMessageSentData = JSON.parse(
-							event.data
-						);
-
-						setMessages((previousMessages) => [
-							...previousMessages,
-							buildAssistantMessage(dataJSON),
-						]);
-
-						scrollToBottom();
-
-						setMessage('');
+						dataJSON = JSON.parse(event.data);
 					}
 					catch {
 						setMessages((previousMessages) => [
 							...previousMessages,
 							{error: true, sender: 'assistant', text: ''},
 						]);
+
+						setIsGenerating(false);
+
+						return;
 					}
+
+					const newMessage = buildAssistantMessage(dataJSON);
+
+					scrollToBottom();
+
+					if (dataJSON.type === 'image') {
+						setMessages((previousMessages) =>
+							addAssistantImage(previousMessages, newMessage)
+						);
+
+						return;
+					}
+
+					setMessages((previousMessages) => [
+						...previousMessages,
+						newMessage,
+					]);
+
+					setMessage('');
 
 					setIsGenerating(false);
 				}
@@ -276,6 +310,8 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 						text = '';
 					}
 
+					scrollToBottom();
+
 					setMessages((previousMessages) => [
 						...previousMessages,
 						{
@@ -284,8 +320,6 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 							text,
 						},
 					]);
-
-					scrollToBottom();
 
 					setIsGenerating(false);
 				}
@@ -333,6 +367,32 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 		};
 	}, [scrollToBottom]);
 
+	useEffect(() => {
+		const handleOpen = (payload: {
+			context?: ChatContext;
+			message?: string;
+		}) => {
+			setActive(true);
+
+			if (payload?.context) {
+				contextRef.current = {
+					...contextRef.current,
+					...payload.context,
+				};
+			}
+
+			if (payload?.message) {
+				sendMessage(payload.message);
+			}
+		};
+
+		Liferay.on('openAIAssistantChat', handleOpen);
+
+		return () => {
+			Liferay.detach('openAIAssistantChat', handleOpen);
+		};
+	}, [sendMessage]);
+
 	const chatSurface = (
 		<>
 			<div className="ai-assistant-chat__messages-container">
@@ -359,6 +419,35 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 							<CategorizationMessageBalloon
 								key={index}
 								{...item.categorization}
+							/>
+						);
+					}
+
+					if (item.images?.length) {
+						const context = {
+							...contextRef.current,
+							...getContextRef.current?.(),
+						};
+
+						return (
+							<ImageMessageBalloon
+								images={item.images}
+								key={index}
+								message={item.text}
+								saveProps={{
+									groupId: context.groupId as
+										| number
+										| string
+										| undefined,
+									objectEntryFolderExternalReferenceCode:
+										context.objectEntryFolderExternalReferenceCode as
+											| string
+											| undefined,
+									selectFileButton:
+										context.selectFileButton as
+											| string
+											| undefined,
+								}}
 							/>
 						);
 					}
