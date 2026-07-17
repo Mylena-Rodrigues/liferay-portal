@@ -7,6 +7,7 @@ import {Locator, Page} from '@playwright/test';
 
 import {PORTLET_URLS} from '../../../../utils/portletUrls';
 import {DataSetPage} from '../../../site-cms-site-initializer/main/pages/DataSetPage';
+import {toDateString} from '../utils/toDateString';
 
 interface ExecItemActionArgs {
 	action: 'Assign Task' | 'Delete' | 'Update Due Date' | 'Update State';
@@ -20,6 +21,8 @@ export class TasksPage {
 	readonly assignTaskToDialog: Locator;
 	readonly calendarView: {
 		datePickerMenu: Locator;
+		dayViewButton: Locator;
+		monthViewButton: Locator;
 		moreLinkButton: Locator;
 		moreLinkPopover: Locator;
 		nextMonthButton: Locator;
@@ -29,6 +32,7 @@ export class TasksPage {
 		unscheduledTasksButton: Locator;
 		unscheduledTasksPanel: Locator;
 		viewOption: Locator;
+		weekViewButton: Locator;
 	};
 	readonly dataSetFragmentPage: DataSetPage;
 	readonly dialogDeleteButton: Locator;
@@ -64,10 +68,22 @@ export class TasksPage {
 		});
 		this.calendarView = {
 			datePickerMenu: page.getByRole('dialog', {name: 'Select Date'}),
+			dayViewButton: page.getByRole('button', {
+				exact: true,
+				name: 'Day',
+			}),
+			monthViewButton: page.getByRole('button', {
+				exact: true,
+				name: 'Month',
+			}),
 			moreLinkButton: page.getByText(/\d+ More/),
 			moreLinkPopover: page.getByTestId('calendarMoreLinkPopover'),
-			nextMonthButton: page.getByRole('button', {name: 'Next Month'}),
+			nextMonthButton: page.getByRole('button', {
+				exact: true,
+				name: 'Next Month',
+			}),
 			previousMonthButton: page.getByRole('button', {
+				exact: true,
 				name: 'Previous Month',
 			}),
 			title: page.getByTestId('calendarTitle'),
@@ -77,6 +93,10 @@ export class TasksPage {
 				'calendarUnscheduledTasksPanel'
 			),
 			viewOption: page.getByRole('option', {name: 'Calendar'}),
+			weekViewButton: page.getByRole('button', {
+				exact: true,
+				name: 'Week',
+			}),
 		};
 		this.dataSetFragmentPage = new DataSetPage(page);
 		this.dialogDeleteButton = page
@@ -111,6 +131,10 @@ export class TasksPage {
 			name: /View Selected$/,
 		});
 		this.workflowTasksTab = page.getByRole('tab', {name: 'Workflow'});
+	}
+
+	getCalendarDayCell(date: Date): Locator {
+		return this.page.locator(`[data-date="${toDateString(date)}"]`);
 	}
 
 	getItem(filter: string) {

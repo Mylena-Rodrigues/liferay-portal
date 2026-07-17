@@ -8,6 +8,7 @@ import ClayDatePicker from '@clayui/date-picker';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import {
 	FrontendDataSetContext,
@@ -17,8 +18,16 @@ import classNames from 'classnames';
 import {dateUtils, sub} from 'frontend-js-web';
 import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 
-import {DEFAULT_TASK_STATE_KEY} from '../../../../utils/constants';
+import {patchTaskById} from '../../../../utils/api';
+import {
+	DEFAULT_TASK_STATE_KEY,
+	TASK_DRAGGING_CLASS_NAME,
+} from '../../../../utils/constants';
 import {openCMPModal} from '../../../../utils/openCMPModal';
+import {
+	displayDueDateSuccessToast,
+	displayErrorToast,
+} from '../../../../utils/toastUtil';
 import {ITask, ITaskObjectEntry} from '../../../../utils/types';
 import CreateTaskModal from '../../../modal/CreateTaskModal';
 import {UPDATE_TASKS_QUICK_FILTER_VISIBILITY} from '../../../task/TasksQuickFilters';
@@ -49,11 +58,18 @@ export default function CalendarView({
 	projectId,
 	projectObjectDefinitionId,
 }: CalendarViewProps) {
-	const {loadData} = useContext(FrontendDataSetContext);
+	const {loadData, onItemsChange} = useContext(FrontendDataSetContext);
 
 	const calendarRef = useRef<FullCalendar>(null);
 	const calendarViewRef = useRef<HTMLDivElement>(null);
 
+	const calendarViews = [
+		{label: Liferay.Language.get('day'), view: 'dayGridDay'},
+		{label: Liferay.Language.get('week'), view: 'dayGridWeek'},
+		{label: Liferay.Language.get('month'), view: 'dayGridMonth'},
+	];
+
+	const [currentView, setCurrentView] = useState('dayGridMonth');
 	const [datePickerExpanded, setDatePickerExpanded] = useState(false);
 	const [datePickerValue, setDatePickerValue] = useState('');
 	const [fdsContainerElement, setFDSContainerElement] =
@@ -67,18 +83,20 @@ export default function CalendarView({
 	const events = useMemo(
 		() =>
 			items
-				.filter((item) => item.embedded?.dueDate)
-				.map((item) => ({
+				.map((item) => item.embedded)
+				.filter(Boolean)
+				.filter((task) => task.dueDate)
+				.map((task) => ({
 					allDay: true,
 
 					// Attach the full task entry to the event so the custom
 					// renderers (eventContent and the "more" popover) can read
 					// it back through event.extendedProps.
 
-					extendedProps: {task: item.embedded},
-					id: String(item.embedded.id),
-					start: item.embedded.dueDate.slice(0, 10),
-					title: item.embedded.title,
+					extendedProps: {task},
+					id: String(task.id),
+					start: task.dueDate.slice(0, 10),
+					title: task.title,
 				})),
 		[items]
 	);
@@ -86,9 +104,9 @@ export default function CalendarView({
 	const unscheduledTasks = useMemo(
 		() =>
 			items
-				.filter((item) => !item.embedded?.dueDate)
 				.map((item) => item.embedded)
-				.filter(Boolean),
+				.filter(Boolean)
+				.filter((task) => !task.dueDate),
 		[items]
 	);
 
@@ -178,8 +196,51 @@ export default function CalendarView({
 		});
 	};
 
+	/**
+	 * Optimistically replace the item in the shared FDS data with a copy
+	 * carrying the new due date, then persist it. Because the FDS provides
+	 * the data to every view, this keeps the calendar and the other views in
+	 * sync without a reload. When persisting fails, restore the original item
+	 * to undo the optimistic update.
+	 */
+	const rescheduleTask = async (item: ITask, dueDate: string) => {
+		const task = item.embedded;
+
+		onItemsChange({
+			itemKey: 'embedded.id',
+			items: [{...item, embedded: {...task, dueDate}}],
+		});
+
+		const {error} = await patchTaskById({
+			body: {dueDate},
+			taskId: String(task.id),
+		});
+
+		if (error) {
+			displayErrorToast();
+
+			onItemsChange({itemKey: 'embedded.id', items: [item]});
+
+			return;
+		}
+
+		displayDueDateSuccessToast(task.title);
+	};
+
 	const currentYear = new Date().getFullYear();
 	const locale = Liferay.ThemeDisplay.getBCP47LanguageId();
+
+	const nextLabel = {
+		dayGridDay: Liferay.Language.get('next-day'),
+		dayGridMonth: Liferay.Language.get('next-month'),
+		dayGridWeek: Liferay.Language.get('next-week'),
+	}[currentView];
+
+	const previousLabel = {
+		dayGridDay: Liferay.Language.get('previous-day'),
+		dayGridMonth: Liferay.Language.get('previous-month'),
+		dayGridWeek: Liferay.Language.get('previous-week'),
+	}[currentView];
 
 	return (
 		<div className="lfr__calendar-view" ref={calendarViewRef}>
@@ -219,7 +280,7 @@ export default function CalendarView({
 					md={6}
 				>
 					<ClayButtonWithIcon
-						aria-label={Liferay.Language.get('previous-month')}
+						aria-label={previousLabel}
 						borderless
 						displayType="secondary"
 						onClick={() => calendarRef.current?.getApi().prev()}
@@ -305,7 +366,7 @@ export default function CalendarView({
 					</div>
 
 					<ClayButtonWithIcon
-						aria-label={Liferay.Language.get('next-month')}
+						aria-label={nextLabel}
 						borderless
 						displayType="secondary"
 						onClick={() => calendarRef.current?.getApi().next()}
@@ -321,26 +382,92 @@ export default function CalendarView({
 					</ClayButton>
 				</ClayLayout.Col>
 
-				{/* Reserved for future toolbar actions; keeping the column
-				    balances the start column so the center stays centered. */}
-
 				<ClayLayout.Col
 					className="lfr__calendar-view-toolbar-end"
 					md={3}
-				/>
+				>
+					<ClayButton.Group>
+						{calendarViews.map(({label, view}) => (
+							<ClayButton
+								aria-label={label}
+								aria-pressed={currentView === view}
+								displayType="secondary"
+								key={view}
+								onClick={() =>
+									calendarRef.current
+										?.getApi()
+										.changeView(view)
+								}
+								outline={currentView !== view}
+								size="sm"
+								title={label}
+							>
+								{label}
+							</ClayButton>
+						))}
+					</ClayButton.Group>
+				</ClayLayout.Col>
 			</ClayLayout.Row>
 
 			<FullCalendar
-				datesSet={({view}) => setTitle(view.title)}
+				datesSet={({view}) => {
+					setCurrentView(view.type);
+					setTitle(view.title);
+				}}
 				dayHeaderFormat={{weekday: 'long'}}
 				dayMaxEvents
+				drop={async (arg) => {
+
+					// Task in unscheduled panel dropped into the calendar.
+
+					const droppedDate = arg.dateStr;
+					const droppedTaskId = arg.draggedEl.dataset.taskId;
+
+					const droppedItem = items.find(
+						(item) =>
+							!item.embedded?.dueDate &&
+							String(item.embedded?.id) === droppedTaskId
+					);
+
+					if (droppedItem) {
+						await rescheduleTask(droppedItem, droppedDate);
+					}
+				}}
+				droppable
 				eventContent={(arg) => (
 					<CalendarTaskCard
+						expanded={currentView !== 'dayGridMonth'}
 						itemsActions={itemsActions}
 						loadData={loadData}
 						task={arg.event.extendedProps.task}
 					/>
 				)}
+				eventDragStart={() =>
+					document.body.classList.add(TASK_DRAGGING_CLASS_NAME)
+				}
+				eventDragStop={() =>
+					document.body.classList.remove(TASK_DRAGGING_CLASS_NAME)
+				}
+				eventDrop={async (arg) => {
+
+					// Task in calendar dropped into another date.
+
+					const droppedDate = arg.event.startStr;
+					const droppedTask = arg.event.extendedProps.task;
+
+					const droppedItem = items.find(
+						(item) => item.embedded?.id === droppedTask.id
+					);
+
+					if (!droppedItem) {
+						arg.revert();
+
+						return;
+					}
+
+					await rescheduleTask(droppedItem, droppedDate);
+				}}
+				eventStartEditable
 				events={events}
 				fixedWeekCount={false}
 				headerToolbar={false}
@@ -378,12 +505,12 @@ export default function CalendarView({
 					</>
 				)}
 				moreLinkHint={Liferay.Language.get('view-all-tasks')}
-				plugins={[dayGridPlugin]}
+				plugins={[dayGridPlugin, interactionPlugin]}
 				ref={calendarRef}
 				{...(Liferay.FeatureFlags['LPD-69885'] && {
 					dayCellContent: (arg) => (
 						<>
-							{arg.dayNumberText}
+							{arg.dayNumberText || String(arg.date.getDate())}
 
 							<ClayButtonWithIcon
 								aria-label={Liferay.Language.get('add-task')}

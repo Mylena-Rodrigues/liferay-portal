@@ -4,6 +4,7 @@
  */
 
 import '@testing-library/jest-dom';
+import {Draggable} from '@fullcalendar/interaction';
 import {fireEvent, render} from '@testing-library/react';
 import React from 'react';
 
@@ -20,6 +21,13 @@ jest.mock('@clayui/drop-down', () => ({
 	ClayDropDownWithItems: ({trigger}: {trigger: React.ReactNode}) => (
 		<div>{trigger}</div>
 	),
+}));
+
+jest.mock('@fullcalendar/interaction', () => ({
+	Draggable: jest.fn(() => ({
+		destroy: jest.fn(),
+		dragging: {emitter: {off: jest.fn(), on: jest.fn()}},
+	})),
 }));
 
 jest.mock('@clayui/core', () => {
@@ -60,10 +68,13 @@ function createTask(overrides: Partial<ITaskObjectEntry> = {}) {
 	} as ITaskObjectEntry;
 }
 
-function renderUnscheduledTasksPanel(tasks: ITaskObjectEntry[]) {
+function renderUnscheduledTasksPanel(
+	tasks: ITaskObjectEntry[],
+	containerElement: HTMLElement | null = null
+) {
 	return render(
 		<UnscheduledTasksPanel
-			containerRef={{current: null}}
+			containerRef={{current: containerElement}}
 			onOpenChange={jest.fn()}
 			open
 			tasks={tasks}
@@ -126,6 +137,29 @@ describe('UnscheduledTasksPanel', () => {
 		]);
 	});
 
+	it('registers the task rows as draggable into the calendar', () => {
+		(Draggable as jest.Mock).mockClear();
+
+		const containerElement = document.createElement('div');
+
+		const {unmount} = renderUnscheduledTasksPanel(
+			[createTask()],
+			containerElement
+		);
+
+		expect(Draggable).toHaveBeenCalledWith(containerElement, {
+			eventData: {create: false},
+			itemSelector: '.lfr__cmp-unscheduled-tasks-panel-item',
+		});
+
+		unmount();
+
+		const draggableInstance = (Draggable as jest.Mock).mock.results[0]
+			.value;
+
+		expect(draggableInstance.destroy).toHaveBeenCalled();
+	});
+
 	it('renders a row for each unscheduled task', () => {
 		const {getByText} = renderUnscheduledTasksPanel([
 			createTask({id: 1, title: 'Alpha'}),
@@ -168,8 +202,9 @@ describe('UnscheduledTasksPanel', () => {
 	});
 
 	it('shows the empty state when there are no unscheduled tasks', () => {
-		const {getByText} = renderUnscheduledTasksPanel([]);
+		const {getByText, queryByText} = renderUnscheduledTasksPanel([]);
 
-		expect(getByText('no-results-found')).toBeInTheDocument();
+		expect(getByText('no-unscheduled-tasks')).toBeInTheDocument();
+		expect(queryByText('clear-search')).not.toBeInTheDocument();
 	});
 });
