@@ -810,7 +810,7 @@ test(
 
 test(
 	'Create a task from the calendar by clicking a day',
-	{tag: ['@LPD-93258']},
+	{tag: ['@LPD-93258', '@LPD-97621']},
 	async ({page, projectPage, projectsPage, tasksPage}) => {
 		const taskTitle = getRandomString();
 
@@ -870,6 +870,60 @@ test(
 		await test.step('The new task appears on the clicked day', async () => {
 			await expect(
 				dayCell.getByText(taskTitle, {exact: true})
+			).toBeVisible();
+		});
+
+		await test.step('Clicking a day slot opens the create task modal with that day pre-filled', async () => {
+			const daySlotDate = new Date();
+
+			daySlotDate.setDate(10);
+
+			await clickAndExpectToBeVisible({
+				target: tasksPage.titleInput,
+				trigger: tasksPage.getCalendarDayCell(daySlotDate),
+			});
+
+			const locale = await page.evaluate(() =>
+				Liferay.ThemeDisplay.getBCP47LanguageId()
+			);
+
+			await expect(page.getByLabel('Due Date')).toHaveValue(
+				daySlotDate.toLocaleDateString(locale, {
+					day: '2-digit',
+					month: '2-digit',
+					year: 'numeric',
+				})
+			);
+
+			await page.getByRole('button', {name: 'Cancel'}).click();
+
+			await expect(tasksPage.titleInput).toBeHidden();
+		});
+
+		await test.step('Saving from a day slot keeps the calendar on the navigated month', async () => {
+			const nextMonthTaskTitle = getRandomString();
+
+			const nextMonthDate = new Date();
+
+			nextMonthDate.setDate(15);
+			nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+
+			await tasksPage.calendarView.nextMonthButton.click();
+
+			const nextMonthDayCell =
+				tasksPage.getCalendarDayCell(nextMonthDate);
+
+			await clickAndExpectToBeVisible({
+				target: tasksPage.titleInput,
+				trigger: nextMonthDayCell,
+			});
+
+			await tasksPage.titleInput.fill(nextMonthTaskTitle);
+
+			await tasksPage.saveButton.click();
+
+			await expect(
+				nextMonthDayCell.getByText(nextMonthTaskTitle, {exact: true})
 			).toBeVisible();
 		});
 	}

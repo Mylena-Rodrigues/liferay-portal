@@ -8,7 +8,7 @@ import ClayDatePicker from '@clayui/date-picker';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import interactionPlugin, {DateClickArg} from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import {
 	FrontendDataSetContext,
@@ -39,7 +39,10 @@ import './CalendarView.scss';
 
 import type {FirstDayOfWeekLocale} from 'frontend-js-web';
 
+const ADD_TASK_BUTTON_CLASS_NAME = 'lfr__calendar-view-add-task-button';
+
 interface CalendarViewProps {
+	hasAddTaskPermission: boolean;
 	items: ITask[];
 	itemsActions: IItemsActions[];
 	projectId?: string;
@@ -53,6 +56,7 @@ interface MoreLinkPopover {
 }
 
 export default function CalendarView({
+	hasAddTaskPermission,
 	items,
 	itemsActions,
 	projectId,
@@ -187,6 +191,7 @@ export default function CalendarView({
 					closeModal={closeModal}
 					dueDate={dueDate}
 					loadData={loadData}
+					onItemsChange={onItemsChange}
 					projectId={projectId}
 					projectObjectDefinitionId={projectObjectDefinitionId}
 					state={DEFAULT_TASK_STATE_KEY}
@@ -507,7 +512,20 @@ export default function CalendarView({
 				moreLinkHint={Liferay.Language.get('view-all-tasks')}
 				plugins={[dayGridPlugin, interactionPlugin]}
 				ref={calendarRef}
-				{...(Liferay.FeatureFlags['LPD-69885'] && {
+				{...(hasAddTaskPermission && {
+					dateClick: (arg: DateClickArg) => {
+						const target = arg.jsEvent.target as HTMLElement;
+
+						// Don't open the create task modal if the add task
+						// button is clicked, since its own click handler
+						// already opens it.
+
+						if (target.closest(`.${ADD_TASK_BUTTON_CLASS_NAME}`)) {
+							return;
+						}
+
+						openCreateTaskModal(arg.dateStr);
+					},
 					dayCellContent: (arg) => (
 						<>
 							{arg.dayNumberText || String(arg.date.getDate())}
@@ -515,7 +533,7 @@ export default function CalendarView({
 							<ClayButtonWithIcon
 								aria-label={Liferay.Language.get('add-task')}
 								borderless
-								className="lfr__calendar-view-add-task-button"
+								className={ADD_TASK_BUTTON_CLASS_NAME}
 								displayType="secondary"
 								onClick={() =>
 									openCreateTaskModal(
