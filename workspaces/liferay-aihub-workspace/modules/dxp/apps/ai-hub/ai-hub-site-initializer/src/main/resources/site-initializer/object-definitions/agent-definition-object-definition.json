@@ -29,7 +29,7 @@
 		},
 		{
 			"DBType": "String",
-			"businessType": "LongText",
+			"businessType": "Text",
 			"defaultValue": "null",
 			"externalReferenceCode": "DESCRIPTION",
 			"indexed": true,
@@ -39,9 +39,8 @@
 			},
 			"name": "description",
 			"readOnly": false,
-			"readOnlyConditionExpression": "",
 			"system": true,
-			"type": "Text"
+			"type": "String"
 		},
 		{
 			"DBType": "String",

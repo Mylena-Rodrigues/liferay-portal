@@ -93,7 +93,7 @@
 		},
 		{
 			"active": true,
-			"description": "This agent generates the value of a single field of the content entry the user is currently editing, deriving it from the values already filled in the entry's other fields and/or a brief. Use it whenever the user asks to generate, write, or fill one field based on other fields or a description - for example \"generate a title based on the content\", \"write the body from the title\", or \"fill field C from field A and field B\". From the user request, extract instruction. The field definitions and the current field values of the open entry are resolved automatically by the application, so always proceed and never ask the user for them. It returns only the generated value and does not create fields, create content entries, or save anything.",
+			"description": "Generates the value of one field in the entry being edited, from other field values and/or a brief. Use to generate/write/fill a single field. Extract instruction; returns the value only, saves nothing.",
 			"externalReferenceCode": "L_GENERATE_FIELD_VALUE",
 			"inputVariables": "instruction",
 			"outputVariable": "properties",
