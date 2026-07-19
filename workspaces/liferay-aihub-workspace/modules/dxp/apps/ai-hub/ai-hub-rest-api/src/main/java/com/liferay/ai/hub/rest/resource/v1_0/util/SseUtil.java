@@ -5,11 +5,15 @@
 
 package com.liferay.ai.hub.rest.resource.v1_0.util;
 
+import com.liferay.portal.kernel.cluster.ClusterExecutorUtil;
+import com.liferay.portal.kernel.cluster.ClusterRequest;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.MethodHandler;
+import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -123,27 +127,28 @@ public class SseUtil {
 			"type", type
 		);
 
-		Sse sse = _sses.get(sseEventSinkKey);
+		if (_sendLocally(
+				jsonObject.toString(), name, nodeName, sseEventSinkKey)) {
 
-		SseEventSink sseEventSink = _sseEventSinks.get(sseEventSinkKey);
+			return;
+		}
 
-		if (sseEventSink.isClosed()) {
-			_remove(sseEventSinkKey);
-
-			if (_log.isWarnEnabled()) {
-				_log.warn("SSE Event Sink is closed " + sseEventSinkKey);
+		if (!ClusterExecutorUtil.isEnabled()) {
+			if (_log.isErrorEnabled()) {
+				_log.error("No SSE event sink found " + sseEventSinkKey);
 			}
 
 			return;
 		}
 
-		sseEventSink.send(
-			sse.newEventBuilder(
-			).data(
-				String.class, jsonObject.toString()
-			).name(
-				Validator.isBlank(name) ? nodeName : name
-			).build());
+		ClusterRequest clusterRequest = ClusterRequest.createMulticastRequest(
+			new MethodHandler(
+				_methodKey, data, name, nodeName, sseEventSinkKey),
+			true);
+
+		clusterRequest.setFireAndForget(true);
+
+		ClusterExecutorUtil.execute(clusterRequest);
 	}
 
 	public static void send(
@@ -160,8 +165,41 @@ public class SseUtil {
 		_sses.remove(sseEventSinkKey);
 	}
 
+	private static boolean _sendLocally(
+		String data, String name, String nodeName, String sseEventSinkKey) {
+
+		SseEventSink sseEventSink = _sseEventSinks.get(sseEventSinkKey);
+
+		if (sseEventSink == null) {
+			return false;
+		}
+
+		if (sseEventSink.isClosed()) {
+			_remove(sseEventSinkKey);
+
+			_log.error("SSE Event Sink is closed " + sseEventSinkKey);
+
+			return true;
+		}
+
+		Sse sse = _sses.get(sseEventSinkKey);
+
+		sseEventSink.send(
+			sse.newEventBuilder(
+			).data(
+				String.class, data
+			).name(
+				Validator.isBlank(name) ? nodeName : name
+			).build());
+
+		return true;
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(SseUtil.class);
 
+	private static final MethodKey _methodKey = new MethodKey(
+		SseUtil.class, "_sendLocally", String.class, String.class, String.class,
+		String.class);
 	private static Map<String, SseEventSink> _sseEventSinks =
 		new ConcurrentHashMap<>();
 	private static Map<String, Sse> _sses = new ConcurrentHashMap<>();
