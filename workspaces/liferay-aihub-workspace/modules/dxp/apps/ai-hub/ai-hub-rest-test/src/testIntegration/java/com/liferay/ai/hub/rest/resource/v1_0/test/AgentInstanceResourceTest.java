@@ -719,9 +719,13 @@ public class AgentInstanceResourceTest
 	private void _testPostAgentInstanceWithTypeCategorizationIntent()
 		throws Exception {
 
-		// Categorize and tag
-
 		String data = _postAndAwaitAgentInstance(
+			"L_CATEGORIZATION_INTENT",
+			JSONUtil.put("message", "add the category Travel"));
+
+		_assertContains(data, "\"categorize\"", "Travel");
+
+		data = _postAndAwaitAgentInstance(
 			"L_CATEGORIZATION_INTENT",
 			JSONUtil.put("message", "categorize and tag this"));
 
@@ -730,26 +734,8 @@ public class AgentInstanceResourceTest
 		Assert.assertTrue(
 			data, data.indexOf("\"categorize\"") < data.indexOf("\"tag\""));
 
-		// Named category target
-
-		data = _postAndAwaitAgentInstance(
-			"L_CATEGORIZATION_INTENT",
-			JSONUtil.put("message", "add the category Travel"));
-
-		_assertContains(data, "\"categorize\"", "Travel");
-
-		// Passthrough
-
-		data = _postAndAwaitAgentInstance(
-			"L_CATEGORIZATION_INTENT",
-			JSONUtil.put("message", "what is Liferay?"));
-
-		_assertContains(data, "passthrough", "true");
-
 		Assert.assertFalse(data, data.contains("\"categorize\""));
 		Assert.assertFalse(data, data.contains("\"tag\""));
-
-		// Tag only
 
 		data = _postAndAwaitAgentInstance(
 			"L_CATEGORIZATION_INTENT",
@@ -758,6 +744,12 @@ public class AgentInstanceResourceTest
 		_assertContains(data, "\"tag\"");
 
 		Assert.assertFalse(data, data.contains("\"categorize\""));
+
+		data = _postAndAwaitAgentInstance(
+			"L_CATEGORIZATION_INTENT",
+			JSONUtil.put("message", "what is Liferay?"));
+
+		_assertContains(data, "passthrough", "true");
 	}
 
 	private void _testPostAgentInstanceWithTypeFixSpellingAndGrammarWithInstruction()
