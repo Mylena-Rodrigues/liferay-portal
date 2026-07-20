@@ -57,6 +57,10 @@ components:
                 externalReferenceCode:
                     readOnly: true
                     type: string
+                id:
+                    format: int64
+                    readOnly: true
+                    type: integer
                 instructionDefinitionScope:
                     enum:
                         -   clickToChat
@@ -476,6 +480,30 @@ paths:
                 200:
                     content:
                         text/event-stream: {}
+            tags: ["AgentInstance"]
+    "/agent-instances/{agentInstanceId}/resume":
+        put:
+            operationId: putAgentInstanceResume
+            parameters:
+                -   in: path
+                    name: agentInstanceId
+                    required: true
+                    schema:
+                        format: int64
+                        type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/AgentInstance"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/AgentInstance"
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
             tags: ["AgentInstance"]
     "/chatbots/by-external-reference-code/{externalReferenceCode}":
         get:
