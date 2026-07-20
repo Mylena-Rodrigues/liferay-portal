@@ -1,4 +1,4 @@
-name: liferay-ai-hub
+name: liferay-aihub-workspace
 services:
     database:
         container_name: database
@@ -28,9 +28,9 @@ services:
             -   "11311:11311"
         user: 0:0
         volumes:
+            -   ${GOOGLE_ADC_PATH:-${HOME}/.config/gcloud/application_default_credentials.json}:/tmp/keys/adc.json:ro
             -   ./bundles/data/document_library:/opt/liferay/data/document_library
             -   ./bundles/deploy:/mnt/liferay/deploy
             -   ./bundles/logs:/opt/liferay/logs
             -   ./bundles/osgi/modules:/mnt/liferay/deploy
             -   ./configs/docker:/mnt/liferay/files
-            -   ${GOOGLE_ADC_PATH:-${HOME}/.config/gcloud/application_default_credentials.json}:/tmp/keys/adc.json:ro
