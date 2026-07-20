@@ -1,9 +1,6 @@
 .DS_Store
-.gradle
 /.idea
 /bundles
-/client-extensions/liferay-aihub-custom-element/src/assets/atlas.css
-/client-extensions/liferay-aihub-custom-element/src/assets/icons.svg
 /poshi/poshi-ext.properties
 /poshi/test-results
 /poshi/tests
