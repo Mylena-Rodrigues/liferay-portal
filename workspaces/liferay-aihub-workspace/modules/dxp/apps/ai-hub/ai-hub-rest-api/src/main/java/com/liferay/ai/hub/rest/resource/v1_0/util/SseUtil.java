@@ -23,6 +23,7 @@ import jakarta.ws.rs.sse.SseEventSink;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -35,23 +36,41 @@ public class SseUtil {
 		for (Map.Entry<String, SseEventSink> entry :
 				_sseEventSinks.entrySet()) {
 
+			Sse sse = _sses.get(entry.getKey());
+
 			SseEventSink sseEventSink = entry.getValue();
 
-			if (sseEventSink.isClosed()) {
-				_remove(entry.getKey());
+			if ((sse == null) || sseEventSink.isClosed()) {
+				_close(sseEventSink, entry.getKey());
 
 				consumer.accept(entry.getKey());
 
 				continue;
 			}
 
-			Sse sse = _sses.get(entry.getKey());
+			try {
+				CompletionStage<?> completionStage = sseEventSink.send(
+					sse.newEventBuilder(
+					).comment(
+						"heartbeat"
+					).build());
 
-			sseEventSink.send(
-				sse.newEventBuilder(
-				).comment(
-					"heartbeat"
-				).build());
+				completionStage.whenComplete(
+					(result, throwable) -> {
+						if (throwable != null) {
+							_close(sseEventSink, entry.getKey());
+
+							consumer.accept(entry.getKey());
+						}
+					});
+			}
+			catch (RuntimeException runtimeException) {
+				_close(sseEventSink, entry.getKey());
+
+				consumer.accept(entry.getKey());
+
+				_log.error(runtimeException);
+			}
 		}
 	}
 
@@ -134,16 +153,15 @@ public class SseUtil {
 		}
 
 		if (!ClusterExecutorUtil.isEnabled()) {
-			if (_log.isErrorEnabled()) {
-				_log.error("No SSE event sink found " + sseEventSinkKey);
-			}
+			_log.error("No SSE event sink found " + sseEventSinkKey);
 
 			return;
 		}
 
 		ClusterRequest clusterRequest = ClusterRequest.createMulticastRequest(
 			new MethodHandler(
-				_methodKey, data, name, nodeName, sseEventSinkKey),
+				_methodKey, jsonObject.toString(), name, nodeName,
+				sseEventSinkKey),
 			true);
 
 		clusterRequest.setFireAndForget(true);
@@ -160,6 +178,18 @@ public class SseUtil {
 			sseEventSinkKey, "text");
 	}
 
+	private static void _close(
+		SseEventSink sseEventSink, String sseEventSinkKey) {
+
+		_remove(sseEventSinkKey);
+
+		if ((sseEventSink == null) || sseEventSink.isClosed()) {
+			return;
+		}
+
+		sseEventSink.close();
+	}
+
 	private static void _remove(String sseEventSinkKey) {
 		_sseEventSinks.remove(sseEventSinkKey);
 		_sses.remove(sseEventSinkKey);
@@ -174,23 +204,35 @@ public class SseUtil {
 			return false;
 		}
 
-		if (sseEventSink.isClosed()) {
-			_remove(sseEventSinkKey);
+		Sse sse = _sses.get(sseEventSinkKey);
+
+		if ((sse == null) || sseEventSink.isClosed()) {
+			_close(sseEventSink, sseEventSinkKey);
 
 			_log.error("SSE Event Sink is closed " + sseEventSinkKey);
 
 			return true;
 		}
 
-		Sse sse = _sses.get(sseEventSinkKey);
+		try {
+			sseEventSink.send(
+				sse.newEventBuilder(
+				).data(
+					String.class, data
+				).name(
+					Validator.isBlank(name) ? nodeName : name
+				).build());
+		}
+		catch (RuntimeException runtimeException) {
+			_close(sseEventSink, sseEventSinkKey);
 
-		sseEventSink.send(
-			sse.newEventBuilder(
-			).data(
-				String.class, data
-			).name(
-				Validator.isBlank(name) ? nodeName : name
-			).build());
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Closed SSE event sink " + sseEventSinkKey +
+						" after a failed send",
+					runtimeException);
+			}
+		}
 
 		return true;
 	}
