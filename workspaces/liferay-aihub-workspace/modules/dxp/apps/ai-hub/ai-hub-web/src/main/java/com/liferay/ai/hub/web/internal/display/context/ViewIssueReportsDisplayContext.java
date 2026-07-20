@@ -72,7 +72,7 @@ public class ViewIssueReportsDisplayContext {
 				new DefaultDTOConverterContext(
 					false, null, null, _httpServletRequest, null,
 					_themeDisplay.getLocale(), null, _themeDisplay.getUser()),
-				null, Pagination.of(1, 1), null, null);
+				null, Pagination.of(1, 20), null, null);
 
 			criticalCount = _getFacetCount(page, "level", "critical");
 			negativeCount = _getFacetCount(page, "feedback", "negative");
