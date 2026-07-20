@@ -1,0 +1,34 @@
+services:
+    database:
+        environment:
+            POSTGRES_PASSWORD: liferay
+            POSTGRES_USER: liferay
+        healthcheck:
+            test: >
+                pg_isready
+                --dbname
+                lportal
+                --username
+                liferay
+    liferay:
+        environment:
+            GOOGLE_APPLICATION_CREDENTIALS: /tmp/keys/adc.json
+            LIFERAY_JVM_OPTS: -Xms3g -Xmx3g
+            LIFERAY_MODULE_PERIOD_FRAMEWORK_PERIOD_PROPERTIES_PERIOD_OSGI_PERIOD_CONSOLE: 0.0.0.0:11311
+            LIFERAY_RETRY_PERIOD_JDBC_PERIOD_ON_PERIOD_STARTUP_PERIOD_DELAY: "10"
+            LIFERAY_RETRY_PERIOD_JDBC_PERIOD_ON_PERIOD_STARTUP_PERIOD_MAX_PERIOD_RETRIES: "2"
+            LIFERAY_SESSION_PERIOD_TIMEOUT: "120"
+            LIFERAY_WORKSPACE_ENVIRONMENT: !reset null
+        image: liferay/release-candidates:7.4.13-u151-ai-hub-1784051387-d10.0.65-snapshot-20260714112350
+        ports: !override
+            -   8000:8000
+            -   8080:8080
+            -   11311:11311
+        user: 0:0
+        volumes: !override
+            -   ${GOOGLE_ADC_PATH:-${HOME}/.config/gcloud/application_default_credentials.json}:/tmp/keys/adc.json:ro
+            -   ./bundles/data/document_library:/opt/liferay/data/document_library
+            -   ./bundles/logs:/opt/liferay/logs
+            -   ./bundles/osgi/client-extensions:/opt/liferay/osgi/client-extensions
+            -   ./bundles/osgi/modules:/mnt/liferay/deploy
+            -   ./configs/docker:/mnt/liferay/files
