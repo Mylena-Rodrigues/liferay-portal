@@ -227,6 +227,30 @@ public abstract class BaseAgentInstanceResourceTestCase {
 	}
 
 	@Test
+	public void testPutAgentInstanceResume() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		AgentInstance agentInstance =
+			testPutAgentInstanceResume_addAgentInstance();
+
+		assertHttpResponseStatusCode(
+			204,
+			agentInstanceResource.putAgentInstanceResumeHttpResponse(
+				agentInstance.getId(), agentInstance));
+
+		assertHttpResponseStatusCode(
+			404,
+			agentInstanceResource.putAgentInstanceResumeHttpResponse(
+				0L, agentInstance));
+	}
+
+	protected AgentInstance testPutAgentInstanceResume_addAgentInstance()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}
@@ -303,6 +327,10 @@ public abstract class BaseAgentInstanceResourceTestCase {
 
 	protected void assertValid(AgentInstance agentInstance) throws Exception {
 		boolean valid = true;
+
+		if (agentInstance.getId() == null) {
+			valid = false;
+		}
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
@@ -432,6 +460,8 @@ public abstract class BaseAgentInstanceResourceTestCase {
 
 		graphQLFields.add(new GraphQLField("externalReferenceCode"));
 
+		graphQLFields.add(new GraphQLField("id"));
+
 		for (java.lang.reflect.Field field :
 				getDeclaredFields(
 					com.liferay.ai.hub.rest.dto.v1_0.AgentInstance.class)) {
@@ -536,6 +566,16 @@ public abstract class BaseAgentInstanceResourceTestCase {
 				if (!Objects.deepEquals(
 						agentInstance1.getExternalReferenceCode(),
 						agentInstance2.getExternalReferenceCode())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("id", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						agentInstance1.getId(), agentInstance2.getId())) {
 
 					return false;
 				}
@@ -788,6 +828,11 @@ public abstract class BaseAgentInstanceResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("id")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("instructionDefinitionScope")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -937,6 +982,7 @@ public abstract class BaseAgentInstanceResourceTestCase {
 				asynchronous = RandomTestUtil.randomBoolean();
 				externalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				id = RandomTestUtil.randomLong();
 				output = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				sseEventSinkKey = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
@@ -1164,4 +1210,4 @@ public abstract class BaseAgentInstanceResourceTestCase {
 		_agentInstanceResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:517036902
+// LIFERAY-REST-BUILDER-HASH:-1345790079
