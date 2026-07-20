@@ -719,19 +719,9 @@ public class AgentInstanceResourceTest
 	private void _testPostAgentInstanceWithTypeCategorizationIntent()
 		throws Exception {
 
-		// Tag only
-
-		String data = _postAndAwaitAgentInstance(
-			"L_CATEGORIZATION_INTENT",
-			JSONUtil.put("message", "tag this article"));
-
-		_assertContains(data, "\"tag\"");
-
-		Assert.assertFalse(data, data.contains("\"categorize\""));
-
 		// Categorize and tag
 
-		data = _postAndAwaitAgentInstance(
+		String data = _postAndAwaitAgentInstance(
 			"L_CATEGORIZATION_INTENT",
 			JSONUtil.put("message", "categorize and tag this"));
 
@@ -758,6 +748,16 @@ public class AgentInstanceResourceTest
 
 		Assert.assertFalse(data, data.contains("\"categorize\""));
 		Assert.assertFalse(data, data.contains("\"tag\""));
+
+		// Tag only
+
+		data = _postAndAwaitAgentInstance(
+			"L_CATEGORIZATION_INTENT",
+			JSONUtil.put("message", "tag this article"));
+
+		_assertContains(data, "\"tag\"");
+
+		Assert.assertFalse(data, data.contains("\"categorize\""));
 	}
 
 	private void _testPostAgentInstanceWithTypeFixSpellingAndGrammarWithInstruction()
