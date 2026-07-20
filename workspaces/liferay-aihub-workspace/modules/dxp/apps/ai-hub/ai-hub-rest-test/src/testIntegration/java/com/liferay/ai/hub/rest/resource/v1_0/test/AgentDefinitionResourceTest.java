@@ -1316,6 +1316,30 @@ public class AgentDefinitionResourceTest
 					version = 1;
 					workflowDefinitionName = "Site Builder";
 				}
+			},
+			new AgentDefinition() {
+				{
+					active = true;
+					externalReferenceCode =
+						WorkflowDefinitionConstants.
+							EXTERNAL_REFERENCE_CODE_TRANSLATE_CONTENT;
+					inputVariables = new Variable[] {
+						new Variable() {
+							{
+								name = "instruction";
+								type = "string";
+							}
+						}
+					};
+					outputVariable = new Variable() {
+						{
+							name = "output";
+							type = "string";
+						}
+					};
+					version = 1;
+					workflowDefinitionName =
+						WorkflowDefinitionConstants.NAME_TRANSLATE_CONTENT;
 			});
 
 	@Inject
