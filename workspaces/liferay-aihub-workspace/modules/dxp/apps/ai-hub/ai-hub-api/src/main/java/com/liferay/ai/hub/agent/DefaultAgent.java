@@ -12,4 +12,7 @@ public interface DefaultAgent {
 
 	public Object invoke(AgentContext agentContext);
 
+	public void resume(AgentContext agentContext, long agentInstanceId)
+		throws Exception;
+
 }
