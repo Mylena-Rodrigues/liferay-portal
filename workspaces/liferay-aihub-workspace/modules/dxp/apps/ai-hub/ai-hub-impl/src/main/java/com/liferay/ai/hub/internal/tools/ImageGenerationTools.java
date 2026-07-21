@@ -5,7 +5,6 @@
 
 package com.liferay.ai.hub.internal.tools;
 
-import com.liferay.ai.hub.internal.langchain4j.model.image.GoogleGenAiImageModel;
 import com.liferay.ai.hub.internal.model.GoogleGenAiUtil;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
@@ -21,6 +20,7 @@ import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.invocation.InvocationParameters;
+import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 
 import java.io.Serializable;
@@ -47,12 +47,10 @@ public class ImageGenerationTools {
 			ExecutionContext executionContext = invocationParameters.get(
 				"executionContext");
 
-			GoogleGenAiImageModel googleGenAiImageModel =
-				GoogleGenAiUtil.createGoogleGenAiImageModel(
-					_quotaManager, executionContext.getServiceContext());
+			ImageModel imageModel = GoogleGenAiUtil.createGoogleGenAiImageModel(
+				_quotaManager, executionContext.getServiceContext());
 
-			Response<List<Image>> response =
-				googleGenAiImageModel.generateImages(prompt);
+			Response<List<Image>> response = imageModel.generate(prompt, -1);
 
 			Map<String, Serializable> workflowContext =
 				executionContext.getWorkflowContext();
@@ -80,13 +78,12 @@ public class ImageGenerationTools {
 					"image");
 			}
 
-			return "The images were generated.";
+			return "Images have been generated.";
 		}
 		catch (Exception exception) {
 			_log.error(exception);
 
-			return "The image could not be generated. Ask the user to " +
-				"rephrase the request or try again later.";
+			return "Unable to generate image. Rephrase the request.";
 		}
 	}
 

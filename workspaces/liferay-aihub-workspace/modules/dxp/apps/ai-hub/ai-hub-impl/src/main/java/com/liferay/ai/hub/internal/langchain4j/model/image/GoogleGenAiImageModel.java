@@ -64,10 +64,15 @@ public class GoogleGenAiImageModel implements ImageModel {
 
 	@Override
 	public Response<Image> generate(String prompt) {
-		return null;
+		Response<List<Image>> response = generate(prompt, 1);
+
+		List<Image> images = response.content();
+
+		return Response.from(images.get(0), response.tokenUsage());
 	}
 
-	public Response<List<Image>> generateImages(String prompt) {
+	@Override
+	public Response<List<Image>> generate(String prompt, int n) {
 		try (Client client = Client.builder(
 			).location(
 				_modelLocation
