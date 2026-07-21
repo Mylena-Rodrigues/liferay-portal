@@ -1340,6 +1340,7 @@ public class AgentDefinitionResourceTest
 					version = 1;
 					workflowDefinitionName =
 						WorkflowDefinitionConstants.NAME_TRANSLATE_CONTENT;
+				}
 			});
 
 	@Inject
