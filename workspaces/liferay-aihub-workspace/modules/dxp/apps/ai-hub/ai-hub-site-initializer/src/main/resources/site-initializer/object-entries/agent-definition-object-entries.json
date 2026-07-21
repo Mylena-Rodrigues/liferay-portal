@@ -79,7 +79,7 @@
 			"workflowDefinitionName": "Fix Spelling and Grammar"
 		},
 		{
-			"active": false,
+			"active": true,
 			"description": "Generate images based on a description and style. This agent requires both information, if style is not specified suggest one of them: Digital Art, Illustration, Photorealistic or Watercolor",
 			"externalReferenceCode": "L_GENERATE_IMAGE",
 			"inputVariables": "description,request,style",
