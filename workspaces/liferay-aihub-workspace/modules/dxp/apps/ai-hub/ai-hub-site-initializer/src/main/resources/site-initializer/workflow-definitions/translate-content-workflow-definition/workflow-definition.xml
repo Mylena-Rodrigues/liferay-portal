@@ -29,7 +29,7 @@
 				]
 			]]>
 		</input-variables>
-		<java-delegate>javaDelegate#TranslateContent#requestPageContext</java-delegate>
+		<java-delegate>javaDelegate#requestPageContext</java-delegate>
 		<labels>
 			<label language-id="en_US">
 				Request Page Context
@@ -40,69 +40,6 @@
 				[
 					{
 						"name": "output",
-						"type": "string"
-					}
-				]
-			]]>
-		</output-variables>
-		<transitions>
-			<transition>
-				<labels>
-					<label language-id="en_US">
-						Translate
-					</label>
-				</labels>
-				<name>translate</name>
-				<target>translate</target>
-				<default>true</default>
-			</transition>
-		</transitions>
-	</service>
-	<service>
-		<name>translate</name>
-		<metadata>
-			<![CDATA[
-				{
-					"xy": [
-						276,
-						250
-					]
-				}
-			]]>
-		</metadata>
-		<input-variables>
-			<![CDATA[
-				[
-					{
-						"name": "fields",
-						"type": "string"
-					},
-					{
-						"name": "html",
-						"type": "string"
-					},
-					{
-						"name": "sourceLanguageId",
-						"type": "string"
-					},
-					{
-						"name": "targetLanguageIds",
-						"type": "string"
-					}
-				]
-			]]>
-		</input-variables>
-		<java-delegate>javaDelegate#TranslateContent#translate</java-delegate>
-		<labels>
-			<label language-id="en_US">
-				Translate
-			</label>
-		</labels>
-		<output-variables>
-			<![CDATA[
-				[
-					{
-						"name": "translatedContent",
 						"type": "string"
 					}
 				]
@@ -156,10 +93,6 @@
 					{
 						"name": "targetLanguageIds",
 						"type": "string"
-					},
-					{
-						"name": "translatedContent",
-						"type": "string"
 					}
 				]
 			]]>
@@ -185,12 +118,6 @@ You produce the translations of the current entry's fields from the source local
 - html: a JSON object mapping each field name to a boolean that is true for rich-text fields.
 - sourceLanguageId: the source locale of the current values, for example "en_US".
 - targetLanguageIds: a JSON array of target locales to translate into.
-- translatedContent: either an empty string, or a JSON object already holding the translations produced by a configured translation service.
-
-# Decision
-
-- When "translatedContent" is a non-empty JSON object, it is authoritative. Output it EXACTLY as received, without translating, re-wording, reformatting, or changing any value, field name, or locale. Do not add or remove entries.
-- Otherwise, translate the fields yourself following the hard rules below.
 
 # Hard rules
 
@@ -244,10 +171,7 @@ Fields (JSON):
 {{fields}}
 
 HTML flags (JSON):
-{{html}}
-
-Already translated content (JSON or empty):
-{{translatedContent}}]]>
+{{html}}]]>
 		</user-message>
 	</llm>
 	<state>

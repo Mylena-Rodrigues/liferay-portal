@@ -95,7 +95,7 @@ public class RequestPageContextServiceNodeDelegate
 
 	@Override
 	public String getKey() {
-		return "javaDelegate#TranslateContent#requestPageContext";
+		return "javaDelegate#requestPageContext";
 	}
 
 	@Reference
