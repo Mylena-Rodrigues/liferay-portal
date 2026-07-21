@@ -33,15 +33,13 @@ import java.util.function.Consumer;
 public class SseUtil {
 
 	public static void broadcastHeartbeat(Consumer<String> consumer) {
-		for (Map.Entry<String, SseEventSink> entry :
-				_sseEventSinks.entrySet()) {
+		for (Map.Entry<String, SseContext> entry : _sseContexts.entrySet()) {
+			SseContext sseContext = entry.getValue();
 
-			Sse sse = _sses.get(entry.getKey());
+			SseEventSink sseEventSink = sseContext.getSseEventSink();
 
-			SseEventSink sseEventSink = entry.getValue();
-
-			if ((sse == null) || sseEventSink.isClosed()) {
-				_close(sseEventSink, entry.getKey());
+			if (sseEventSink.isClosed()) {
+				_sseContexts.remove(entry.getKey());
 
 				consumer.accept(entry.getKey());
 
@@ -49,6 +47,8 @@ public class SseUtil {
 			}
 
 			try {
+				Sse sse = sseContext.getSse();
+
 				CompletionStage<?> completionStage = sseEventSink.send(
 					sse.newEventBuilder(
 					).comment(
@@ -75,14 +75,18 @@ public class SseUtil {
 	}
 
 	public static void closeAll() {
-		if (_sseEventSinks.isEmpty() || !PortalRunMode.isTestMode()) {
+		if (_sseContexts.isEmpty() || !PortalRunMode.isTestMode()) {
 			return;
 		}
 
-		_sseEventSinks.forEach((__, sseEventSink) -> sseEventSink.close());
+		_sseContexts.forEach(
+			(__, sseContext) -> {
+				SseEventSink sseEventSink = sseContext.getSseEventSink();
 
-		_sseEventSinks = new ConcurrentHashMap<>();
-		_sses = new ConcurrentHashMap<>();
+				sseEventSink.close();
+			});
+
+		_sseContexts = new ConcurrentHashMap<>();
 	}
 
 	public static Set<String> getSSEEventSinksKeys() {
@@ -90,14 +94,13 @@ public class SseUtil {
 			return null;
 		}
 
-		return _sseEventSinks.keySet();
+		return _sseContexts.keySet();
 	}
 
 	public static void initialize(Sse sse, SseEventSink sseEventSink) {
 		String sseEventSinkKey = PortalUUIDUtil.generate();
 
-		_sseEventSinks.put(sseEventSinkKey, sseEventSink);
-		_sses.put(sseEventSinkKey, sse);
+		_sseContexts.put(sseEventSinkKey, new SseContext(sse, sseEventSink));
 
 		sseEventSink.send(
 			sse.newEventBuilder(
@@ -146,9 +149,7 @@ public class SseUtil {
 			"type", type
 		);
 
-		if (_sendLocally(
-				jsonObject.toString(), name, nodeName, sseEventSinkKey)) {
-
+		if (_send(jsonObject.toString(), name, nodeName, sseEventSinkKey)) {
 			return;
 		}
 
@@ -181,7 +182,7 @@ public class SseUtil {
 	private static void _close(
 		SseEventSink sseEventSink, String sseEventSinkKey) {
 
-		_remove(sseEventSinkKey);
+		_sseContexts.remove(sseEventSinkKey);
 
 		if ((sseEventSink == null) || sseEventSink.isClosed()) {
 			return;
@@ -190,24 +191,19 @@ public class SseUtil {
 		sseEventSink.close();
 	}
 
-	private static void _remove(String sseEventSinkKey) {
-		_sseEventSinks.remove(sseEventSinkKey);
-		_sses.remove(sseEventSinkKey);
-	}
-
-	private static boolean _sendLocally(
+	private static boolean _send(
 		String data, String name, String nodeName, String sseEventSinkKey) {
 
-		SseEventSink sseEventSink = _sseEventSinks.get(sseEventSinkKey);
+		SseContext sseContext = _sseContexts.get(sseEventSinkKey);
 
-		if (sseEventSink == null) {
+		if (sseContext == null) {
 			return false;
 		}
 
-		Sse sse = _sses.get(sseEventSinkKey);
+		SseEventSink sseEventSink = sseContext.getSseEventSink();
 
-		if ((sse == null) || sseEventSink.isClosed()) {
-			_close(sseEventSink, sseEventSinkKey);
+		if (sseEventSink.isClosed()) {
+			_sseContexts.remove(sseEventSinkKey);
 
 			_log.error("SSE Event Sink is closed " + sseEventSinkKey);
 
@@ -215,6 +211,8 @@ public class SseUtil {
 		}
 
 		try {
+			Sse sse = sseContext.getSse();
+
 			sseEventSink.send(
 				sse.newEventBuilder(
 				).data(
@@ -226,12 +224,7 @@ public class SseUtil {
 		catch (RuntimeException runtimeException) {
 			_close(sseEventSink, sseEventSinkKey);
 
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Closed SSE event sink " + sseEventSinkKey +
-						" after a failed send",
-					runtimeException);
-			}
+			_log.error(runtimeException);
 		}
 
 		return true;
@@ -240,10 +233,29 @@ public class SseUtil {
 	private static final Log _log = LogFactoryUtil.getLog(SseUtil.class);
 
 	private static final MethodKey _methodKey = new MethodKey(
-		SseUtil.class, "_sendLocally", String.class, String.class, String.class,
+		SseUtil.class, "_send", String.class, String.class, String.class,
 		String.class);
-	private static Map<String, SseEventSink> _sseEventSinks =
+	private static Map<String, SseContext> _sseContexts =
 		new ConcurrentHashMap<>();
-	private static Map<String, Sse> _sses = new ConcurrentHashMap<>();
+
+	private static class SseContext {
+
+		public SseContext(Sse sse, SseEventSink sseEventSink) {
+			_sse = sse;
+			_sseEventSink = sseEventSink;
+		}
+
+		public Sse getSse() {
+			return _sse;
+		}
+
+		public SseEventSink getSseEventSink() {
+			return _sseEventSink;
+		}
+
+		private final Sse _sse;
+		private final SseEventSink _sseEventSink;
+
+	}
 
 }
