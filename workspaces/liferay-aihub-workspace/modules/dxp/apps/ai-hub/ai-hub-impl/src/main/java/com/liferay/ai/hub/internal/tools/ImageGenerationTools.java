@@ -11,7 +11,7 @@ import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
@@ -23,10 +23,7 @@ import dev.langchain4j.invocation.InvocationParameters;
 import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 
-import java.io.Serializable;
-
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Feliphe Marinho
@@ -52,9 +49,6 @@ public class ImageGenerationTools {
 
 			Response<List<Image>> response = imageModel.generate(prompt, -1);
 
-			Map<String, Serializable> workflowContext =
-				executionContext.getWorkflowContext();
-
 			KaleoInstanceToken kaleoInstanceToken =
 				executionContext.getKaleoInstanceToken();
 
@@ -63,18 +57,19 @@ public class ImageGenerationTools {
 			for (Image image : response.content()) {
 				SseUtil.send(
 					new String[] {
-						GetterUtil.getString(
-							workflowContext.get(
-								"agentDefinitionExternalReferenceCode"))
+						MapUtil.getString(
+							executionContext.getWorkflowContext(),
+							"agentDefinitionExternalReferenceCode")
 					},
 					image.base64Data(),
-					GetterUtil.getString(
-						workflowContext.get("outBoundEventName"),
-						"Chat Message Sent"),
+					MapUtil.getString(
+						executionContext.getWorkflowContext(),
+						"outBoundEventName", "Chat Message Sent"),
 					kaleoNode.getName(),
 					JSONUtil.put("mimeType", image.mimeType()),
-					GetterUtil.getString(
-						workflowContext.get("sseEventSinkKey")),
+					MapUtil.getString(
+						executionContext.getWorkflowContext(),
+						"sseEventSinkKey"),
 					"image");
 			}
 
