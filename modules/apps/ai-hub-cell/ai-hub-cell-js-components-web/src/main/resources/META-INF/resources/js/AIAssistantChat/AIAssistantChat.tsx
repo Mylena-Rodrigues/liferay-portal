@@ -437,7 +437,8 @@ const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
 								saveProps={{
 									fileUploadSelector:
 										context.fileUploadSelector ??
-										fileUploadSelectorRef.current,
+										fileUploadSelectorRef.current ??
+										'[data-ai-assistant-field-id]',
 									groupId: context.groupId,
 									objectEntryFolderExternalReferenceCode:
 										context.objectEntryFolderExternalReferenceCode,
