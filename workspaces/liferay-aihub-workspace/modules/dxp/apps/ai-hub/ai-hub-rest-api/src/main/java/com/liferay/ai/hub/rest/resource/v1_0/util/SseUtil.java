@@ -39,9 +39,7 @@ public class SseUtil {
 			SseEventSink sseEventSink = sseContext.getSseEventSink();
 
 			if (sseEventSink.isClosed()) {
-				_sseContexts.remove(entry.getKey());
-
-				consumer.accept(entry.getKey());
+				_close(consumer, sseEventSink, entry.getKey());
 
 				continue;
 			}
@@ -58,16 +56,12 @@ public class SseUtil {
 				completionStage.whenComplete(
 					(result, throwable) -> {
 						if (throwable != null) {
-							_close(sseEventSink, entry.getKey());
-
-							consumer.accept(entry.getKey());
+							_close(consumer, sseEventSink, entry.getKey());
 						}
 					});
 			}
 			catch (RuntimeException runtimeException) {
-				_close(sseEventSink, entry.getKey());
-
-				consumer.accept(entry.getKey());
+				_close(consumer, sseEventSink, entry.getKey());
 
 				_log.error(runtimeException);
 			}
@@ -180,12 +174,17 @@ public class SseUtil {
 	}
 
 	private static void _close(
-		SseEventSink sseEventSink, String sseEventSinkKey) {
+		Consumer<String> consumer, SseEventSink sseEventSink,
+		String sseEventSinkKey) {
 
 		_sseContexts.remove(sseEventSinkKey);
 
 		if (!sseEventSink.isClosed()) {
 			sseEventSink.close();
+		}
+
+		if (consumer != null) {
+			consumer.accept(sseEventSinkKey);
 		}
 	}
 
@@ -220,7 +219,7 @@ public class SseUtil {
 				).build());
 		}
 		catch (RuntimeException runtimeException) {
-			_close(sseEventSink, sseEventSinkKey);
+			_close(null, sseEventSink, sseEventSinkKey);
 
 			_log.error(runtimeException);
 		}
