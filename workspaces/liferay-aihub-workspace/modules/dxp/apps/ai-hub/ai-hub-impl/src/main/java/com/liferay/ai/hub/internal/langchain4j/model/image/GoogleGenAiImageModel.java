@@ -18,6 +18,7 @@ import com.liferay.ai.hub.configuration.VertexAIConfiguration;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.ai.hub.quota.Source;
 import com.liferay.ai.hub.quota.Usage;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -31,7 +32,6 @@ import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -89,7 +89,7 @@ public class GoogleGenAiImageModel implements ImageModel {
 						).build()),
 					GenerateContentConfig.builder(
 					).responseModalities(
-						List.of("IMAGE", "TEXT")
+						"IMAGE"
 					).safetySettings(
 						_safetySettings
 					).build());
@@ -98,9 +98,12 @@ public class GoogleGenAiImageModel implements ImageModel {
 
 			_updateUsage(tokenUsage);
 
-			List<Image> images = new ArrayList<>();
+			List<Image> images = TransformUtil.transform(
+					generateContentResponse.parts(), this::_toImage);
 
-			images.addAll(_toImages(generateContentResponse));
+			if (images.isEmpty()) {
+				throw new IllegalStateException("The model returned no image");
+			}
 
 			return Response.from(images, tokenUsage);
 		}
@@ -109,58 +112,45 @@ public class GoogleGenAiImageModel implements ImageModel {
 		}
 	}
 
-	private List<Image> _toImages(
-		GenerateContentResponse generateContentResponse) {
+	private Image _toImage(Part part) {
+		if (GetterUtil.getBoolean(
+				part.thought(
+				).orElse(
+					false
+				))) {
 
-		List<Image> images = new ArrayList<>();
-
-		for (Part part : generateContentResponse.parts()) {
-			if (GetterUtil.getBoolean(
-					part.thought(
-					).orElse(
-						false
-					))) {
-
-				continue;
-			}
-
-			Blob blob = part.inlineData(
-			).orElse(
-				null
-			);
-
-			if (blob == null) {
-				continue;
-			}
-
-			byte[] data = blob.data(
-			).orElse(
-				null
-			);
-
-			if (data == null) {
-				continue;
-			}
-
-			Base64.Encoder encoder = Base64.getEncoder();
-
-			images.add(
-				Image.builder(
-				).base64Data(
-					encoder.encodeToString(data)
-				).mimeType(
-					blob.mimeType(
-					).orElse(
-						"image/png"
-					)
-				).build());
+			return null;
 		}
 
-		if (images.isEmpty()) {
-			throw new IllegalStateException("The model returned no image");
+		Blob blob = part.inlineData(
+		).orElse(
+			null
+		);
+
+		if (blob == null) {
+			return null;
 		}
 
-		return images;
+		byte[] data = blob.data(
+		).orElse(
+			null
+		);
+
+		if (data == null) {
+			return null;
+		}
+
+		Base64.Encoder encoder = Base64.getEncoder();
+
+		return Image.builder(
+		).base64Data(
+			encoder.encodeToString(data)
+		).mimeType(
+			blob.mimeType(
+			).orElse(
+				"image/png"
+			)
+		).build();
 	}
 
 	private TokenUsage _toTokenUsage(
