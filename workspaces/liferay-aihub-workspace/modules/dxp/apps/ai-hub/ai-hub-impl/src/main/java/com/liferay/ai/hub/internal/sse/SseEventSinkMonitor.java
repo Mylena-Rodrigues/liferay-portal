@@ -13,6 +13,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
+import com.liferay.portal.kernel.util.NamedThreadFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,14 +26,17 @@ import org.osgi.service.component.annotations.Deactivate;
 /**
  * @author José Abelenda
  * @author Feliphe Marinho
+ * @author Gabriel Albuquerque
  */
 @Component(service = {})
 public class SseEventSinkMonitor {
 
 	@Activate
 	protected void activate() {
-		_scheduledExecutorService =
-			Executors.newSingleThreadScheduledExecutor();
+		_scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
+			new NamedThreadFactory(
+				SseEventSinkMonitor.class.getName(), Thread.NORM_PRIORITY,
+				SseEventSinkMonitor.class.getClassLoader()));
 
 		_scheduledExecutorService.scheduleWithFixedDelay(
 			() -> {
@@ -40,7 +44,7 @@ public class SseEventSinkMonitor {
 					SseUtil.broadcastHeartbeat(this::_deleteMessages);
 				}
 				catch (Exception exception) {
-					_log.error("Unable to broadcast heartbeat", exception);
+					_log.error(exception);
 				}
 			},
 			15, 15, TimeUnit.SECONDS);
@@ -61,26 +65,21 @@ public class SseEventSinkMonitor {
 		try {
 			ClusterRequest clusterRequest =
 				ClusterRequest.createMulticastRequest(
-					new MethodHandler(
-						_deleteMessagesMethodKey, sseEventSinkKey),
-					true);
+					new MethodHandler(_methodKey, sseEventSinkKey), true);
 
 			clusterRequest.setFireAndForget(true);
 
 			ClusterExecutorUtil.execute(clusterRequest);
 		}
 		catch (Exception exception) {
-			_log.error(
-				"Unable to delete chat memory across the cluster " +
-					sseEventSinkKey,
-				exception);
+			_log.error(exception);
 		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SseEventSinkMonitor.class);
 
-	private static final MethodKey _deleteMessagesMethodKey = new MethodKey(
+	private static final MethodKey _methodKey = new MethodKey(
 		ChatMemoryProviderUtil.class, "deleteMessages", Object.class);
 
 	private ScheduledExecutorService _scheduledExecutorService;
