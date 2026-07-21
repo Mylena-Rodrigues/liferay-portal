@@ -124,7 +124,7 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 						executionContext,
 						VariablesUtil.getInputVariables(
 							kaleoNodeSettingValues, workflowContext),
-						currentKaleoNode, workflowContext));
+						workflowContext));
 			}
 		}
 		catch (Exception exception) {

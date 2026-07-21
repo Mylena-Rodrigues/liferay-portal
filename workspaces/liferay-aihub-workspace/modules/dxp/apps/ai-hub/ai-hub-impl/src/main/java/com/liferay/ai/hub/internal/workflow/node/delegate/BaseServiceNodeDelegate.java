@@ -24,9 +24,11 @@ import org.osgi.service.component.annotations.Reference;
 public abstract class BaseServiceNodeDelegate implements ServiceNodeDelegate {
 
 	protected void completeWorkflowNode(
-			KaleoInstanceToken kaleoInstanceToken, KaleoNode kaleoNode,
+			KaleoInstanceToken kaleoInstanceToken,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
+
+		KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
 
 		List<KaleoTransition> kaleoTransitions =
 			kaleoNode.getKaleoTransitions();

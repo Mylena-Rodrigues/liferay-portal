@@ -16,7 +16,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
-import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
@@ -38,7 +37,7 @@ public class RequestPageContextServiceNodeDelegate
 	@Override
 	public String execute(
 			ExecutionContext executionContext,
-			Map<String, String> inputVariables, KaleoNode kaleoNode,
+			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
 
@@ -87,7 +86,7 @@ public class RequestPageContextServiceNodeDelegate
 						});
 				}
 			).toString(),
-			"Chat Message Sent", kaleoNode.getName(),
+			"Chat Message Sent", kaleoInstanceToken.getCurrentKaleoNodeName(),
 			GetterUtil.getString(workflowContext.get("sseEventSinkKey")));
 
 		return StringPool.BLANK;

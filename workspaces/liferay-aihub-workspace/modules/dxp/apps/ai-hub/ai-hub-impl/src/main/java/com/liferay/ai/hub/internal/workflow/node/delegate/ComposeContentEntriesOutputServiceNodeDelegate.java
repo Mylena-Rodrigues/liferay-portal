@@ -15,7 +15,6 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
@@ -35,7 +34,7 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 	@Override
 	public String execute(
 			ExecutionContext executionContext,
-			Map<String, String> inputVariables, KaleoNode kaleoNode,
+			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
 
@@ -49,8 +48,7 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 			workflowContext.put("output", output);
 
 			completeWorkflowNode(
-				executionContext.getKaleoInstanceToken(), kaleoNode,
-				workflowContext);
+				executionContext.getKaleoInstanceToken(), workflowContext);
 
 			return output;
 		}
@@ -64,8 +62,7 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 			workflowContext.put("output", output);
 
 			completeWorkflowNode(
-				executionContext.getKaleoInstanceToken(), kaleoNode,
-				workflowContext);
+				executionContext.getKaleoInstanceToken(), workflowContext);
 
 			return output;
 		}
@@ -96,8 +93,7 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 		workflowContext.put("output", output);
 
 		completeWorkflowNode(
-			executionContext.getKaleoInstanceToken(), kaleoNode,
-			workflowContext);
+			executionContext.getKaleoInstanceToken(), workflowContext);
 
 		return output;
 	}
