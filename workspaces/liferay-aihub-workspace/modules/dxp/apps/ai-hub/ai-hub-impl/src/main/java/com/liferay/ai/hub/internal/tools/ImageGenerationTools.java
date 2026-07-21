@@ -38,11 +38,10 @@ public class ImageGenerationTools {
 		_quotaManager = quotaManager;
 	}
 
-	@Tool("Generate multiple images based in a prompt.")
+	@Tool("Generate images based on a prompt.")
 	public String generateImages(
 		InvocationParameters invocationParameters,
-		@P("All information the user request to generate images.") String
-			prompt) {
+		@P("Description of the images to be generated.") String prompt) {
 
 		try {
 			ExecutionContext executionContext = invocationParameters.get(
