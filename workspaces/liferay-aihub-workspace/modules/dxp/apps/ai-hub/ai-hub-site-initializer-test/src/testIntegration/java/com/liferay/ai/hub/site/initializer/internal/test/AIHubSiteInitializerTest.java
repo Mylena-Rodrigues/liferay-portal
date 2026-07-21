@@ -340,6 +340,10 @@ public class AIHubSiteInitializerTest {
 			WorkflowDefinitionConstants.NAME_TRANSLATE_CONTENT);
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_SEO_STUDIO,
+			"L_SEO_STUDIO_DESCRIPTION_GENERATOR",
+			"SEO Studio Description Generator");
+		_assertWorkflowDefinitionExists(
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_SEO_STUDIO,
 			WorkflowDefinitionConstants.
 				EXTERNAL_REFERENCE_CODE_SEO_STUDIO_TITLE_GENERATOR,
 			WorkflowDefinitionConstants.NAME_SEO_STUDIO_TITLE_GENERATOR);
