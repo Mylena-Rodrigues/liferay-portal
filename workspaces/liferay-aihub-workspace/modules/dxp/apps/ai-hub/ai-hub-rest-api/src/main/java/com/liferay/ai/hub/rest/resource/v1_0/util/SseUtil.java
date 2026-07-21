@@ -184,11 +184,9 @@ public class SseUtil {
 
 		_sseContexts.remove(sseEventSinkKey);
 
-		if ((sseEventSink == null) || sseEventSink.isClosed()) {
-			return;
+		if (!sseEventSink.isClosed()) {
+			sseEventSink.close();
 		}
-
-		sseEventSink.close();
 	}
 
 	private static boolean _send(
