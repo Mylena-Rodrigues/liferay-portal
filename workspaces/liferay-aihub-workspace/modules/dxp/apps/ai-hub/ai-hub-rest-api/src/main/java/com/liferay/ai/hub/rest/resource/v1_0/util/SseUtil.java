@@ -183,9 +183,7 @@ public class SseUtil {
 			sseEventSink.close();
 		}
 
-		if (consumer != null) {
-			consumer.accept(sseEventSinkKey);
-		}
+		consumer.accept(sseEventSinkKey);
 	}
 
 	private static boolean _send(
@@ -200,8 +198,6 @@ public class SseUtil {
 		SseEventSink sseEventSink = sseContext.getSseEventSink();
 
 		if (sseEventSink.isClosed()) {
-			_sseContexts.remove(sseEventSinkKey);
-
 			_log.error("SSE Event Sink is closed " + sseEventSinkKey);
 
 			return true;
@@ -219,8 +215,6 @@ public class SseUtil {
 				).build());
 		}
 		catch (RuntimeException runtimeException) {
-			_close(null, sseEventSink, sseEventSinkKey);
-
 			_log.error(runtimeException);
 		}
 
