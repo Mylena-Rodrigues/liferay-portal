@@ -1,4 +1,4 @@
-name: liferay-ai-hub
+name: liferay-aihub-workspace
 services:
     database:
         environment:
