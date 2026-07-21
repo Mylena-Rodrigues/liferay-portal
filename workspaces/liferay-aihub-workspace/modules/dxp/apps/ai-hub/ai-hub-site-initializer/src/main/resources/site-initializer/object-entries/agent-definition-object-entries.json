@@ -80,7 +80,7 @@
 		},
 		{
 			"active": false,
-			"description": "Generates one or more images from a description and style. When the subject is missing, ask what to show and never invent one. When the style is missing, ask: Photorealistic, Illustration, Digital Art, or Watercolor. Treat a request for multiple images with no number as two.",
+			"description": "Generate images based on a description and style. This agent requires both information, if style is not specified suggest one of them: Digital Art, Illustration, Photorealistic or Watercolor",
 			"externalReferenceCode": "L_GENERATE_IMAGE",
 			"inputVariables": "description,request,style",
 			"outputVariable": "brief",
