@@ -26,6 +26,7 @@
 			},
 			"name": "description",
 			"readOnly": false,
+			"required": false,
 			"system": true,
 			"type": "String"
 		},
