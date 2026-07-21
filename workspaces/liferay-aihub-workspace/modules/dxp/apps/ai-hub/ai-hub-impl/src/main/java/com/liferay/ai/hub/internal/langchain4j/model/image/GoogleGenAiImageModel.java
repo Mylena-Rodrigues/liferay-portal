@@ -99,10 +99,10 @@ public class GoogleGenAiImageModel implements ImageModel {
 			_updateUsage(tokenUsage);
 
 			List<Image> images = TransformUtil.transform(
-					generateContentResponse.parts(), this::_toImage);
+				generateContentResponse.parts(), this::_toImage);
 
 			if (images.isEmpty()) {
-				throw new IllegalStateException("The model returned no image");
+				throw new IllegalStateException();
 			}
 
 			return Response.from(images, tokenUsage);

@@ -9,7 +9,6 @@ import com.liferay.ai.hub.internal.langchain4j.model.image.GoogleGenAiImageModel
 import com.liferay.ai.hub.internal.model.GoogleGenAiUtil;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -56,7 +55,31 @@ public class ImageGenerationTools {
 			Response<List<Image>> response =
 				googleGenAiImageModel.generateImages(prompt);
 
-			_sendImages(executionContext, response.content());
+			Map<String, Serializable> workflowContext =
+				executionContext.getWorkflowContext();
+
+			KaleoInstanceToken kaleoInstanceToken =
+				executionContext.getKaleoInstanceToken();
+
+			KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
+
+			for (Image image : response.content()) {
+				SseUtil.send(
+					new String[] {
+						GetterUtil.getString(
+							workflowContext.get(
+								"agentDefinitionExternalReferenceCode"))
+					},
+					image.base64Data(),
+					GetterUtil.getString(
+						workflowContext.get("outBoundEventName"),
+						"Chat Message Sent"),
+					kaleoNode.getName(),
+					JSONUtil.put("mimeType", image.mimeType()),
+					GetterUtil.getString(
+						workflowContext.get("sseEventSinkKey")),
+					"image");
+			}
 
 			return "The images were generated.";
 		}
@@ -65,35 +88,6 @@ public class ImageGenerationTools {
 
 			return "The image could not be generated. Ask the user to " +
 				"rephrase the request or try again later.";
-		}
-	}
-
-	private void _sendImages(
-			ExecutionContext executionContext, List<Image> images)
-		throws PortalException {
-
-		Map<String, Serializable> workflowContext =
-			executionContext.getWorkflowContext();
-
-		KaleoInstanceToken kaleoInstanceToken =
-			executionContext.getKaleoInstanceToken();
-
-		KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
-
-		for (Image image : images) {
-			SseUtil.send(
-				new String[] {
-					GetterUtil.getString(
-						workflowContext.get(
-							"agentDefinitionExternalReferenceCode"))
-				},
-				image.base64Data(),
-				GetterUtil.getString(
-					workflowContext.get("outBoundEventName"),
-					"Chat Message Sent"),
-				kaleoNode.getName(), JSONUtil.put("mimeType", image.mimeType()),
-				GetterUtil.getString(workflowContext.get("sseEventSinkKey")),
-				"image");
 		}
 	}
 
