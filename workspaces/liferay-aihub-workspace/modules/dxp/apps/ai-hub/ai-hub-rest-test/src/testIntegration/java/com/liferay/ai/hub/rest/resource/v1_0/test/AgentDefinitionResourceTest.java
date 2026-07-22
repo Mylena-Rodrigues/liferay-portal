@@ -61,7 +61,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedFieldsContext;
 import com.liferay.portal.vulcan.fields.NestedFieldsContextThreadLocal;
-import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
 import com.liferay.portal.workflow.kaleo.exception.NoSuchDefinitionException;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 import com.liferay.site.initializer.SiteInitializer;
@@ -217,9 +216,7 @@ public class AgentDefinitionResourceTest
 			ObjectEntry objectEntry1 =
 				defaultObjectEntryManager.partialUpdateObjectEntry(
 					TestPropsValues.getCompanyId(), _dtoConverterContext,
-					WorkflowDefinitionConstants.
-						EXTERNAL_REFERENCE_CODE_CHANGE_TONE,
-					_getObjectDefinition(),
+					"L_CHANGE_TONE", _getObjectDefinition(),
 					new ObjectEntry() {
 						{
 							properties = HashMapBuilder.<String, Object>put(
@@ -279,8 +276,7 @@ public class AgentDefinitionResourceTest
 			AgentDefinition agentDefinition =
 				agentDefinitionResource.
 					postAgentDefinitionByExternalReferenceCodeCopy(
-						WorkflowDefinitionConstants.
-							EXTERNAL_REFERENCE_CODE_CHANGE_TONE);
+						"L_CHANGE_TONE");
 
 			ObjectEntry objectEntry2 = _objectEntryManager.getObjectEntry(
 				TestPropsValues.getCompanyId(), _dtoConverterContext,
@@ -349,8 +345,7 @@ public class AgentDefinitionResourceTest
 
 			WorkflowDefinition workflowDefinition1 =
 				_workflowDefinitionManager.getLatestWorkflowDefinition(
-					TestPropsValues.getCompanyId(),
-					WorkflowDefinitionConstants.NAME_CHANGE_TONE);
+					TestPropsValues.getCompanyId(), "Change Tone");
 
 			WorkflowDefinition workflowDefinition2 =
 				_workflowDefinitionManager.getWorkflowDefinition(
@@ -497,9 +492,7 @@ public class AgentDefinitionResourceTest
 
 	private AgentDefinition _addAgentDefinition() throws Exception {
 		return agentDefinitionResource.
-			postAgentDefinitionByExternalReferenceCodeCopy(
-				WorkflowDefinitionConstants.
-					EXTERNAL_REFERENCE_CODE_CHANGE_TONE);
+			postAgentDefinitionByExternalReferenceCodeCopy("L_CHANGE_TONE");
 	}
 
 	private ObjectEntry _addAgentDefinitionObjectEntry(
@@ -912,9 +905,7 @@ public class AgentDefinitionResourceTest
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						WorkflowDefinitionConstants.
-							EXTERNAL_REFERENCE_CODE_CHANGE_TONE;
+					externalReferenceCode = "L_CHANGE_TONE";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -936,15 +927,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						WorkflowDefinitionConstants.NAME_CHANGE_TONE;
+					workflowDefinitionName = "Change Tone";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						"L_CONTENT_GAP_ANALYSIS";
+					externalReferenceCode = "L_CONTENT_GAP_ANALYSIS";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -960,15 +949,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						"Content Gap Analysis";
+					workflowDefinitionName = "Content Gap Analysis";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						"L_FIND_MATCHING_ASSETS";
+					externalReferenceCode = "L_FIND_MATCHING_ASSETS";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1014,16 +1001,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						"Find Matching Assets";
+					workflowDefinitionName = "Find Matching Assets";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						WorkflowDefinitionConstants.
-							EXTERNAL_REFERENCE_CODE_FIX_SPELLING_AND_GRAMMAR;
+					externalReferenceCode = "L_FIX_SPELLING_AND_GRAMMAR";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1039,16 +1023,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						WorkflowDefinitionConstants.
-							NAME_FIX_SPELLING_AND_GRAMMAR;
+					workflowDefinitionName = "Fix Spelling and Grammar";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = false;
-					externalReferenceCode =
-						"L_GENERATE_IMAGE";
+					externalReferenceCode = "L_GENERATE_IMAGE";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1070,15 +1051,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						"Generate Image";
+					workflowDefinitionName = "Generate Image";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						"L_GENERATE_CONTENT";
+					externalReferenceCode = "L_GENERATE_CONTENT";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1100,15 +1079,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						"Generate Content";
+					workflowDefinitionName = "Generate Content";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						"L_GENERATE_FIELD_VALUE";
+					externalReferenceCode = "L_GENERATE_FIELD_VALUE";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1124,8 +1101,7 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						"Generate Field Value";
+					workflowDefinitionName = "Generate Field Value";
 				}
 			},
 			new AgentDefinition() {
@@ -1165,9 +1141,7 @@ public class AgentDefinitionResourceTest
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						WorkflowDefinitionConstants.
-							EXTERNAL_REFERENCE_CODE_IMPROVE_WRITING;
+					externalReferenceCode = "L_IMPROVE_WRITING";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1183,16 +1157,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						WorkflowDefinitionConstants.NAME_IMPROVE_WRITING;
+					workflowDefinitionName = "Improve Writing";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						WorkflowDefinitionConstants.
-							EXTERNAL_REFERENCE_CODE_LIFERAY_SEARCH;
+					externalReferenceCode = "L_LIFERAY_SEARCH";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1208,16 +1179,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						WorkflowDefinitionConstants.NAME_LIFERAY_SEARCH;
+					workflowDefinitionName = "Liferay Search";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						WorkflowDefinitionConstants.
-							EXTERNAL_REFERENCE_CODE_MAKE_LONGER;
+					externalReferenceCode = "L_MAKE_LONGER";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1233,16 +1201,13 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						WorkflowDefinitionConstants.NAME_MAKE_LONGER;
+					workflowDefinitionName = "Make Longer";
 				}
 			},
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						WorkflowDefinitionConstants.
-							EXTERNAL_REFERENCE_CODE_MAKE_SHORTER;
+					externalReferenceCode = "L_MAKE_SHORTER";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1258,8 +1223,7 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						WorkflowDefinitionConstants.NAME_MAKE_SHORTER;
+					workflowDefinitionName = "Make Shorter";
 				}
 			},
 			new AgentDefinition() {
@@ -1338,8 +1302,7 @@ public class AgentDefinitionResourceTest
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode =
-						"L_TRANSLATE_CONTENT";
+					externalReferenceCode = "L_TRANSLATE_CONTENT";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -1355,8 +1318,7 @@ public class AgentDefinitionResourceTest
 						}
 					};
 					version = 1;
-					workflowDefinitionName =
-						"Translate Content";
+					workflowDefinitionName = "Translate Content";
 				}
 			});
 
