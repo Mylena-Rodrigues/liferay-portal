@@ -9,7 +9,6 @@ import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryUserRelLocalService;
-import com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration;
 import com.liferay.ai.hub.configuration.VertexAIConfiguration;
 import com.liferay.ai.hub.rest.resource.v1_0.test.util.SseEventSourceTestUtil;
 import com.liferay.ai.hub.rest.resource.v1_0.test.util.TokenTestUtil;
@@ -126,7 +125,7 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 	public void tearDown() throws Exception {
 		SseUtil.closeAll();
 		ConfigurationTestUtil.deleteConfiguration(
-			AIHubCellConfiguration.class.getName());
+			"com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration");
 	}
 
 	@Ignore
