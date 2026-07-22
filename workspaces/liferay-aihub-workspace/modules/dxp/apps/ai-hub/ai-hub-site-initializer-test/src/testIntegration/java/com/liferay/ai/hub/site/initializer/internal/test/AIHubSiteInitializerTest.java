@@ -289,34 +289,25 @@ public class AIHubSiteInitializerTest {
 			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_CHANGE_TONE,
 			WorkflowDefinitionConstants.NAME_CHANGE_TONE);
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.
-				EXTERNAL_REFERENCE_CODE_CONTENT_GAP_ANALYSIS,
-			WorkflowDefinitionConstants.NAME_CONTENT_GAP_ANALYSIS);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_CONTENT_GAP_ANALYSIS",
+			"Content Gap Analysis");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.
-				EXTERNAL_REFERENCE_CODE_FIND_MATCHING_ASSETS,
-			WorkflowDefinitionConstants.NAME_FIND_MATCHING_ASSETS);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_FIND_MATCHING_ASSETS",
+			"Find Matching Assets");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
 			WorkflowDefinitionConstants.
 				EXTERNAL_REFERENCE_CODE_FIX_SPELLING_AND_GRAMMAR,
 			WorkflowDefinitionConstants.NAME_FIX_SPELLING_AND_GRAMMAR);
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.
-				EXTERNAL_REFERENCE_CODE_GENERATE_CONTENT,
-			WorkflowDefinitionConstants.NAME_GENERATE_CONTENT);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_GENERATE_CONTENT",
+			"Generate Content");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.
-				EXTERNAL_REFERENCE_CODE_GENERATE_FIELD_VALUE,
-			WorkflowDefinitionConstants.NAME_GENERATE_FIELD_VALUE);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_GENERATE_FIELD_VALUE",
+			"Generate Field Value");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_GENERATE_IMAGE,
-			WorkflowDefinitionConstants.NAME_GENERATE_IMAGE);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_GENERATE_IMAGE",
+			"Generate Image");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
 			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_IMPROVE_WRITING,
@@ -334,10 +325,8 @@ public class AIHubSiteInitializerTest {
 			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_MAKE_SHORTER,
 			WorkflowDefinitionConstants.NAME_MAKE_SHORTER);
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.
-				EXTERNAL_REFERENCE_CODE_TRANSLATE_CONTENT,
-			WorkflowDefinitionConstants.NAME_TRANSLATE_CONTENT);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_TRANSLATE_CONTENT",
+			"Translate Content");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_SEO_STUDIO,
 			"L_SEO_STUDIO_DESCRIPTION_GENERATOR",
