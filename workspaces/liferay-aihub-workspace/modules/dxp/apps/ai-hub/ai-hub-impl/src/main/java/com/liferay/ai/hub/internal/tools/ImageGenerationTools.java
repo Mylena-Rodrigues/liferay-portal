@@ -44,15 +44,15 @@ public class ImageGenerationTools {
 			ExecutionContext executionContext = invocationParameters.get(
 				"executionContext");
 
-			ImageModel imageModel = GoogleGenAiUtil.createGoogleGenAiImageModel(
-				_quotaManager, executionContext.getServiceContext());
-
-			Response<List<Image>> response = imageModel.generate(prompt, -1);
-
 			KaleoInstanceToken kaleoInstanceToken =
 				executionContext.getKaleoInstanceToken();
 
 			KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
+
+			ImageModel imageModel = GoogleGenAiUtil.createGoogleGenAiImageModel(
+				_quotaManager, executionContext.getServiceContext());
+
+			Response<List<Image>> response = imageModel.generate(prompt, -1);
 
 			for (Image image : response.content()) {
 				SseUtil.send(
