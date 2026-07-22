@@ -10,9 +10,11 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
 
@@ -26,32 +28,37 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = ServiceNodeDelegate.class)
 public class CategorizeContentEntriesServiceNodeDelegate
-	implements ServiceNodeDelegate {
+	extends BaseServiceNodeDelegate {
 
 	@Override
-	public String execute(
+	public String getKey() {
+		return "javaDelegate#categorizeContentEntries";
+	}
+
+	@Override
+	protected String doExecute(
+			ExecutionContext executionContext,
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
 
-		String contentEntriesPayloadJSON = inputVariables.get(
+		String contentEntriesPayload = inputVariables.get(
 			"contentEntriesPayload");
 
 		JSONArray taxonomyCategoryIdsJSONArray =
 			_getTaxonomyCategoryIdsJSONArray(
 				inputVariables.get("taxonomyCategoryIds"));
 
-		if (Validator.isNull(contentEntriesPayloadJSON) ||
+		if (Validator.isNull(contentEntriesPayload) ||
 			(taxonomyCategoryIdsJSONArray.length() == 0)) {
 
-			workflowContext.put(
-				"contentEntriesPayload", contentEntriesPayloadJSON);
+			workflowContext.put("contentEntriesPayload", contentEntriesPayload);
 
-			return contentEntriesPayloadJSON;
+			return contentEntriesPayload;
 		}
 
 		JSONArray contentEntriesPayloadJSONArray = _jsonFactory.createJSONArray(
-			contentEntriesPayloadJSON);
+			contentEntriesPayload);
 
 		for (int i = 0; i < contentEntriesPayloadJSONArray.length(); i++) {
 			JSONObject jsonObject =
@@ -64,11 +71,6 @@ public class CategorizeContentEntriesServiceNodeDelegate
 			"contentEntriesPayload", contentEntriesPayloadJSONArray.toString());
 
 		return contentEntriesPayloadJSONArray.toString();
-	}
-
-	@Override
-	public String getKey() {
-		return "javaDelegate#GenerateContent#categorizeContentEntries";
 	}
 
 	private JSONArray _getTaxonomyCategoryIdsJSONArray(
@@ -87,20 +89,18 @@ public class CategorizeContentEntriesServiceNodeDelegate
 			return _jsonFactory.createJSONArray(trimmedTaxonomyCategoryIds);
 		}
 
-		JSONArray jsonArray = _jsonFactory.createJSONArray();
+		return JSONUtil.toJSONArray(
+			StringUtil.split(trimmedTaxonomyCategoryIds),
+			taxonomyCategoryId -> {
+				long taxonomyCategoryIdLong = GetterUtil.getLong(
+					taxonomyCategoryId);
 
-		for (String taxonomyCategoryId :
-				StringUtil.split(trimmedTaxonomyCategoryIds)) {
+				if (taxonomyCategoryIdLong > 0) {
+					return taxonomyCategoryIdLong;
+				}
 
-			long taxonomyCategoryIdLong = GetterUtil.getLong(
-				taxonomyCategoryId);
-
-			if (taxonomyCategoryIdLong > 0) {
-				jsonArray.put(taxonomyCategoryIdLong);
-			}
-		}
-
-		return jsonArray;
+				return null;
+			});
 	}
 
 	@Reference
