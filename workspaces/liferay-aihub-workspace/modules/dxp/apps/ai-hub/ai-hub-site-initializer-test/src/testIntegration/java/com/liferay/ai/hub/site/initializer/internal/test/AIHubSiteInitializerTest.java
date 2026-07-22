@@ -50,7 +50,6 @@ import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.site.initializer.SiteInitializerRegistry;
@@ -285,9 +284,8 @@ public class AIHubSiteInitializerTest {
 			"L_AI_HUB_CONTENT_RETRIEVER",
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_CHANGE_TONE,
-			WorkflowDefinitionConstants.NAME_CHANGE_TONE);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_CHANGE_TONE",
+			"Change Tone");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_CONTENT_GAP_ANALYSIS",
 			"Content Gap Analysis");
@@ -296,9 +294,7 @@ public class AIHubSiteInitializerTest {
 			"Find Matching Assets");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.
-				EXTERNAL_REFERENCE_CODE_FIX_SPELLING_AND_GRAMMAR,
-			WorkflowDefinitionConstants.NAME_FIX_SPELLING_AND_GRAMMAR);
+			"L_FIX_SPELLING_AND_GRAMMAR", "Fix Spelling and Grammar");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_GENERATE_CONTENT",
 			"Generate Content");
@@ -309,21 +305,17 @@ public class AIHubSiteInitializerTest {
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_GENERATE_IMAGE",
 			"Generate Image");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_IMPROVE_WRITING,
-			WorkflowDefinitionConstants.NAME_IMPROVE_WRITING);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_IMPROVE_WRITING",
+			"Improve Writing");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_LIFERAY_SEARCH,
-			WorkflowDefinitionConstants.NAME_LIFERAY_SEARCH);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_LIFERAY_SEARCH",
+			"Liferay Search");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_MAKE_LONGER,
-			WorkflowDefinitionConstants.NAME_MAKE_LONGER);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_MAKE_LONGER",
+			"Make Longer");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
-			WorkflowDefinitionConstants.EXTERNAL_REFERENCE_CODE_MAKE_SHORTER,
-			WorkflowDefinitionConstants.NAME_MAKE_SHORTER);
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_MAKE_SHORTER",
+			"Make Shorter");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_TRANSLATE_CONTENT",
 			"Translate Content");
@@ -333,9 +325,7 @@ public class AIHubSiteInitializerTest {
 			"SEO Studio Description Generator");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_SEO_STUDIO,
-			WorkflowDefinitionConstants.
-				EXTERNAL_REFERENCE_CODE_SEO_STUDIO_TITLE_GENERATOR,
-			WorkflowDefinitionConstants.NAME_SEO_STUDIO_TITLE_GENERATOR);
+			"L_SEO_STUDIO_TITLE_GENERATOR", "SEO Studio Title Generator");
 	}
 
 	private void _assertAccountRoleExists(
