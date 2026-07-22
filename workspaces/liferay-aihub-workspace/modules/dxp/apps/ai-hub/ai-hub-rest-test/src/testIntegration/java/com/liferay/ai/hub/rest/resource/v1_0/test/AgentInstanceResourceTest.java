@@ -1313,7 +1313,8 @@ public class AgentInstanceResourceTest
 			threadsCount);
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
-				"org.hibernate.engine.jdbc.spi.SqlExceptionHelper", LoggerTestUtil.OFF)) {
+				"org.hibernate.engine.jdbc.spi.SqlExceptionHelper",
+				LoggerTestUtil.OFF)) {
 
 			List<Future<?>> futures = new ArrayList<>();
 
