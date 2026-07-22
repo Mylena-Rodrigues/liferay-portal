@@ -32,7 +32,12 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 	extends BaseServiceNodeDelegate {
 
 	@Override
-	public String doExecute(
+	public String getKey() {
+		return "javaDelegate#composeContentEntriesOutput";
+	}
+
+	@Override
+	protected String doExecute(
 			ExecutionContext executionContext,
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
@@ -74,11 +79,6 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 						")");
 				}),
 			"\n");
-	}
-
-	@Override
-	public String getKey() {
-		return "javaDelegate#composeContentEntriesOutput";
 	}
 
 	private String _getOutput(Map<String, String> inputVariables) {

@@ -35,7 +35,22 @@ public class RequestPageContextServiceNodeDelegate
 	extends BaseServiceNodeDelegate {
 
 	@Override
-	public String doExecute(
+	public String execute(
+			ExecutionContext executionContext,
+			Map<String, String> inputVariables,
+			Map<String, Serializable> workflowContext)
+		throws Exception {
+
+		return doExecute(executionContext, inputVariables, workflowContext);
+	}
+
+	@Override
+	public String getKey() {
+		return "javaDelegate#requestPageContext";
+	}
+
+	@Override
+	protected String doExecute(
 			ExecutionContext executionContext,
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
@@ -90,21 +105,6 @@ public class RequestPageContextServiceNodeDelegate
 			GetterUtil.getString(workflowContext.get("sseEventSinkKey")));
 
 		return StringPool.BLANK;
-	}
-
-	@Override
-	public String execute(
-			ExecutionContext executionContext,
-			Map<String, String> inputVariables,
-			Map<String, Serializable> workflowContext)
-		throws Exception {
-
-		return doExecute(executionContext, inputVariables, workflowContext);
-	}
-
-	@Override
-	public String getKey() {
-		return "javaDelegate#requestPageContext";
 	}
 
 	@Reference

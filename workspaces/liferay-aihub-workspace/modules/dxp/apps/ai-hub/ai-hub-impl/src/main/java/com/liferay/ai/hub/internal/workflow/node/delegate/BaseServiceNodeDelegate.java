@@ -54,6 +54,12 @@ public abstract class BaseServiceNodeDelegate implements ServiceNodeDelegate {
 		return output;
 	}
 
+	protected abstract String doExecute(
+			ExecutionContext executionContext,
+			Map<String, String> inputVariables,
+			Map<String, Serializable> workflowContext)
+		throws Exception;
+
 	@Reference
 	protected WorkflowNodeManager workflowNodeManager;
 
