@@ -914,18 +914,20 @@ public class ActionUtil {
 
 			dropdownItems.add(
 				getGenerateImageWithAIDropdownItem(
+					groupId,
 					LanguageUtil.get(
 						httpServletRequest, "generate-single-image-with-ai"),
 					LanguageUtil.get(
 						httpServletRequest, "generate-single-image"),
-					groupId, objectEntryFolderExternalReferenceCode));
+					objectEntryFolderExternalReferenceCode));
 			dropdownItems.add(
 				getGenerateImageWithAIDropdownItem(
+					groupId,
 					LanguageUtil.get(
 						httpServletRequest, "generate-multiple-images-with-ai"),
 					LanguageUtil.get(
 						httpServletRequest, "generate-multiple-images"),
-					groupId, objectEntryFolderExternalReferenceCode));
+					objectEntryFolderExternalReferenceCode));
 		}
 
 		List<DropdownItem> filesCustomDropdownItems =
@@ -943,7 +945,7 @@ public class ActionUtil {
 	}
 
 	public static DropdownItem getGenerateImageWithAIDropdownItem(
-		String label, String message, long groupId,
+		long groupId, String label, String message,
 		String objectEntryFolderExternalReferenceCode) {
 
 		return DropdownItemBuilder.putData(
