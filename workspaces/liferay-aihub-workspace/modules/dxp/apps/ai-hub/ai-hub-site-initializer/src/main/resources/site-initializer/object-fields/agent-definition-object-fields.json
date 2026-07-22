@@ -15,8 +15,8 @@
 			"type": "Boolean"
 		},
 		{
-			"DBType": "String",
-			"businessType": "Text",
+			"DBType": "Clob",
+			"businessType": "LongText",
 			"defaultValue": "null",
 			"externalReferenceCode": "DESCRIPTION",
 			"indexed": true,
@@ -28,7 +28,7 @@
 			"readOnly": false,
 			"required": false,
 			"system": true,
-			"type": "String"
+			"type": "Clob"
 		},
 		{
 			"DBType": "String",
