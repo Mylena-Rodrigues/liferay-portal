@@ -4,7 +4,6 @@ dependencies {
 	compileOnly group: "com.liferay", name: "com.liferay.petra.string", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.portal.configuration.metatype.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.portal.vulcan.api", version: "default"
-	compileOnly group: "com.liferay", name: "com.liferay.portal.workflow.kaleo.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.portal.workflow.kaleo.runtime.api", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	compileOnly group: "com.nimbusds", name: "nimbus-jose-jwt", version: "10.4"
