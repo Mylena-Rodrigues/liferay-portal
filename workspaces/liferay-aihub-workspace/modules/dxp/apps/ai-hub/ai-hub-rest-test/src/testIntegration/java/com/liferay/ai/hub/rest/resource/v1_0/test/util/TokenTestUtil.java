@@ -5,7 +5,6 @@
 
 package com.liferay.ai.hub.rest.resource.v1_0.test.util;
 
-import com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration;
 import com.liferay.oauth2.provider.constants.ClientProfile;
 import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.oauth2.provider.model.OAuth2Application;
@@ -47,7 +46,7 @@ public class TokenTestUtil {
 				new ServiceContext());
 
 		ConfigurationTestUtil.saveConfiguration(
-			AIHubCellConfiguration.class.getName(),
+			"com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration",
 			HashMapDictionaryBuilder.<String, Object>put(
 				"clientId", oAuth2Application.getClientId()
 			).put(
