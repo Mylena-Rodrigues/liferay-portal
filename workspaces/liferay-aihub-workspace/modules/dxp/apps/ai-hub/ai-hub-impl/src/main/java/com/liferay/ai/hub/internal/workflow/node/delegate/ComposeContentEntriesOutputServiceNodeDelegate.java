@@ -32,7 +32,7 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 	extends BaseServiceNodeDelegate {
 
 	@Override
-	public String execute(
+	public String doExecute(
 			ExecutionContext executionContext,
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
@@ -42,32 +42,17 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 			"contentEntriesPayload");
 
 		if (Validator.isNull(contentEntriesPayload)) {
-			String output =
-				"I could not generate any content. Please try again.";
-
-			workflowContext.put("output", output);
-
-			completeWorkflowNode(
-				executionContext.getKaleoInstanceToken(), workflowContext);
-
-			return output;
+			return "I could not generate any content. Please try again.";
 		}
 
 		JSONArray jsonArray = _jsonFactory.createJSONArray(
 			contentEntriesPayload);
 
 		if (jsonArray.length() == 0) {
-			String output = _getOutput(inputVariables);
-
-			workflowContext.put("output", output);
-
-			completeWorkflowNode(
-				executionContext.getKaleoInstanceToken(), workflowContext);
-
-			return output;
+			return _getOutput(inputVariables);
 		}
 
-		String output = StringUtil.merge(
+		return StringUtil.merge(
 			JSONUtil.toList(
 				jsonArray,
 				jsonObject -> {
@@ -89,13 +74,6 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 						")");
 				}),
 			"\n");
-
-		workflowContext.put("output", output);
-
-		completeWorkflowNode(
-			executionContext.getKaleoInstanceToken(), workflowContext);
-
-		return output;
 	}
 
 	@Override

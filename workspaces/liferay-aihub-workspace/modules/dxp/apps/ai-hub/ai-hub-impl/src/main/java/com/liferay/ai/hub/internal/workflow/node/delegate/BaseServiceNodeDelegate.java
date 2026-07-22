@@ -10,6 +10,7 @@ import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.model.KaleoTransition;
+import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
 
@@ -23,10 +24,20 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class BaseServiceNodeDelegate implements ServiceNodeDelegate {
 
-	protected void completeWorkflowNode(
-			KaleoInstanceToken kaleoInstanceToken,
+	@Override
+	public String execute(
+			ExecutionContext executionContext,
+			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
+
+		String output = doExecute(
+			executionContext, inputVariables, workflowContext);
+
+		workflowContext.put("output", output);
+
+		KaleoInstanceToken kaleoInstanceToken =
+			executionContext.getKaleoInstanceToken();
 
 		KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
 
@@ -39,6 +50,8 @@ public abstract class BaseServiceNodeDelegate implements ServiceNodeDelegate {
 			kaleoInstanceToken.getCompanyId(), kaleoInstanceToken.getUserId(),
 			kaleoInstanceToken.getKaleoInstanceTokenId(),
 			kaleoTransition.getName(), workflowContext, false);
+
+		return output;
 	}
 
 	@Reference

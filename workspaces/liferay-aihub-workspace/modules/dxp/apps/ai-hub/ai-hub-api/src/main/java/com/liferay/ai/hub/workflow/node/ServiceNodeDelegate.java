@@ -16,6 +16,12 @@ import java.util.Map;
  */
 public interface ServiceNodeDelegate {
 
+	public String doExecute(
+			ExecutionContext executionContext,
+			Map<String, String> inputVariables,
+			Map<String, Serializable> workflowContext)
+		throws Exception;
+
 	public String execute(
 			ExecutionContext executionContext,
 			Map<String, String> inputVariables,
