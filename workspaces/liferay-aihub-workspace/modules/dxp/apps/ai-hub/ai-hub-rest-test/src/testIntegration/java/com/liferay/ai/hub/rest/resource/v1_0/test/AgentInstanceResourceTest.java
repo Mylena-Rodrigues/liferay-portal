@@ -9,7 +9,6 @@ import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryUserRelLocalService;
-import com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration;
 import com.liferay.ai.hub.configuration.VertexAIConfiguration;
 import com.liferay.ai.hub.rest.dto.v1_0.Guardrail;
 import com.liferay.ai.hub.rest.manager.v1_0.GuardrailManager;
@@ -94,8 +93,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -148,7 +145,7 @@ public class AgentInstanceResourceTest
 		_originalName = PrincipalThreadLocal.getName();
 
 		ConfigurationTestUtil.saveConfiguration(
-			AIHubCellConfiguration.class.getName(),
+			"com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration",
 			HashMapDictionaryBuilder.<String, Object>put(
 				"clientId", RandomTestUtil.randomString()
 			).put(
@@ -287,7 +284,7 @@ public class AgentInstanceResourceTest
 		ServiceContextThreadLocal.popServiceContext();
 		SseUtil.closeAll();
 		ConfigurationTestUtil.deleteConfiguration(
-			AIHubCellConfiguration.class.getName());
+			"com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration");
 		ConfigurationTestUtil.deleteConfiguration(
 			"com.liferay.mcp.server.internal.configuration." +
 				"MCPServerConfiguration.scoped");
@@ -1316,7 +1313,7 @@ public class AgentInstanceResourceTest
 			threadsCount);
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
-				SqlExceptionHelper.class.getName(), LoggerTestUtil.OFF)) {
+				"org.hibernate.engine.jdbc.spi.SqlExceptionHelper", LoggerTestUtil.OFF)) {
 
 			List<Future<?>> futures = new ArrayList<>();
 
