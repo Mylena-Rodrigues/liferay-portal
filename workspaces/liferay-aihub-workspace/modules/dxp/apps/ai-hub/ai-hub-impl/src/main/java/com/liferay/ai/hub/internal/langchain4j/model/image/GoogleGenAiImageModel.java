@@ -94,7 +94,7 @@ public class GoogleGenAiImageModel implements ImageModel {
 						).build()),
 					GenerateContentConfig.builder(
 					).responseModalities(
-						"IMAGE"
+						"IMAGE", "TEXT"
 					).safetySettings(
 						_safetySettings
 					).build());
