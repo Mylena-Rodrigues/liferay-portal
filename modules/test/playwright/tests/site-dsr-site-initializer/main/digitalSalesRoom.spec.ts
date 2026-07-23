@@ -515,7 +515,12 @@ test(
 test(
 	'Room archival and deletion should both be available simultaneously to a user with the appropriate permissions',
 	{tag: '@LPD-97748'},
-	async ({apiHelpers, digitalSalesRoomsPage, page}) => {
+	async ({
+		apiHelpers,
+		digitalSalesRoomUsersPage,
+		digitalSalesRoomsPage,
+		page,
+	}) => {
 		const account = await apiHelpers.headlessAdminUser.postAccount({
 			type: 'business',
 		});
@@ -559,6 +564,24 @@ test(
 			id: `${role.id}_${userAccount.id}`,
 			type: 'roleUserAccountAssociation',
 		});
+
+		await digitalSalesRoomsPage.goToRoomsPage();
+		await digitalSalesRoomsPage.clickRowActionsMenuItem(
+			roomName,
+			digitalSalesRoomsPage.shareMenuItem
+		);
+
+		await expect(
+			digitalSalesRoomUsersPage.userEmailAddressesInput
+		).toBeVisible();
+
+		await digitalSalesRoomUsersPage.userEmailAddressesInput.fill(
+			userAccount.emailAddress
+		);
+		await digitalSalesRoomUsersPage.userEmailAddressesInput.press('Enter');
+		await digitalSalesRoomUsersPage.inviteButton.click();
+
+		await waitForAlert(page, 'Success:User was invited successfully.');
 
 		const grantRoomPermissions = (actionIds: string[]) =>
 			apiHelpers.objectEntry.putObjectEntryPermissions(
@@ -1227,6 +1250,56 @@ test(
 		).not.toBeVisible();
 
 		await performUserSwitch(page, 'test');
+	}
+);
+
+test(
+	'An admin cannot invite users from the share popup of an archived room',
+	{tag: '@LPD-97750'},
+	async ({
+		apiHelpers,
+		digitalSalesRoomUsersPage,
+		digitalSalesRoomsPage,
+		editDigitalSalesRoomPage,
+	}) => {
+		const account = await apiHelpers.headlessAdminUser.postAccount({
+			type: 'business',
+		});
+
+		const roomName = `A${getRandomInt()}`;
+
+		await digitalSalesRoomsPage.goToRoomsPage();
+
+		await expect(
+			digitalSalesRoomsPage.digitalSalesRoomsTable.searchInput
+		).toBeVisible();
+
+		await digitalSalesRoomsPage.digitalSalesRoomsTable.newButton.click();
+
+		await editDigitalSalesRoomPage.addDigitalSalesRoom({
+			accountName: account.name,
+			roomName,
+		});
+
+		await digitalSalesRoomsPage.goToRoomsPage();
+
+		await digitalSalesRoomsPage.archiveRoom(roomName);
+		await digitalSalesRoomsPage.showArchivedRooms();
+		await digitalSalesRoomsPage.clickRowActionsMenuItem(
+			roomName,
+			digitalSalesRoomsPage.shareMenuItem
+		);
+
+		await expect(digitalSalesRoomUsersPage.shareModalHeading).toBeVisible();
+		await expect(
+			digitalSalesRoomUsersPage.shareModalEmailInput
+		).toBeVisible();
+		await expect(
+			digitalSalesRoomUsersPage.shareModalEmailInput
+		).toBeDisabled();
+		await expect(
+			digitalSalesRoomUsersPage.shareModalInviteButton
+		).toBeDisabled();
 	}
 );
 
