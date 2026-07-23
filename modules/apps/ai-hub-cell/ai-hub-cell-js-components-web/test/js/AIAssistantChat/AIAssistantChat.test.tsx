@@ -93,20 +93,64 @@ describe('AIAssistantChat', () => {
 		};
 	});
 
-	it('shows the chat input immediately on open', async () => {
+	it('accumulates several image events into a single balloon', async () => {
+		const fakeEventSource = createFakeEventSource();
+
+		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
 		await renderAndOpen();
 
+		await act(async () => {
+			fakeEventSource.emit(
+				'Chat Message Sent',
+				JSON.stringify({
+					data: 'AAA',
+					mimeType: 'image/png',
+					type: 'image',
+				})
+			);
+		});
+
+		await act(async () => {
+			fakeEventSource.emit(
+				'Chat Message Sent',
+				JSON.stringify({
+					data: 'BBB',
+					mimeType: 'image/png',
+					type: 'image',
+				})
+			);
+		});
+
+		const images = screen.getAllByAltText('generated-image');
+
+		expect(images).toHaveLength(2);
+		expect(images[0]).toHaveAttribute('src', 'data:image/png;base64,AAA');
+		expect(images[1]).toHaveAttribute('src', 'data:image/png;base64,BBB');
+
 		expect(
-			screen.getByPlaceholderText('Ask me anything...')
-		).toBeInTheDocument();
+			screen.getAllByRole('checkbox', {name: 'generated-image'})
+		).toHaveLength(2);
 	});
 
-	it('shows the footer disclaimer', async () => {
+	it('defaults the mime type to image/png when the image event omits it', async () => {
+		const fakeEventSource = createFakeEventSource();
+
+		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
 		await renderAndOpen();
 
-		expect(
-			screen.getByText('ai-generated-responses-may-be-inaccurate')
-		).toBeInTheDocument();
+		await act(async () => {
+			fakeEventSource.emit(
+				'Chat Message Sent',
+				JSON.stringify({data: 'CCC', type: 'image'})
+			);
+		});
+
+		expect(screen.getByAltText('generated-image')).toHaveAttribute(
+			'src',
+			'data:image/png;base64,CCC'
+		);
 	});
 
 	it('exposes the feedback row on a successful message and wires the codes', async () => {
@@ -168,6 +212,74 @@ describe('AIAssistantChat', () => {
 				name: 'send-negative-feedback-or-report-legal-concern',
 			})
 		).not.toBeInTheDocument();
+	});
+
+	it('injects the image into a select file field found on the page when no field context is provided', async () => {
+		const originalDataTransfer = (global as {DataTransfer?: unknown})
+			.DataTransfer;
+
+		(global as {DataTransfer?: unknown}).DataTransfer = class {
+			items = {
+				_files: [] as File[],
+				add(file: File) {
+					this._files.push(file);
+				},
+			};
+
+			get files() {
+				return this.items._files;
+			}
+		};
+
+		const field = document.createElement('div');
+
+		field.setAttribute('data-ai-assistant-field-id', '');
+		field.innerHTML = '<input class="file-upload-input" type="file" />';
+
+		document.body.appendChild(field);
+
+		try {
+			const fileInput = field.querySelector(
+				'.file-upload-input'
+			) as HTMLInputElement;
+
+			let files: File[] = [];
+
+			Object.defineProperty(fileInput, 'files', {
+				configurable: true,
+				get: () => files,
+				set: (value) => {
+					files = value;
+				},
+			});
+
+			const fakeEventSource = createFakeEventSource();
+
+			mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
+			await renderAndOpen();
+
+			await act(async () => {
+				fakeEventSource.emit(
+					'Chat Message Sent',
+					JSON.stringify({
+						data: 'AAA',
+						mimeType: 'image/png',
+						type: 'image',
+					})
+				);
+			});
+
+			fireEvent.click(screen.getByRole('button', {name: 'save-image'}));
+
+			expect(fileInput.files).toHaveLength(1);
+		}
+		finally {
+			field.remove();
+
+			(global as {DataTransfer?: unknown}).DataTransfer =
+				originalDataTransfer;
+		}
 	});
 
 	it('merges the static context and the getContext snapshot when sending', async () => {
@@ -237,128 +349,19 @@ describe('AIAssistantChat', () => {
 		);
 	});
 
-	it('accumulates several image events into a single balloon', async () => {
-		const fakeEventSource = createFakeEventSource();
-
-		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
-
+	it('shows the chat input immediately on open', async () => {
 		await renderAndOpen();
-
-		await act(async () => {
-			fakeEventSource.emit(
-				'Chat Message Sent',
-				JSON.stringify({
-					data: 'AAA',
-					mimeType: 'image/png',
-					type: 'image',
-				})
-			);
-		});
-
-		await act(async () => {
-			fakeEventSource.emit(
-				'Chat Message Sent',
-				JSON.stringify({
-					data: 'BBB',
-					mimeType: 'image/png',
-					type: 'image',
-				})
-			);
-		});
-
-		const images = screen.getAllByAltText('generated-image');
-
-		expect(images).toHaveLength(2);
-		expect(images[0]).toHaveAttribute('src', 'data:image/png;base64,AAA');
-		expect(images[1]).toHaveAttribute('src', 'data:image/png;base64,BBB');
 
 		expect(
-			screen.getAllByRole('checkbox', {name: 'generated-image'})
-		).toHaveLength(2);
+			screen.getByPlaceholderText('Ask me anything...')
+		).toBeInTheDocument();
 	});
 
-	it('injects the image into a select file field found on the page when no field context is provided', async () => {
-		const originalDataTransfer = (global as {DataTransfer?: unknown})
-			.DataTransfer;
-
-		(global as {DataTransfer?: unknown}).DataTransfer = class {
-			items = {
-				_files: [] as File[],
-				add(file: File) {
-					this._files.push(file);
-				},
-			};
-
-			get files() {
-				return this.items._files;
-			}
-		};
-
-		const field = document.createElement('div');
-
-		field.setAttribute('data-ai-assistant-field-id', '');
-		field.innerHTML = '<input class="file-upload-input" type="file" />';
-
-		document.body.appendChild(field);
-
-		const fileInput = field.querySelector(
-			'.file-upload-input'
-		) as HTMLInputElement;
-
-		let files: File[] = [];
-
-		Object.defineProperty(fileInput, 'files', {
-			configurable: true,
-			get: () => files,
-			set: (value) => {
-				files = value;
-			},
-		});
-
-		const fakeEventSource = createFakeEventSource();
-
-		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
-
+	it('shows the footer disclaimer', async () => {
 		await renderAndOpen();
 
-		await act(async () => {
-			fakeEventSource.emit(
-				'Chat Message Sent',
-				JSON.stringify({
-					data: 'AAA',
-					mimeType: 'image/png',
-					type: 'image',
-				})
-			);
-		});
-
-		fireEvent.click(screen.getByRole('button', {name: 'save-image'}));
-
-		expect(fileInput.files).toHaveLength(1);
-
-		field.remove();
-
-		(global as {DataTransfer?: unknown}).DataTransfer =
-			originalDataTransfer;
-	});
-
-	it('defaults the mime type to image/png when the image event omits it', async () => {
-		const fakeEventSource = createFakeEventSource();
-
-		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
-
-		await renderAndOpen();
-
-		await act(async () => {
-			fakeEventSource.emit(
-				'Chat Message Sent',
-				JSON.stringify({data: 'CCC', type: 'image'})
-			);
-		});
-
-		expect(screen.getByAltText('generated-image')).toHaveAttribute(
-			'src',
-			'data:image/png;base64,CCC'
-		);
+		expect(
+			screen.getByText('ai-generated-responses-may-be-inaccurate')
+		).toBeInTheDocument();
 	});
 });
