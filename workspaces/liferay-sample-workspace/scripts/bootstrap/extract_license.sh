@@ -2,7 +2,7 @@
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-source _common.sh
+source ../_common.sh
 
 function main {
 	local force=false
@@ -13,7 +13,7 @@ function main {
 		force=true
 	fi
 
-	local license_file=../build/docker/deploy/license.xml
+	local license_file=../../build/docker/deploy/license.xml
 
 	if [[ -f ${license_file} ]] &&
 	   [[ ${force} == false ]]
