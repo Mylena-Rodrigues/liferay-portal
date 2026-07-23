@@ -212,6 +212,30 @@ describe('AIAssistantChat', () => {
 		);
 	});
 
+	it('sends the message once when the openAIAssistantChat event fires', async () => {
+		const fakeEventSource = createFakeEventSource();
+
+		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
+		(Liferay.on as jest.Mock).mockClear();
+
+		await renderAndOpen();
+
+		await act(async () => {
+			fakeEventSource.emit('Subscribe', 'ref-code');
+		});
+
+		const openChatHandlers = (Liferay.on as jest.Mock).mock.calls
+			.filter(([eventName]) => eventName === 'openAIAssistantChat')
+			.map(([, handler]) => handler);
+
+		await act(async () => {
+			openChatHandlers.forEach((handler) => handler({message: 'Hi'}));
+		});
+
+		expect(mockPostChat).toHaveBeenCalledTimes(1);
+	});
+
 	it('renders a generated image from an image event', async () => {
 		const fakeEventSource = createFakeEventSource();
 
