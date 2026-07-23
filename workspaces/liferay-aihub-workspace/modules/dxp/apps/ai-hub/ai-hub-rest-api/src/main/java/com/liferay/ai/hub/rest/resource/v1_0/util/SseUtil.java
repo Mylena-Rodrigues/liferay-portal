@@ -198,7 +198,7 @@ public class SseUtil {
 		SseEventSink sseEventSink = sseContext.getSseEventSink();
 
 		if (sseEventSink.isClosed()) {
-			_log.error("SSE Event Sink is closed " + sseEventSinkKey);
+			_log.error("SSE event sink is closed " + sseEventSinkKey);
 
 			return true;
 		}
