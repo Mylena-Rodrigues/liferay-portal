@@ -11,9 +11,9 @@ import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
-import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import dev.langchain4j.agent.tool.P;
@@ -24,6 +24,7 @@ import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * @author Feliphe Marinho
@@ -32,7 +33,42 @@ import java.util.List;
 public class ImageGenerationTools {
 
 	public ImageGenerationTools(QuotaManager quotaManager) {
-		_quotaManager = quotaManager;
+		_callable = new CompanyInheritableThreadLocalCallable<>(
+			() -> {
+				ExecutionContext executionContext = _invocationParameters.get(
+					"executionContext");
+
+				KaleoInstanceToken kaleoInstanceToken =
+					executionContext.getKaleoInstanceToken();
+
+				ImageModel imageModel =
+					GoogleGenAiUtil.createGoogleGenAiImageModel(
+						quotaManager, executionContext.getServiceContext());
+
+				Response<List<Image>> response = imageModel.generate(
+					_prompt, -1);
+
+				for (Image image : response.content()) {
+					SseUtil.send(
+						new String[] {
+							MapUtil.getString(
+								executionContext.getWorkflowContext(),
+								"agentDefinitionExternalReferenceCode")
+						},
+						image.base64Data(),
+						MapUtil.getString(
+							executionContext.getWorkflowContext(),
+							"outBoundEventName", "Chat Message Sent"),
+						kaleoInstanceToken.getCurrentKaleoNodeName(),
+						JSONUtil.put("mimeType", image.mimeType()),
+						MapUtil.getString(
+							executionContext.getWorkflowContext(),
+							"sseEventSinkKey"),
+						"image");
+				}
+
+				return "Images have been generated.";
+			});
 	}
 
 	@Tool("Generate images based on a prompt.")
@@ -40,40 +76,11 @@ public class ImageGenerationTools {
 		InvocationParameters invocationParameters,
 		@P("Description of the images to be generated.") String prompt) {
 
+		_invocationParameters = invocationParameters;
+		_prompt = prompt;
+
 		try {
-			ExecutionContext executionContext = invocationParameters.get(
-				"executionContext");
-
-			KaleoInstanceToken kaleoInstanceToken =
-				executionContext.getKaleoInstanceToken();
-
-			KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
-
-			ImageModel imageModel = GoogleGenAiUtil.createGoogleGenAiImageModel(
-				_quotaManager, executionContext.getServiceContext());
-
-			Response<List<Image>> response = imageModel.generate(prompt, -1);
-
-			for (Image image : response.content()) {
-				SseUtil.send(
-					new String[] {
-						MapUtil.getString(
-							executionContext.getWorkflowContext(),
-							"agentDefinitionExternalReferenceCode")
-					},
-					image.base64Data(),
-					MapUtil.getString(
-						executionContext.getWorkflowContext(),
-						"outBoundEventName", "Chat Message Sent"),
-					kaleoNode.getName(),
-					JSONUtil.put("mimeType", image.mimeType()),
-					MapUtil.getString(
-						executionContext.getWorkflowContext(),
-						"sseEventSinkKey"),
-					"image");
-			}
-
-			return "Images have been generated.";
+			return _callable.call();
 		}
 		catch (Exception exception) {
 			_log.error(exception);
@@ -85,6 +92,8 @@ public class ImageGenerationTools {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ImageGenerationTools.class);
 
-	private final QuotaManager _quotaManager;
+	private final Callable<String> _callable;
+	private InvocationParameters _invocationParameters;
+	private String _prompt;
 
 }
