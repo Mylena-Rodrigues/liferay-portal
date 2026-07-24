@@ -255,7 +255,7 @@ export default function ChatbotWidget({
 						{sender: 'error', text: ''},
 					]);
 					setLoading(false);
-				}, 30000);
+				}, 60000);
 			}
 			catch (error) {
 				console.error('Failed to send message:', error);
