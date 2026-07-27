@@ -51,7 +51,7 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 		isGenerating,
 		message,
 		messages,
-		messagesEndRef,
+		messagesContainerRef,
 		runtimeContextRef,
 		sendMessage,
 		setIsGenerating,
@@ -69,8 +69,10 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 	}, []);
 
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView();
-	}, [messagesEndRef]);
+		const container = messagesContainerRef.current;
+
+		container?.scrollTo({top: container.scrollHeight});
+	}, [messagesContainerRef]);
 
 	function onSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -112,7 +114,10 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 
 	return (
 		<>
-			<div className="ai-assistant-chat__messages-container">
+			<div
+				className="ai-assistant-chat__messages-container"
+				ref={messagesContainerRef}
+			>
 				{showGreeting && (
 					<AIAssistantMessageBalloon
 						error={false}
@@ -285,8 +290,6 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 						</span>
 					</div>
 				)}
-
-				<div ref={messagesEndRef} />
 			</div>
 
 			{!!quickActions?.length && (
