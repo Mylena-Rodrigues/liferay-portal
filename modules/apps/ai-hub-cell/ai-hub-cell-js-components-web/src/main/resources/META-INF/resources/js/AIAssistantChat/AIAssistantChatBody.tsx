@@ -141,6 +141,7 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 						return (
 							<CategorizationMessageBalloon
 								key={index}
+								setIsGenerating={setIsGenerating}
 								{...item.categorization}
 							/>
 						);
@@ -176,6 +177,7 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 								key={index}
 								message={item.text}
 								sendMessage={sendMessage}
+								setIsGenerating={setIsGenerating}
 							/>
 						);
 					}
