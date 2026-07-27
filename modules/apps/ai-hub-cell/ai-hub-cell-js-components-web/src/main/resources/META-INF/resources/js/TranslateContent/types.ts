@@ -15,6 +15,5 @@ export interface TranslateContentMessageBalloonProps {
 	availableLanguageIds?: string[];
 	requestedLanguageIds?: string[];
 	results?: Result[];
-	setIsGenerating: (isGenerating: boolean) => void;
 	sourceLanguageIdRef: MutableRefObject<string>;
 }

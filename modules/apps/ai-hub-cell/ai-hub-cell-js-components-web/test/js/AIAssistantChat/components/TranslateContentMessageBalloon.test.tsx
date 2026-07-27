@@ -9,6 +9,7 @@ import React from 'react';
 
 import '@testing-library/jest-dom';
 
+import {IsGeneratingContext} from '../../../../src/main/resources/META-INF/resources/js/AIAssistantChat/IsGeneratingContext';
 import TranslateContentMessageBalloon from '../../../../src/main/resources/META-INF/resources/js/AIAssistantChat/components/TranslateContentMessageBalloon';
 import {putAgentInstanceResume} from '../../../../src/main/resources/META-INF/resources/js/TranslateContent/api';
 
@@ -25,13 +26,16 @@ function renderComponent(props = {}) {
 	const setIsGenerating = jest.fn();
 
 	const view = render(
-		<TranslateContentMessageBalloon
-			agentInstanceId={12345}
-			availableLanguageIds={['es_ES', 'pt_BR', 'fr_FR']}
-			setIsGenerating={setIsGenerating}
-			sourceLanguageIdRef={{current: 'en_US'}}
-			{...props}
-		/>
+		<IsGeneratingContext.Provider
+			value={{isGenerating: false, setIsGenerating}}
+		>
+			<TranslateContentMessageBalloon
+				agentInstanceId={12345}
+				availableLanguageIds={['es_ES', 'pt_BR', 'fr_FR']}
+				sourceLanguageIdRef={{current: 'en_US'}}
+				{...props}
+			/>
+		</IsGeneratingContext.Provider>
 	);
 
 	return {setIsGenerating, ...view};

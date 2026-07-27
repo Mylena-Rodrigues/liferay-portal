@@ -10,6 +10,7 @@ import React from 'react';
 
 import '@testing-library/jest-dom';
 
+import {IsGeneratingContext} from '../../../../src/main/resources/META-INF/resources/js/AIAssistantChat/IsGeneratingContext';
 import ContentTypeSelectorMessageBalloon from '../../../../src/main/resources/META-INF/resources/js/AIAssistantChat/components/ContentTypeSelectorMessageBalloon';
 
 jest.mock('frontend-js-web', () => ({fetch: jest.fn()}));
@@ -45,13 +46,16 @@ describe('ContentTypeSelectorMessageBalloon', () => {
 		const setIsGenerating = jest.fn();
 
 		render(
-			<ContentTypeSelectorMessageBalloon
-				contentTypes={CONTENT_TYPES}
-				contextRef={contextRef}
-				message="What type of content do you want to generate?"
-				sendMessage={sendMessage}
-				setIsGenerating={setIsGenerating}
-			/>
+			<IsGeneratingContext.Provider
+				value={{isGenerating: false, setIsGenerating}}
+			>
+				<ContentTypeSelectorMessageBalloon
+					contentTypes={CONTENT_TYPES}
+					contextRef={contextRef}
+					message="What type of content do you want to generate?"
+					sendMessage={sendMessage}
+				/>
+			</IsGeneratingContext.Provider>
 		);
 
 		expect(screen.queryByRole('button', {name: 'send'})).toBeNull();

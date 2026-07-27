@@ -10,6 +10,7 @@ import {ChatContext} from '../api';
 import {getObjectFields} from '../services/getObjectFields';
 
 import '../chat.scss';
+import {useSetIsGenerating} from '../IsGeneratingContext';
 import AIAssistantMessageBalloonIcon from './AIAssistantMessageBalloonIcon';
 
 export interface ContentType {
@@ -23,16 +24,17 @@ interface ContentTypeSelectorMessageBalloonProps {
 	contextRef: React.MutableRefObject<ChatContext>;
 	message: string;
 	sendMessage: (text: string) => void;
-	setIsGenerating: (isGenerating: boolean) => void;
 }
 
 const ContentTypeSelectorMessageBalloon: React.FC<
 	ContentTypeSelectorMessageBalloonProps
-> = ({contentTypes, contextRef, message, sendMessage, setIsGenerating}) => {
+> = ({contentTypes, contextRef, message, sendMessage}) => {
 	const [externalReferenceCode, setExternalReferenceCode] = useState('');
 	const [submitted, setSubmitted] = useState(false);
 
 	const selectId = useId();
+
+	const setIsGenerating = useSetIsGenerating();
 
 	async function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
 		const value = event.target.value;

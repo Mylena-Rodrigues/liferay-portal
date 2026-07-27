@@ -5,6 +5,7 @@
 
 import {Dispatch, SetStateAction, useEffect, useRef, useState} from 'react';
 
+import {useSetIsGenerating} from '../AIAssistantChat/IsGeneratingContext';
 import {putAgentInstanceResume} from './api';
 import {TranslateContentMessageBalloonProps} from './types';
 import {getPageContext} from './utils/getPageContext';
@@ -15,9 +16,10 @@ export default function useTranslateContentAgent({
 	availableLanguageIds,
 	requestedLanguageIds,
 	results,
-	setIsGenerating,
 	sourceLanguageIdRef,
 }: TranslateContentMessageBalloonProps) {
+	const setIsGenerating = useSetIsGenerating();
+
 	const appliedRef = useRef<boolean>(false);
 
 	const [overwriteLanguageIds, setOverwriteLanguageIds] = useState<string[]>(

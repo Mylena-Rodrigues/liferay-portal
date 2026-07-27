@@ -15,11 +15,8 @@ import {getCandidateCategories} from '../../Categorization/services/getCandidate
 import {getExistingTags} from '../../Categorization/services/getExistingTags';
 import {ECategorizationAgent, Suggestion} from '../../Categorization/types';
 import useCategorizationAgent from '../../Categorization/useCategorizationAgent';
+import {useSetIsGenerating} from '../IsGeneratingContext';
 import AIAssistantMessageBalloonIcon from './AIAssistantMessageBalloonIcon';
-
-interface CategorizationMessageBalloonProps extends CategorizeEventPayload {
-	setIsGenerating: (isGenerating: boolean) => void;
-}
 
 function getKey(suggestion: Suggestion): string {
 	return `${suggestion.id ?? suggestion.name}`;
@@ -34,11 +31,12 @@ export default function CategorizationMessageBalloon({
 	currentCategoryIds,
 	currentTagNames,
 	scopeId,
-	setIsGenerating,
 	targets,
-}: CategorizationMessageBalloonProps) {
+}: CategorizeEventPayload) {
 	const [committed, setCommitted] = useState(false);
 	const [dismissed, setDismissed] = useState<string[]>([]);
+
+	const setIsGenerating = useSetIsGenerating();
 
 	const {regenerate, resolveTargets, run, status, suggestions} =
 		useCategorizationAgent(agent);

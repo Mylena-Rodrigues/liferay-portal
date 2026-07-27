@@ -9,6 +9,7 @@ import React, {
 	useCallback,
 	useEffect,
 	useId,
+	useMemo,
 	useRef,
 	useState,
 	useSyncExternalStore,
@@ -23,6 +24,7 @@ import {
 	subscribe,
 } from './AIAssistant';
 import AIAssistantChatBody from './AIAssistantChatBody';
+import {IsGeneratingContext} from './IsGeneratingContext';
 import AIAssistantPanelHeader from './components/AIAssistantPanelHeader';
 import AIAssistantSidebar from './shells/AIAssistantSidebar';
 import useAIChat from './useAIChat';
@@ -135,15 +137,22 @@ const AIAssistantHost: React.FC = () => {
 		triggerRef: anchorRef as React.RefObject<HTMLButtonElement | null>,
 	});
 
-	const chatBody = (
-		<AIAssistantChatBody
-			chat={chat}
-			quickActions={activeCommand?.quickActions}
-			showGreeting={!activeCommand?.initialMessage}
-		/>
+	const {isGenerating, reportContext, setIsGenerating} = chat;
+
+	const isGeneratingContextValue = useMemo(
+		() => ({isGenerating, setIsGenerating}),
+		[isGenerating, setIsGenerating]
 	);
 
-	const {reportContext} = chat;
+	const chatBody = (
+		<IsGeneratingContext.Provider value={isGeneratingContextValue}>
+			<AIAssistantChatBody
+				chat={chat}
+				quickActions={activeCommand?.quickActions}
+				showGreeting={!activeCommand?.initialMessage}
+			/>
+		</IsGeneratingContext.Provider>
+	);
 
 	const reportFeedbackModal = reportContext !== null && (
 		<ReportFeedbackModal

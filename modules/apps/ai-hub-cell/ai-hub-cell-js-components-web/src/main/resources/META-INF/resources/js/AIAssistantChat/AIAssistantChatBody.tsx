@@ -10,6 +10,7 @@ import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {autoSize as AutoSize} from 'frontend-js-web';
 import React, {useEffect, useRef} from 'react';
 
+import {useIsGenerating} from './IsGeneratingContext';
 import AIAssistantFooterDisclaimer from './components/AIAssistantFooterDisclaimer';
 import AIAssistantMessageBalloon from './components/AIAssistantMessageBalloon';
 import CategorizationMessageBalloon from './components/CategorizationMessageBalloon';
@@ -48,17 +49,17 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 		fileUploadSelectorRef,
 		getContextRef,
 		giveThumbsUp,
-		isGenerating,
 		message,
 		messages,
 		messagesContainerRef,
 		runtimeContextRef,
 		sendMessage,
-		setIsGenerating,
 		setMessage,
 		setReportContext,
 		sourceLanguageIdRef,
 	} = chat;
+
+	const isGenerating = useIsGenerating();
 
 	const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -141,7 +142,6 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 						return (
 							<CategorizationMessageBalloon
 								key={index}
-								setIsGenerating={setIsGenerating}
 								{...item.categorization}
 							/>
 						);
@@ -177,7 +177,6 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 								key={index}
 								message={item.text}
 								sendMessage={sendMessage}
-								setIsGenerating={setIsGenerating}
 							/>
 						);
 					}
@@ -215,7 +214,6 @@ const AIAssistantChatBody: React.FC<AIAssistantChatBodyProps> = ({
 									key={index}
 									requestedLanguageIds={targetLanguageIds}
 									results={results}
-									setIsGenerating={setIsGenerating}
 									sourceLanguageIdRef={sourceLanguageIdRef}
 								/>
 							);
