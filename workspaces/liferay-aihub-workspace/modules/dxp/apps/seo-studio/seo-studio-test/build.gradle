@@ -1,12 +1,16 @@
 dependencies {
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.account.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.ai.hub.cell.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.configuration.admin.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.oauth2.provider.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.object.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.configuration.metatype.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.configuration.module.configuration.api", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.site.api", version: "default"
+	testIntegrationImplementation group: "com.liferay.portal", name: "com.liferay.portal.test", version: "default"
+	testIntegrationImplementation group: "com.liferay.portal", name: "com.liferay.portal.test.integration", version: "default"
+	testIntegrationImplementation group: "com.liferay.portal", name: "release.dxp.api", version: "default"
+	testIntegrationImplementation group: "junit", name: "junit", version: "4.13.1"
 	testIntegrationImplementation group: "org.osgi", name: "org.osgi.service.cm", version: "1.6.0"
-	testIntegrationImplementation project(":apps:account:account-api")
-	testIntegrationImplementation project(":apps:ai-hub-cell:ai-hub-cell-api")
-	testIntegrationImplementation project(":apps:configuration-admin:configuration-admin-api")
-	testIntegrationImplementation project(":apps:oauth2-provider:oauth2-provider-api")
-	testIntegrationImplementation project(":apps:object:object-api")
-	testIntegrationImplementation project(":apps:portal-configuration:portal-configuration-module-configuration-api")
-	testIntegrationImplementation project(":apps:site:site-api")
-	testIntegrationImplementation project(":apps:static:portal-configuration:portal-configuration-metatype-api")
-	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
 }
