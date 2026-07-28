@@ -173,6 +173,27 @@ public class Chatbot implements Cloneable, Serializable {
 
 	protected String placeholderMessage;
 
+	public String[] getSuggestedQuestions() {
+		return suggestedQuestions;
+	}
+
+	public void setSuggestedQuestions(String[] suggestedQuestions) {
+		this.suggestedQuestions = suggestedQuestions;
+	}
+
+	public void setSuggestedQuestions(
+		UnsafeSupplier<String[], Exception> suggestedQuestionsUnsafeSupplier) {
+
+		try {
+			suggestedQuestions = suggestedQuestionsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String[] suggestedQuestions;
+
 	public String getTitle() {
 		return title;
 	}
@@ -226,4 +247,4 @@ public class Chatbot implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1342302770
+// LIFERAY-REST-BUILDER-HASH:1829323003

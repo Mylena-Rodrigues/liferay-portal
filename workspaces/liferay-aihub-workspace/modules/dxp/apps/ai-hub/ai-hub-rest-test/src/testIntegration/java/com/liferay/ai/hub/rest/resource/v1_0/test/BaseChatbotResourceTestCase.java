@@ -339,6 +339,16 @@ public abstract class BaseChatbotResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"suggestedQuestions", additionalAssertFieldName)) {
+
+				if (chatbot.getSuggestedQuestions() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("title", additionalAssertFieldName)) {
 				if (chatbot.getTitle() == null) {
 					valid = false;
@@ -540,6 +550,19 @@ public abstract class BaseChatbotResourceTestCase {
 				if (!Objects.deepEquals(
 						chatbot1.getPlaceholderMessage(),
 						chatbot2.getPlaceholderMessage())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"suggestedQuestions", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						chatbot1.getSuggestedQuestions(),
+						chatbot2.getSuggestedQuestions())) {
 
 					return false;
 				}
@@ -904,6 +927,11 @@ public abstract class BaseChatbotResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("suggestedQuestions")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("title")) {
 			Object object = chatbot.getTitle();
 
@@ -1233,4 +1261,4 @@ public abstract class BaseChatbotResourceTestCase {
 		_chatbotResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:705595240
+// LIFERAY-REST-BUILDER-HASH:619503341

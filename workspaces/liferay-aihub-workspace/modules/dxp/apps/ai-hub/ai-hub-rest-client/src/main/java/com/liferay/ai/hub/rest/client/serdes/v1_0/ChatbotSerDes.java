@@ -134,6 +134,26 @@ public class ChatbotSerDes {
 			sb.append("\"");
 		}
 
+		if (chatbot.getSuggestedQuestions() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"suggestedQuestions\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < chatbot.getSuggestedQuestions().length; i++) {
+				sb.append(_toJSON(chatbot.getSuggestedQuestions()[i]));
+
+				if ((i + 1) < chatbot.getSuggestedQuestions().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		if (chatbot.getTitle() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -223,6 +243,15 @@ public class ChatbotSerDes {
 				String.valueOf(chatbot.getPlaceholderMessage()));
 		}
 
+		if (chatbot.getSuggestedQuestions() == null) {
+			map.put("suggestedQuestions", null);
+		}
+		else {
+			map.put(
+				"suggestedQuestions",
+				String.valueOf(chatbot.getSuggestedQuestions()));
+		}
+
 		if (chatbot.getTitle() == null) {
 			map.put("title", null);
 		}
@@ -271,6 +300,11 @@ public class ChatbotSerDes {
 			}
 			else if (Objects.equals(
 						jsonParserFieldName, "placeholderMessage")) {
+
+				return false;
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "suggestedQuestions")) {
 
 				return false;
 			}
@@ -327,6 +361,14 @@ public class ChatbotSerDes {
 
 				if (jsonParserFieldValue != null) {
 					chatbot.setPlaceholderMessage((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "suggestedQuestions")) {
+
+				if (jsonParserFieldValue != null) {
+					chatbot.setSuggestedQuestions(
+						toStrings((Object[])jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "title")) {
@@ -415,4 +457,4 @@ public class ChatbotSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1593085211
+// LIFERAY-REST-BUILDER-HASH:-994782632

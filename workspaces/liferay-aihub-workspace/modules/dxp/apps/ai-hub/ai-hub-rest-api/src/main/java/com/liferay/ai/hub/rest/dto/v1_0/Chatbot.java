@@ -337,6 +337,47 @@ public class Chatbot implements Serializable {
 	private Supplier<String> _placeholderMessageSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
+	public String[] getSuggestedQuestions() {
+		if (_suggestedQuestionsSupplier != null) {
+			suggestedQuestions = _suggestedQuestionsSupplier.get();
+
+			_suggestedQuestionsSupplier = null;
+		}
+
+		return suggestedQuestions;
+	}
+
+	public void setSuggestedQuestions(String[] suggestedQuestions) {
+		this.suggestedQuestions = suggestedQuestions;
+
+		_suggestedQuestionsSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setSuggestedQuestions(
+		UnsafeSupplier<String[], Exception> suggestedQuestionsUnsafeSupplier) {
+
+		_suggestedQuestionsSupplier = () -> {
+			try {
+				return suggestedQuestionsUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String[] suggestedQuestions;
+
+	@JsonIgnore
+	private Supplier<String[]> _suggestedQuestionsSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
 	public String getTitle() {
 		if (_titleSupplier != null) {
 			title = _titleSupplier.get();
@@ -508,6 +549,32 @@ public class Chatbot implements Serializable {
 			sb.append("\"");
 		}
 
+		String[] suggestedQuestions = getSuggestedQuestions();
+
+		if (suggestedQuestions != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"suggestedQuestions\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < suggestedQuestions.length; i++) {
+				sb.append("\"");
+
+				sb.append(_escape(suggestedQuestions[i]));
+
+				sb.append("\"");
+
+				if ((i + 1) < suggestedQuestions.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		String title = getTitle();
 
 		if (title != null) {
@@ -625,4 +692,4 @@ public class Chatbot implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:2078847285
+// LIFERAY-REST-BUILDER-HASH:-99732612
