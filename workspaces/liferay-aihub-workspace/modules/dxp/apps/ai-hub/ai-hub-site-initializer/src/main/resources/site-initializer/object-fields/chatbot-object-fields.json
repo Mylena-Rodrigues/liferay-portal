@@ -141,6 +141,24 @@
 			"type": "String"
 		},
 		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"defaultValue": "null",
+			"externalReferenceCode": "SUGGESTED_QUESTIONS",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Suggested Questions"
+			},
+			"localized": true,
+			"name": "suggestedQuestions",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"system": false,
+			"type": "Clob"
+		},
+		{
 			"DBType": "String",
 			"businessType": "Text",
 			"defaultValue": "null",
