@@ -22,6 +22,7 @@ dependencies {
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.search.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.search.engine.adapter.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.search.test.util", version: "default"
+	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.security.audit.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.vulcan.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.workflow.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.workflow.kaleo.api", version: "default"
