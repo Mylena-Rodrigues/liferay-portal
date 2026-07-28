@@ -16,17 +16,20 @@ import '@testing-library/jest-dom';
 
 import ChatbotForm from '../../../src/main/resources/META-INF/resources/js/chatbot_form/ChatbotForm';
 
-const mockGetChatbotDefinition = jest.fn();
-const mockPostChatbotDefinition = jest.fn();
-const mockPutChatbotDefinition = jest.fn();
-const mockOpenToast = jest.fn();
+const mockGetAgentDefinitions = jest.fn().mockResolvedValue({items: []});
 
 jest.mock(
 	'../../../src/main/resources/META-INF/resources/js/agent_definition_form/services/AgentDefinitionService',
 	() => ({
-		getAgentDefinitions: jest.fn().mockResolvedValue({items: []}),
+		getAgentDefinitions: (...args: any[]) =>
+			mockGetAgentDefinitions(...args),
 	})
 );
+
+const mockGetChatbotDefinition = jest.fn();
+const mockPostChatbotDefinition = jest.fn();
+const mockPutChatbotDefinition = jest.fn();
+const mockOpenToast = jest.fn();
 
 jest.mock(
 	'../../../src/main/resources/META-INF/resources/js/chatbot_form/services/ChatbotService',
@@ -95,6 +98,12 @@ jest.mock('frontend-js-web', () => ({
 	},
 };
 
+(global as any).ResizeObserver = class {
+	disconnect() {}
+	observe() {}
+	unobserve() {}
+};
+
 const defaultProps = {
 	accountEntryExternalReferenceCode: 'ACCOUNT',
 	avatarAcceptedFileExtensions: 'jpeg, jpg, png',
@@ -116,6 +125,42 @@ function makeFile(name: string, sizeInBytes: number, type = 'image/png'): File {
 
 	return new File([blob], name, {type});
 }
+
+describe('ChatbotForm assigned agents search', () => {
+	beforeEach(() => {
+		mockOpenToast.mockClear();
+		mockGetChatbotDefinition.mockReset();
+		mockGetAgentDefinitions.mockReset();
+		mockGetAgentDefinitions.mockResolvedValue({items: []});
+	});
+
+	afterEach(() => {
+		cleanup();
+	});
+
+	it('requests the agent definitions with a search parameter', async () => {
+		render(<ChatbotForm {...defaultProps} />);
+
+		fireEvent.change(screen.getByRole('combobox'), {
+			target: {value: 'support'},
+		});
+
+		await waitFor(() =>
+			expect(mockGetAgentDefinitions).toHaveBeenLastCalledWith({
+				search: 'support',
+			})
+		);
+	});
+
+	it('requests the agent definitions without a search parameter', async () => {
+		render(<ChatbotForm {...defaultProps} />);
+
+		await waitFor(() => expect(mockGetAgentDefinitions).toHaveBeenCalled());
+
+		expect(mockGetAgentDefinitions).toHaveBeenCalledWith({});
+	});
+
+});
 
 describe('ChatbotForm company logo upload', () => {
 	beforeEach(() => {
