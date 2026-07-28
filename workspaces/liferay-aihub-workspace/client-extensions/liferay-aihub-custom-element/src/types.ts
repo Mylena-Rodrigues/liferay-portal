@@ -19,6 +19,7 @@ export interface ChatbotConfiguration {
 	introMessage?: string;
 	notificationMessage?: string;
 	placeholderMessage?: string;
+	suggestedQuestions?: string[];
 	title?: string;
 }
 

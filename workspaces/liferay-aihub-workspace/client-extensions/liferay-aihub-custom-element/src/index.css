@@ -225,6 +225,36 @@
 	margin: 0;
 }
 
+.aihub-suggestions {
+	align-items: flex-start;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 0.5rem 0;
+}
+
+.aihub-suggestion {
+	background: #fff;
+	border: 1px solid var(--aihub-accent);
+	border-radius: 1.25rem;
+	color: var(--aihub-text-main);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	padding: 0.375rem 0.875rem;
+	text-align: left;
+}
+
+.aihub-suggestion:disabled {
+	cursor: not-allowed;
+	opacity: 0.4;
+}
+
+.aihub-suggestion:hover:not(:disabled) {
+	background: var(--aihub-bg-light);
+}
+
 .aihub-msg-assistant {
 	display: flex;
 	margin-bottom: 0.5rem;

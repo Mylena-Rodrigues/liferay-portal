@@ -18,6 +18,7 @@ import ChatbotFooter from './ChatbotFooter';
 import ChatbotHeader from './ChatbotHeader';
 import ChatbotInput from './ChatbotInput';
 import ChatbotIntro from './ChatbotIntro';
+import ChatbotSuggestions from './ChatbotSuggestions';
 import ErrorMessage from './ErrorMessage';
 import LoadingIndicator from './LoadingIndicator';
 import SendFeedbackModal from './SendFeedbackModal';
@@ -59,6 +60,7 @@ export default function ChatbotWidget({
 	const [subscribed, setSubscribed] = useState(false);
 	const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+	const configurationRequestRef = useRef(0);
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const eventSourceReference = useRef<string | null>(null);
 	const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -67,15 +69,33 @@ export default function ChatbotWidget({
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const panelRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
+	const fetchChatbotConfiguration = useCallback(() => {
+		const requestId = ++configurationRequestRef.current;
+
 		getChatbotConfiguration(
 			widgetConfiguration.chatbotExternalReferenceCode
 		)
-			.then(setChatbotConfiguration)
+			.then((configuration) => {
+				if (requestId === configurationRequestRef.current) {
+					setChatbotConfiguration(configuration);
+				}
+			})
 			.catch((error) => {
 				console.error('Error fetching chatbot configuration:', error);
 			});
 	}, [widgetConfiguration.chatbotExternalReferenceCode]);
+
+	useEffect(() => {
+		fetchChatbotConfiguration();
+	}, [fetchChatbotConfiguration]);
+
+	useEffect(() => {
+		if (!open) {
+			return;
+		}
+
+		fetchChatbotConfiguration();
+	}, [fetchChatbotConfiguration, open]);
 
 	useEffect(() => {
 		if (!chatbotConfiguration?.active) {
@@ -212,7 +232,7 @@ export default function ChatbotWidget({
 			eventSourceRef.current = null;
 			setSubscribed(false);
 		};
-	}, [chatbotConfiguration]);
+	}, [chatbotConfiguration?.active]);
 
 	useEffect(() => {
 		if (open) {
@@ -304,6 +324,7 @@ export default function ChatbotWidget({
 			introMessage: chatbotConfiguration.introMessage ?? '',
 			notificationMessage: chatbotConfiguration.notificationMessage ?? '',
 			placeholderMessage: chatbotConfiguration.placeholderMessage ?? '',
+			suggestedQuestions: chatbotConfiguration.suggestedQuestions ?? [],
 			title: chatbotConfiguration.title ?? '',
 		};
 	}, [chatbotConfiguration]);
@@ -333,6 +354,21 @@ export default function ChatbotWidget({
 						introMessage={localized.introMessage}
 						title={localized.title}
 					/>
+
+					{!!localized.suggestedQuestions.length &&
+						!messages.some(
+							(message) => message.sender === 'user'
+						) && (
+							<ChatbotSuggestions
+								disabled={
+									loading ||
+									!subscribed ||
+									!eventSourceReference.current
+								}
+								onSelect={sendMessage}
+								questions={localized.suggestedQuestions}
+							/>
+						)}
 
 					{messages.map((msg, index) => {
 						if (msg.sender === 'assistant') {
