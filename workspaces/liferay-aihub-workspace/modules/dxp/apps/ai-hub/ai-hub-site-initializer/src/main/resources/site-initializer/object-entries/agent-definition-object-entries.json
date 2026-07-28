@@ -93,7 +93,7 @@
 		},
 		{
 			"active": true,
-			"description": "Generates CMS content entries as drafts from a brief, split into distinct angles. Use when asked to generate, write, or draft CMS/blog/web content. Extract brief and count (default 1).",
+			"description": "This agent generates one or more CMS content entries (assets backed by a Content Structure) as drafts by decomposing the requested topic into distinct angles; use this agent whenever a user asks to generate, write, draft, or create CMS content, blog posts, web content, or similar materials, extracting the parameters 'count' (the exact integer number of contents to generate, defaulting to 1 if unspecified or for singular phrasing like 'a', 'an', or 'one') and 'brief' (a clear description of the content's topic and expected appearance, such as 'dogs that are too big'), with the strict requirement that if the provided brief is unclear or not well-described, you must always ask the user for clarification before proceeding, although you may proceed with their subsequent response even if it remains vague.",
 			"externalReferenceCode": "L_GENERATE_CONTENT",
 			"inputVariables": "brief,count",
 			"outputVariable": "output",
