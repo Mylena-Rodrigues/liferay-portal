@@ -12,7 +12,10 @@ import com.liferay.object.rest.dto.v1_0.FileEntry;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
@@ -82,6 +85,13 @@ public class ChatbotResourceImpl extends BaseChatbotResourceImpl {
 			chatbot.setPlaceholderMessage(
 				() -> GetterUtil.getString(
 					objectEntry.getPropertyValue("placeholderMessage")));
+			chatbot.setSuggestedQuestions(
+				() -> ArrayUtil.filter(
+					StringUtil.splitLines(
+						GetterUtil.getString(
+							objectEntry.getPropertyValue(
+								"suggestedQuestions"))),
+					line -> !Validator.isBlank(StringUtil.trim(line))));
 			chatbot.setTitle(
 				() -> GetterUtil.getString(
 					objectEntry.getPropertyValue("title")));
