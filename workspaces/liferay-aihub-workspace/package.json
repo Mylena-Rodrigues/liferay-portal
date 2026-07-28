@@ -14,14 +14,15 @@
 	"workspaces": {
 		"packages": [
 			"client-extensions/liferay-aihub-custom-element",
+			"frontend-stubs/liferay-frontend-js-react-web",
+			"frontend-stubs/frontend-js-web",
 			"frontend-stubs/dynamic-data-mapping-form-field-type",
 			"frontend-stubs/frontend-js-components-web",
-			"frontend-stubs/frontend-js-web",
-			"frontend-stubs/liferay-frontend-data-set-web",
-			"frontend-stubs/liferay-frontend-js-react-web",
 			"frontend-stubs/liferay-object-js-components-web",
-			"modules/dxp/apps/ai-hub-pricing/ai-hub-pricing-web",
-			"modules/dxp/apps/ai-hub/ai-hub-web"
+			"frontend-stubs/liferay-frontend-data-set-web",
+			"modules/dxp/apps/seo-studio/seo-studio-web",
+			"modules/dxp/apps/ai-hub/ai-hub-web",
+			"modules/dxp/apps/ai-hub-pricing/ai-hub-pricing-web"
 		]
 	}
 }
