@@ -31,4 +31,6 @@ dependencies {
 	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.4.0"
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
 	compileOnly project(":modules:dxp:apps:seo-studio:seo-studio-spi")
+	testImplementation group: "com.liferay.portal", name: "com.liferay.portal.test", version: "default"
+	testImplementation group: "junit", name: "junit", version: "4.13.1"
 }

@@ -142,6 +142,24 @@ export async function runBuild({virtualModules = {}, webContext}) {
 				const external = resolveExternal(args.path);
 
 				if (external) {
+
+					// A bundled CommonJS dependency reaching an external
+					// through require() cannot be left external: in ESM output
+					// there is no import statement for esbuild to hang it on,
+					// so it emits a dynamic __require() that throws in the
+					// browser ("Dynamic require of ... is not supported").
+					// recharts pulls in such dependencies; @clayui and the
+					// portal packages, being ESM, never take this path.
+					// Resolve those to an in-graph shim that statically
+					// re-exports the external instead.
+
+					if (args.kind === 'require-call') {
+						return {
+							namespace: 'liferay-external-shim',
+							path: external,
+						};
+					}
+
 					return {external: true, path: external};
 				}
 
@@ -150,6 +168,39 @@ export async function runBuild({virtualModules = {}, webContext}) {
 
 				return null;
 			});
+
+			// The shim reaches the external by URL, which is relative, so the
+			// bare specifier resolver above never sees it.
+
+			pluginBuild.onResolve(
+				{filter: /.*/, namespace: 'liferay-external-shim'},
+				(args) => {
+					return {external: true, path: args.path};
+				}
+			);
+
+			pluginBuild.onLoad(
+				{filter: /.*/, namespace: 'liferay-external-shim'},
+				(args) => {
+					const url = JSON.stringify(args.path);
+
+					// `export *` carries the named exports, which is what a
+					// require() caller reads off the returned object; the
+					// default covers callers that use the module itself.
+
+					return {
+						contents: `
+import * as liferayExternal from ${url};
+
+export * from ${url};
+
+export default liferayExternal.default ?? liferayExternal;
+`,
+						loader: 'js',
+						resolveDir: moduleDir,
+					};
+				}
+			);
 
 			pluginBuild.onLoad(
 				{filter: /.*/, namespace: 'liferay-virtual'},

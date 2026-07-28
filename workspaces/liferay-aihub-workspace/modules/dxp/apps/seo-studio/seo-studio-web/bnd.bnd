@@ -1,5 +1,12 @@
 Bundle-Name: Liferay SEO Studio Web
 Bundle-SymbolicName: com.liferay.seo.studio.web
 Bundle-Version: 1.1.0
+Provide-Capability:\
+	osgi.webresource;\
+		osgi.webresource="@liferay/seo-studio-web";\
+		version:Version="1.1.0"
 Web-ContextPath: /seo-studio-web
 -dsannotations-options: inherit
+-includeresource:\
+	META-INF/resources=build/node/packageRunBuild/resources/META-INF/resources,\
+	package.json
