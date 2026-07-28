@@ -19,6 +19,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import './ChatbotForm.scss';
 import {getAgentDefinitions} from '../agent_definition_form/services/AgentDefinitionService';
 import Toolbar from '../components/ToolBar';
+import SuggestedQuestionsTable from './SuggestedQuestionsTable';
 import {
 	disassociateChatbotFromAgentDefinition,
 	getChatbotDefinition,
@@ -26,7 +27,11 @@ import {
 	putChatbotAgentDefinitionRelationship,
 	putChatbotDefinition,
 } from './services/ChatbotService';
-import {Chatbot} from './types/Chatbot';
+import {Chatbot, SuggestedQuestion} from './types/Chatbot';
+import {
+	toLocalizedValue,
+	toSuggestedQuestions,
+} from './utils/suggestedQuestions';
 
 type AgentDefinitionOption = {
 	externalReferenceCode: string;
@@ -136,6 +141,9 @@ export default function ChatbotForm({
 		setOriginalSelectedAgentDefinitions,
 	] = useState<AgentDefinitionOption[]>([]);
 	const [avatarLoading, setAvatarLoading] = useState(false);
+	const [suggestedQuestions, setSuggestedQuestions] = useState<
+		SuggestedQuestion[]
+	>([]);
 	const avatarInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -256,6 +264,7 @@ export default function ChatbotForm({
 				...formData,
 				r_accountToAIHubChatbots_accountEntryERC:
 					accountEntryExternalReferenceCode,
+				suggestedQuestions_i18n: toLocalizedValue(suggestedQuestions),
 				title:
 					formData.title_i18n?.['en_US'] ||
 					Object.values(formData.title_i18n ?? {})[0] ||
@@ -348,11 +357,13 @@ export default function ChatbotForm({
 					placeholderMessage_i18n: {},
 					r_accountToAIHubChatbots_accountEntryERC:
 						accountEntryExternalReferenceCode,
+					suggestedQuestions_i18n: {},
 					title_i18n: {},
 				});
 
 				setSelectedAgentDefinitions([]);
 				setOriginalSelectedAgentDefinitions([]);
+				setSuggestedQuestions([]);
 
 				return;
 			}
@@ -389,8 +400,16 @@ export default function ChatbotForm({
 						chatbotDefinition.placeholderMessage_i18n,
 					r_accountToAIHubChatbots_accountEntryERC:
 						chatbotDefinition.r_accountToAIHubChatbots_accountEntryERC,
+					suggestedQuestions_i18n:
+						chatbotDefinition.suggestedQuestions_i18n,
 					title_i18n: chatbotDefinition.title_i18n,
 				});
+
+				setSuggestedQuestions(
+					toSuggestedQuestions(
+						chatbotDefinition.suggestedQuestions_i18n ?? {}
+					)
+				);
 
 				const agentDefinitions = (
 					chatbotDefinition.agentDefinitionsToChatbots ?? []
@@ -746,6 +765,22 @@ export default function ChatbotForm({
 											translations={
 												(formData.introMessage_i18n as LocalizedValue<string>) ||
 												{}
+											}
+										/>
+									</ClayForm.Group>
+
+									<ClayForm.Group>
+										<label>
+											{Liferay.Language.get('questions')}
+										</label>
+
+										<SuggestedQuestionsTable
+											onSuggestedQuestionsChange={
+												setSuggestedQuestions
+											}
+											readOnly={readOnly}
+											suggestedQuestions={
+												suggestedQuestions
 											}
 										/>
 									</ClayForm.Group>

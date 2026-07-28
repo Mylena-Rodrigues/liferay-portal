@@ -11,6 +11,7 @@
 		"@clayui/link": "^3.165.0",
 		"@clayui/list": "^3.165.0",
 		"@clayui/localized-input": "^3.165.0",
+		"@clayui/modal": "^3.165.0",
 		"@clayui/multi-select": "^3.165.0",
 		"@clayui/panel": "^3.165.0",
 		"@clayui/progress-bar": "^3.165.0",

@@ -24,5 +24,11 @@ export type Chatbot = {
 	notificationMessage_i18n: {[key: string]: string};
 	placeholderMessage_i18n: {[key: string]: string};
 	r_accountToAIHubChatbots_accountEntryERC: string;
+	suggestedQuestions_i18n?: {[key: string]: string};
 	title_i18n: {[key: string]: string};
+};
+
+export type SuggestedQuestion = {
+	id: string;
+	question_i18n: {[key: string]: string};
 };
