@@ -214,7 +214,8 @@ public class AIHubSiteInitializerTest {
 		_assertObjectFieldsExist(
 			"L_AI_HUB_CHATBOT", "active", "avatar", "description",
 			"introMessage", "notificationMessage", "placeholderMessage",
-			"r_accountToAIHubChatbots_accountEntryId", "title");
+			"r_accountToAIHubChatbots_accountEntryId", "suggestedQuestions",
+			"title");
 		_assertObjectFieldsExist(
 			"L_AI_HUB_CONFIGURATION", "environmentURLs",
 			"r_accountToAIHubConfigurations_accountEntryId");

@@ -109,6 +109,8 @@ public class ChatbotResourceTest extends BaseChatbotResourceTestCase {
 		throws Exception {
 
 		String chatbotExternalReferenceCode = RandomTestUtil.randomString();
+		String suggestedQuestionValue1 = RandomTestUtil.randomString();
+		String suggestedQuestionValue2 = RandomTestUtil.randomString();
 		String titleValue = RandomTestUtil.randomString();
 
 		ObjectDefinition objectDefinition =
@@ -141,6 +143,13 @@ public class ChatbotResourceTest extends BaseChatbotResourceTestCase {
 				"r_accountToAIHubChatbots_accountEntryId",
 				_accountEntry.getAccountEntryId()
 			).put(
+				"suggestedQuestions_i18n",
+				HashMapBuilder.put(
+					_DEFAULT_LANGUAGE_ID,
+					suggestedQuestionValue1 + "\n\n   \n" +
+						suggestedQuestionValue2
+				).build()
+			).put(
 				"title_i18n",
 				HashMapBuilder.put(
 					_DEFAULT_LANGUAGE_ID, titleValue
@@ -153,6 +162,9 @@ public class ChatbotResourceTest extends BaseChatbotResourceTestCase {
 			{
 				active = true;
 				externalReferenceCode = chatbotExternalReferenceCode;
+				suggestedQuestions = new String[] {
+					suggestedQuestionValue1, suggestedQuestionValue2
+				};
 				title = titleValue;
 			}
 		};
@@ -168,6 +180,9 @@ public class ChatbotResourceTest extends BaseChatbotResourceTestCase {
 		Assert.assertTrue(getChatbot.getActive());
 		Assert.assertNotNull(
 			MapUtil.getString(getChatbot.getAvatar(), "fileURL"));
+		Assert.assertArrayEquals(
+			postChatbot.getSuggestedQuestions(),
+			getChatbot.getSuggestedQuestions());
 		Assert.assertEquals(postChatbot.getTitle(), getChatbot.getTitle());
 	}
 
