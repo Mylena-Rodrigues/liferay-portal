@@ -122,12 +122,12 @@ export default function ChatbotForm({
 	const [availableAgentDefinitions, setAvailableAgentDefinitions] = useState<
 		AgentDefinitionOption[]
 	>([]);
-	const [agentDefinitionsLoaded, setAgentDefinitionsLoaded] = useState(false);
 	const [formData, setFormData] = useState<Chatbot>({} as Chatbot);
 	const [
 		existingChatbotExternalReferenceCode,
 		setExistingChatbotExternalReferenceCode,
 	] = useState(externalReferenceCode);
+	const [query, setQuery] = useState('');
 	const [selectedAgentDefinitions, setSelectedAgentDefinitions] = useState<
 		AgentDefinitionOption[]
 	>([]);
@@ -139,7 +139,9 @@ export default function ChatbotForm({
 	const avatarInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
-		getAgentDefinitions()
+		getAgentDefinitions({
+			...(query ? {search: query} : {}),
+		})
 			.then((response) => {
 				setAvailableAgentDefinitions(
 					(response.items || []).map(
@@ -150,11 +152,8 @@ export default function ChatbotForm({
 					)
 				);
 			})
-			.catch(() => {})
-			.finally(() => {
-				setAgentDefinitionsLoaded(true);
-			});
-	}, []);
+			.catch(() => {});
+	}, [query]);
 
 	const handleInputChange = (
 		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -650,30 +649,28 @@ export default function ChatbotForm({
 											)}
 										</label>
 
-										{agentDefinitionsLoaded && (
-											<ClayMultiSelect
-												allowDuplicateValues={false}
-												allowsCustomLabel={false}
-												disabled={readOnly}
-												inputName="assignedAgents"
-												items={selectedAgentDefinitions}
-												locator={{
-													label: 'title',
-													value: 'externalReferenceCode',
-												}}
-												onItemsChange={(items) => {
-													setSelectedAgentDefinitions(
-														items
-													);
-												}}
-												sourceItems={
-													availableAgentDefinitions
-												}
-												spritemap={
-													Liferay.Icons.spritemap
-												}
-											/>
-										)}
+										<ClayMultiSelect
+											allowDuplicateValues={false}
+											allowsCustomLabel={false}
+											disabled={readOnly}
+											inputName="assignedAgents"
+											items={selectedAgentDefinitions}
+											loadingState={4}
+											locator={{
+												label: 'title',
+												value: 'externalReferenceCode',
+											}}
+											onChange={setQuery}
+											onItemsChange={(items) => {
+												setSelectedAgentDefinitions(
+													items
+												);
+											}}
+											sourceItems={
+												availableAgentDefinitions
+											}
+											spritemap={Liferay.Icons.spritemap}
+										/>
 									</ClayForm.Group>
 
 									<ClayForm.Group>
