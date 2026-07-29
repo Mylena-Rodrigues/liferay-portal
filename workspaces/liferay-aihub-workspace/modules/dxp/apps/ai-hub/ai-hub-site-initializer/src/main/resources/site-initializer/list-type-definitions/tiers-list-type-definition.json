@@ -1,0 +1,31 @@
+{
+	"externalReferenceCode": "L_AI_HUB_TIERS",
+	"listTypeEntries": [
+		{
+			"externalReferenceCode": "ACTIVATE",
+			"key": "activate",
+			"name": "Activate",
+			"system": false
+		},
+		{
+			"externalReferenceCode": "ENTERPRISE",
+			"key": "enterprise",
+			"name": "Enterprise",
+			"system": false
+		},
+		{
+			"externalReferenceCode": "STUDIO",
+			"key": "studio",
+			"name": "Studio",
+			"system": false
+		},
+		{
+			"externalReferenceCode": "TRIAL",
+			"key": "trial",
+			"name": "Trial",
+			"system": false
+		}
+	],
+	"name": "AI Hub Tiers",
+	"system": false
+}

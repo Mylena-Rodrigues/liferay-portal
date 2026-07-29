@@ -1,0 +1,35 @@
+{
+	"object-fields": [
+		{
+			"DBType": "String",
+			"businessType": "MultiselectPicklist",
+			"externalReferenceCode": "ADD_ONS",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Add-Ons"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_ADD_ONS",
+			"name": "addOns",
+			"required": false,
+			"system": false,
+			"type": "String"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Picklist",
+			"externalReferenceCode": "TIER",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Tier"
+			},
+			"listTypeDefinitionExternalReferenceCode": "L_AI_HUB_TIERS",
+			"name": "tier",
+			"required": false,
+			"system": false,
+			"type": "String"
+		}
+	],
+	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:AccountEntry$]"
+}

@@ -1,0 +1,13 @@
+{
+	"externalReferenceCode": "L_AI_HUB_ADD_ONS",
+	"listTypeEntries": [
+		{
+			"externalReferenceCode": "SEO_STUDIO",
+			"key": "seoStudio",
+			"name": "SEO Studio",
+			"system": false
+		}
+	],
+	"name": "AI Hub Add-Ons",
+	"system": false
+}
