@@ -180,7 +180,11 @@ Space id: {{spaceId}}]]>
 						"type": "string"
 					},
 					{
-						"name": "taxonomyCategoryIds",
+						"name": "funnelStageId",
+						"type": "string"
+					},
+					{
+						"name": "personaId",
 						"type": "string"
 					}
 				]
@@ -322,6 +326,106 @@ Space id: {{spaceId}}]]>
 			</transition>
 		</transitions>
 	</service>
+	<service>
+		<name>requestContentGapCategories</name>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "contentCoverage",
+						"type": "string"
+					},
+					{
+						"name": "funnelStageId",
+						"type": "string"
+					},
+					{
+						"name": "personaId",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#requestContentGapCategories</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Request Content Gap Categories
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "output",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Content Entries Generator
+					</label>
+				</labels>
+				<name>contentEntriesGenerator</name>
+				<target>contentEntriesGenerator</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</service>
+	<http-request>
+		<name>getContentCoverage</name>
+		<labels>
+			<label language-id="en_US">
+				Get Content Coverage
+			</label>
+		</labels>
+		<http-method>GET</http-method>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "aiHubCellLiferayDXPURL",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "contentCoverage",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<timeout>10000</timeout>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Request Content Gap Categories
+					</label>
+				</labels>
+				<name>requestContentGapCategories</name>
+				<target>requestContentGapCategories</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/headless-cmp/v1.0/projects/{{projectId}}/content-coverage</url>
+	</http-request>
 	<state>
 		<name>start</name>
 		<metadata>
@@ -344,11 +448,11 @@ Space id: {{spaceId}}]]>
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Content Entries Generator
+						Get Content Coverage
 					</label>
 				</labels>
-				<name>contentEntriesGenerator</name>
-				<target>contentEntriesGenerator</target>
+				<name>getContentCoverage</name>
+				<target>getContentCoverage</target>
 				<default>true</default>
 			</transition>
 		</transitions>
