@@ -173,7 +173,6 @@ export default function SuggestedQuestionsTable({
 								{
 									fieldName: 'question',
 									label: Liferay.Language.get('question'),
-									localizeLabel: true,
 									sortable: false,
 								},
 							],
