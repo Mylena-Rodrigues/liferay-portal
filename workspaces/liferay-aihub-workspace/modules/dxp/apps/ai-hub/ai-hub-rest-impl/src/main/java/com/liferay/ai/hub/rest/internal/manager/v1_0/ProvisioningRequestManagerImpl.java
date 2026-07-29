@@ -25,6 +25,8 @@ import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.object.system.SystemObjectDefinitionManager;
+import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
@@ -47,6 +49,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -79,6 +82,9 @@ public class ProvisioningRequestManagerImpl
 			provisioningRequest.getAccountEntryExternalReferenceCode(),
 			provisioningRequest.getAccountEntryName(), serviceContext);
 
+		_addOrUpdateAccountEntryProvisioningFields(
+			customerAccountEntry, provisioningRequest, serviceContext);
+
 		_addConfiguration(
 			customerAccountEntry, company.getCompanyId(), dtoConverterContext);
 
@@ -106,6 +112,8 @@ public class ProvisioningRequestManagerImpl
 					customerAccountEntry::getExternalReferenceCode);
 				setAccountEntryId(customerAccountEntry::getAccountEntryId);
 				setAccountEntryName(customerAccountEntry::getName);
+				setAddOns(provisioningRequest::getAddOns);
+				setTier(provisioningRequest::getTier);
 				setUserAccounts(
 					() -> TransformUtil.transformToArray(
 						users, user -> _toUserAccount(user),
@@ -214,6 +222,44 @@ public class ProvisioningRequestManagerImpl
 				"aihubinstructiondefinition.everything.write",
 				"aihubquota.everything.read", "aihubmcpserver.everything.read"),
 			false, serviceContext);
+	}
+
+	private void _addOrUpdateAccountEntryProvisioningFields(
+			AccountEntry customerAccountEntry,
+			ProvisioningRequest provisioningRequest,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		SystemObjectDefinitionManager systemObjectDefinitionManager =
+			_systemObjectDefinitionManagerRegistry.
+				getSystemObjectDefinitionManager("AccountEntry");
+
+		if (systemObjectDefinitionManager == null) {
+			return;
+		}
+
+		Map<String, Object> values = HashMapBuilder.<String, Object>put(
+			"description", customerAccountEntry.getDescription()
+		).put(
+			"externalReferenceCode",
+			customerAccountEntry.getExternalReferenceCode()
+		).put(
+			"name", customerAccountEntry.getName()
+		).put(
+			"tier", provisioningRequest.getTierAsString()
+		).put(
+			"type", customerAccountEntry.getType()
+		).build();
+
+		String[] addOns = provisioningRequest.getAddOns();
+
+		if (addOns != null) {
+			values.put("addOns", addOns);
+		}
+
+		systemObjectDefinitionManager.updateBaseModel(
+			customerAccountEntry.getAccountEntryId(),
+			_userLocalService.getUser(serviceContext.getUserId()), values);
 	}
 
 	private List<User> _addRegularUsers(
@@ -405,6 +451,10 @@ public class ProvisioningRequestManagerImpl
 
 	@Reference
 	private RoleLocalService _roleLocalService;
+
+	@Reference
+	private SystemObjectDefinitionManagerRegistry
+		_systemObjectDefinitionManagerRegistry;
 
 	@Reference
 	private UserLocalService _userLocalService;
