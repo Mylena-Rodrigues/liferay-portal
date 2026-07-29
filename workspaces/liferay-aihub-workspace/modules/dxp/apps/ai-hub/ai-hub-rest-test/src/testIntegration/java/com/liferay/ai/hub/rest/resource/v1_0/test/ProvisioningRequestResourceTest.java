@@ -43,8 +43,11 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.site.initializer.SiteInitializerRegistry;
 
+import java.io.Serializable;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -131,6 +134,9 @@ public class ProvisioningRequestResourceTest
 
 		_assertAccountEntry(customerAccountEntry, provisioningRequest1);
 
+		_assertAccountEntryProvisioningFields(
+			customerAccountEntry, provisioningRequest1);
+
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.
 				fetchObjectDefinitionByExternalReferenceCode(
@@ -169,12 +175,28 @@ public class ProvisioningRequestResourceTest
 				customerAccountEntry.getAccountEntryId() +
 					"-ai-hub-configuration",
 				0, objectDefinition.getObjectDefinitionId()));
+
+		ProvisioningRequest provisioningRequest3 = randomProvisioningRequest(
+			userAccounts);
+
+		provisioningRequest3.setAccountEntryExternalReferenceCode(
+			provisioningRequest1.getAccountEntryExternalReferenceCode());
+		provisioningRequest3.setAccountEntryName(
+			provisioningRequest1.getAccountEntryName());
+		provisioningRequest3.setAddOns((String[])null);
+		provisioningRequest3.setTier(provisioningRequest1.getTier());
+
+		provisioningRequestResource.postProvisioning(provisioningRequest3);
+
+		_assertAccountEntryProvisioningFields(
+			customerAccountEntry, provisioningRequest1);
 	}
 
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {
-			"accountEntryExternalReferenceCode", "accountEntryName"
+			"accountEntryExternalReferenceCode", "accountEntryName", "addOns",
+			"tier"
 		};
 	}
 
@@ -185,6 +207,8 @@ public class ProvisioningRequestResourceTest
 		ProvisioningRequest provisioningRequest =
 			super.randomProvisioningRequest();
 
+		provisioningRequest.setAddOns(new String[] {"seoStudio"});
+		provisioningRequest.setTier(ProvisioningRequest.Tier.TRIAL);
 		provisioningRequest.setUserAccounts(userAccounts);
 
 		return provisioningRequest;
@@ -198,6 +222,34 @@ public class ProvisioningRequestResourceTest
 			accountEntry.getExternalReferenceCode());
 		Assert.assertEquals(
 			provisioningRequest.getAccountEntryName(), accountEntry.getName());
+	}
+
+	private void _assertAccountEntryProvisioningFields(
+			AccountEntry accountEntry, ProvisioningRequest provisioningRequest)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_ACCOUNT", TestPropsValues.getCompanyId());
+
+		Map<String, Serializable> values =
+			_objectEntryLocalService.
+				getExtensionDynamicObjectDefinitionTableValues(
+					objectDefinition, accountEntry.getAccountEntryId());
+
+		ProvisioningRequest.Tier tier = provisioningRequest.getTier();
+
+		Assert.assertEquals(
+			tier.getValue(), String.valueOf(values.get("tier")));
+
+		String addOns = String.valueOf(values.get("addOns"));
+
+		for (String addOn : provisioningRequest.getAddOns()) {
+			Assert.assertTrue(
+				"Add-ons were not persisted: " + addOns,
+				addOns.contains(addOn));
+		}
 	}
 
 	private void _assertOAuth2Application(
