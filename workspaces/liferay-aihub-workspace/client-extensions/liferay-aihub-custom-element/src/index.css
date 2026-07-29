@@ -452,6 +452,14 @@
 	text-decoration: underline;
 }
 
+.aihub-footer p {
+	margin: 0;
+}
+
+.aihub-footer p + p {
+	margin-top: 0.5rem;
+}
+
 .aihub-notification {
 	align-items: flex-start;
 	background: #fff;

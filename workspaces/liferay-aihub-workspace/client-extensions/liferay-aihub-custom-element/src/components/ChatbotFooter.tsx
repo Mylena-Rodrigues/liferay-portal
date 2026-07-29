@@ -5,6 +5,8 @@
 
 import React from 'react';
 
+import Markdown from './Markdown';
+
 const DEFAULT_DISCLAIMER_MESSAGE =
 	'AI generated responses may be inaccurate. Please review carefully.';
 
@@ -15,7 +17,7 @@ interface ChatbotFooterProps {
 export default function ChatbotFooter({disclaimerMessage}: ChatbotFooterProps) {
 	return (
 		<div className="aihub-footer">
-			{disclaimerMessage || DEFAULT_DISCLAIMER_MESSAGE}
+			<Markdown text={disclaimerMessage || DEFAULT_DISCLAIMER_MESSAGE} />
 		</div>
 	);
 }
