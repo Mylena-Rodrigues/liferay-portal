@@ -5,9 +5,12 @@
 
 package com.liferay.ai.hub.rest.dto.v1_0;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
@@ -39,7 +42,7 @@ import java.util.function.Supplier;
 @Generated("")
 @GraphQLName("ProvisioningRequest")
 @io.swagger.v3.oas.annotations.media.Schema(
-	requiredProperties = {"accountEntryName", "userAccounts"}
+	requiredProperties = {"accountEntryName", "tier", "userAccounts"}
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "ProvisioningRequest")
@@ -184,6 +187,100 @@ public class ProvisioningRequest implements Serializable {
 	private Supplier<String> _accountEntryNameSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
+	public String[] getAddOns() {
+		if (_addOnsSupplier != null) {
+			addOns = _addOnsSupplier.get();
+
+			_addOnsSupplier = null;
+		}
+
+		return addOns;
+	}
+
+	public void setAddOns(String[] addOns) {
+		this.addOns = addOns;
+
+		_addOnsSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setAddOns(
+		UnsafeSupplier<String[], Exception> addOnsUnsafeSupplier) {
+
+		_addOnsSupplier = () -> {
+			try {
+				return addOnsUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String[] addOns;
+
+	@JsonIgnore
+	private Supplier<String[]> _addOnsSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	@JsonGetter("tier")
+	@Valid
+	public Tier getTier() {
+		if (_tierSupplier != null) {
+			tier = _tierSupplier.get();
+
+			_tierSupplier = null;
+		}
+
+		return tier;
+	}
+
+	@JsonIgnore
+	public String getTierAsString() {
+		Tier tier = getTier();
+
+		if (tier == null) {
+			return null;
+		}
+
+		return tier.toString();
+	}
+
+	public void setTier(Tier tier) {
+		this.tier = tier;
+
+		_tierSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setTier(UnsafeSupplier<Tier, Exception> tierUnsafeSupplier) {
+		_tierSupplier = () -> {
+			try {
+				return tierUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	@NotNull
+	protected Tier tier;
+
+	@JsonIgnore
+	private Supplier<Tier> _tierSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
 	public UserAccount[] getUserAccounts() {
 		if (_userAccountsSupplier != null) {
@@ -298,6 +395,46 @@ public class ProvisioningRequest implements Serializable {
 			sb.append("\"");
 		}
 
+		String[] addOns = getAddOns();
+
+		if (addOns != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"addOns\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < addOns.length; i++) {
+				sb.append("\"");
+
+				sb.append(_escape(addOns[i]));
+
+				sb.append("\"");
+
+				if ((i + 1) < addOns.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
+		Tier tier = getTier();
+
+		if (tier != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"tier\": ");
+
+			sb.append("\"");
+			sb.append(tier);
+			sb.append("\"");
+		}
+
 		UserAccount[] userAccounts = getUserAccounts();
 
 		if (userAccounts != null) {
@@ -331,6 +468,45 @@ public class ProvisioningRequest implements Serializable {
 		name = "x-class-name"
 	)
 	public String xClassName;
+
+	@GraphQLName("Tier")
+	public static enum Tier {
+
+		ACTIVATE("activate"), ENTERPRISE("enterprise"), STUDIO("studio"),
+		TRIAL("trial");
+
+		@JsonCreator
+		public static Tier create(String value) {
+			if ((value == null) || value.equals("")) {
+				return null;
+			}
+
+			for (Tier tier : values()) {
+				if (Objects.equals(tier.getValue(), value)) {
+					return tier;
+				}
+			}
+
+			throw new IllegalArgumentException("Invalid enum value: " + value);
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Tier(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
 
 	private static String _escape(Object object) {
 		return StringUtil.replace(
@@ -421,4 +597,4 @@ public class ProvisioningRequest implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1176234519
+// LIFERAY-REST-BUILDER-HASH:1093894272

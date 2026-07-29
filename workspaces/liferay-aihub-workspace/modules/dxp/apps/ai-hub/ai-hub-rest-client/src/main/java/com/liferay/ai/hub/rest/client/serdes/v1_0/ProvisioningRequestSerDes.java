@@ -90,6 +90,38 @@ public class ProvisioningRequestSerDes {
 			sb.append("\"");
 		}
 
+		if (provisioningRequest.getAddOns() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"addOns\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < provisioningRequest.getAddOns().length; i++) {
+				sb.append(_toJSON(provisioningRequest.getAddOns()[i]));
+
+				if ((i + 1) < provisioningRequest.getAddOns().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
+		if (provisioningRequest.getTier() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"tier\": ");
+
+			sb.append("\"");
+			sb.append(provisioningRequest.getTier());
+			sb.append("\"");
+		}
+
 		if (provisioningRequest.getUserAccounts() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -165,6 +197,20 @@ public class ProvisioningRequestSerDes {
 				String.valueOf(provisioningRequest.getAccountEntryName()));
 		}
 
+		if (provisioningRequest.getAddOns() == null) {
+			map.put("addOns", null);
+		}
+		else {
+			map.put("addOns", String.valueOf(provisioningRequest.getAddOns()));
+		}
+
+		if (provisioningRequest.getTier() == null) {
+			map.put("tier", null);
+		}
+		else {
+			map.put("tier", String.valueOf(provisioningRequest.getTier()));
+		}
+
 		if (provisioningRequest.getUserAccounts() == null) {
 			map.put("userAccounts", null);
 		}
@@ -203,6 +249,12 @@ public class ProvisioningRequestSerDes {
 			else if (Objects.equals(jsonParserFieldName, "accountEntryName")) {
 				return false;
 			}
+			else if (Objects.equals(jsonParserFieldName, "addOns")) {
+				return false;
+			}
+			else if (Objects.equals(jsonParserFieldName, "tier")) {
+				return false;
+			}
 			else if (Objects.equals(jsonParserFieldName, "userAccounts")) {
 				return false;
 			}
@@ -233,6 +285,19 @@ public class ProvisioningRequestSerDes {
 				if (jsonParserFieldValue != null) {
 					provisioningRequest.setAccountEntryName(
 						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "addOns")) {
+				if (jsonParserFieldValue != null) {
+					provisioningRequest.setAddOns(
+						toStrings((Object[])jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "tier")) {
+				if (jsonParserFieldValue != null) {
+					provisioningRequest.setTier(
+						ProvisioningRequest.Tier.create(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "userAccounts")) {
@@ -332,4 +397,4 @@ public class ProvisioningRequestSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1878769754
+// LIFERAY-REST-BUILDER-HASH:760254007

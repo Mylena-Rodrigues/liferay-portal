@@ -93,6 +93,54 @@ public class ProvisioningRequest implements Cloneable, Serializable {
 
 	protected String accountEntryName;
 
+	public String[] getAddOns() {
+		return addOns;
+	}
+
+	public void setAddOns(String[] addOns) {
+		this.addOns = addOns;
+	}
+
+	public void setAddOns(
+		UnsafeSupplier<String[], Exception> addOnsUnsafeSupplier) {
+
+		try {
+			addOns = addOnsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String[] addOns;
+
+	public Tier getTier() {
+		return tier;
+	}
+
+	public String getTierAsString() {
+		if (tier == null) {
+			return null;
+		}
+
+		return tier.toString();
+	}
+
+	public void setTier(Tier tier) {
+		this.tier = tier;
+	}
+
+	public void setTier(UnsafeSupplier<Tier, Exception> tierUnsafeSupplier) {
+		try {
+			tier = tierUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Tier tier;
+
 	public UserAccount[] getUserAccounts() {
 		return userAccounts;
 	}
@@ -145,5 +193,39 @@ public class ProvisioningRequest implements Cloneable, Serializable {
 		return ProvisioningRequestSerDes.toJSON(this);
 	}
 
+	public static enum Tier {
+
+		ACTIVATE("activate"), ENTERPRISE("enterprise"), STUDIO("studio"),
+		TRIAL("trial");
+
+		public static Tier create(String value) {
+			for (Tier tier : values()) {
+				if (Objects.equals(tier.getValue(), value) ||
+					Objects.equals(tier.name(), value)) {
+
+					return tier;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Tier(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
+
 }
-// LIFERAY-REST-BUILDER-HASH:1830339160
+// LIFERAY-REST-BUILDER-HASH:-1410137300
