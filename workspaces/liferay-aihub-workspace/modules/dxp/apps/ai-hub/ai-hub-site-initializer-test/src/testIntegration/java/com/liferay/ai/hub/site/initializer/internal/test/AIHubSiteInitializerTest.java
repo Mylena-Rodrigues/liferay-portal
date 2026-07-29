@@ -154,6 +154,7 @@ public class AIHubSiteInitializerTest {
 		_assertLayoutUtilityPageEntryExists(
 			"L_AI_HUB_CREATE_ACCOUNT_UTILITY_PAGE",
 			LayoutUtilityPageEntryConstants.TYPE_CREATE_ACCOUNT);
+		_assertListTypeDefinitionExists("L_AI_HUB_ADD_ONS", "seoStudio");
 		_assertListTypeDefinitionExists(
 			"L_AI_HUB_CRAWLER_JOB_STATUSES", "abandoned", "dispatched",
 			"failed", "queued", "running", "succeeded");
@@ -168,6 +169,8 @@ public class AIHubSiteInitializerTest {
 		_assertListTypeDefinitionExists(
 			"L_AI_HUB_INSTRUCTION_DEFINITION_SCOPES", "clickToChat", "cms",
 			"everywhere");
+		_assertListTypeDefinitionExists(
+			"L_AI_HUB_TIERS", "activate", "enterprise", "studio", "trial");
 		_assertListTypeDefinitionUserRoleViewPermission(
 			"L_AI_HUB_CRAWLER_JOB_STATUSES");
 		_assertListTypeDefinitionUserRoleViewPermission(
@@ -206,6 +209,7 @@ public class AIHubSiteInitializerTest {
 		_assertObjectFieldSettingValue(
 			"L_AI_HUB_CHATBOT", "avatar",
 			ObjectFieldSettingConstants.NAME_MAX_FILE_SIZE, "512000");
+		_assertObjectFieldsExist("L_ACCOUNT", "addOns", "tier");
 		_assertObjectFieldsExist(
 			"L_AI_HUB_AGENT_DEFINITION", "active", "description",
 			"inputVariables", "outputVariable",
