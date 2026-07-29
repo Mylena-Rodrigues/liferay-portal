@@ -254,12 +254,26 @@ components:
                     type: integer
                 accountEntryName:
                     type: string
+                addOns:
+                    items:
+                        enum:
+                            -   seoStudio
+                        type: string
+                    type: array
+                tier:
+                    enum:
+                        -   activate
+                        -   enterprise
+                        -   studio
+                        -   trial
+                    type: string
                 userAccounts:
                     items:
                         $ref: "#/components/schemas/UserAccount"
                     type: array
             required:
                 -   accountEntryName
+                -   tier
                 -   userAccounts
             type: object
         Report:
