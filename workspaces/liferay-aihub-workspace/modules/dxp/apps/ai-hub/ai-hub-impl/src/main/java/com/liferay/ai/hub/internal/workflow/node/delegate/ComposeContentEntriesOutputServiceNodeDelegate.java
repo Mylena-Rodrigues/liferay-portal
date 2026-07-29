@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
@@ -29,16 +30,47 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = ServiceNodeDelegate.class)
 public class ComposeContentEntriesOutputServiceNodeDelegate
-	extends BaseServiceNodeDelegate {
+	implements ServiceNodeDelegate {
+
+	@Override
+	public String execute(
+			ExecutionContext executionContext,
+			Map<String, String> inputVariables,
+			Map<String, Serializable> workflowContext)
+		throws Exception {
+
+		String output = _getOutput(inputVariables, workflowContext);
+
+		workflowContext.put("output", output);
+
+		WorkflowNodeUtil.completeWorkflowNode(
+			executionContext, workflowContext, _workflowNodeManager);
+
+		return output;
+	}
 
 	@Override
 	public String getKey() {
 		return "javaDelegate#composeContentEntriesOutput";
 	}
 
-	@Override
-	protected String doExecute(
-			ExecutionContext executionContext,
+	private String _getOutput(Map<String, String> inputVariables) {
+		if (Validator.isNull(inputVariables.get("objectDefinitionName")) ||
+			Validator.isNull(inputVariables.get("spaceId"))) {
+
+			return StringBundler.concat(
+				"I can only generate content when a destination space and a ",
+				"content type are selected. Please open the AI Assistant from ",
+				"a content section.");
+		}
+
+		return StringBundler.concat(
+			"I can only generate ", inputVariables.get("objectDefinitionName"),
+			" content here. To generate a different content type, open the AI ",
+			"Assistant from that content type's section.");
+	}
+
+	private String _getOutput(
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
@@ -81,23 +113,10 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 			"\n");
 	}
 
-	private String _getOutput(Map<String, String> inputVariables) {
-		if (Validator.isNull(inputVariables.get("objectDefinitionName")) ||
-			Validator.isNull(inputVariables.get("spaceId"))) {
-
-			return StringBundler.concat(
-				"I can only generate content when a destination space and a ",
-				"content type are selected. Please open the AI Assistant from ",
-				"a content section.");
-		}
-
-		return StringBundler.concat(
-			"I can only generate ", inputVariables.get("objectDefinitionName"),
-			" content here. To generate a different content type, open the AI ",
-			"Assistant from that content type's section.");
-	}
-
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private WorkflowNodeManager _workflowNodeManager;
 
 }

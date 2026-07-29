@@ -6,14 +6,12 @@
 package com.liferay.ai.hub.internal.workflow.node.delegate;
 
 import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
@@ -28,15 +26,10 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = ServiceNodeDelegate.class)
 public class CategorizeContentEntriesServiceNodeDelegate
-	extends BaseServiceNodeDelegate {
+	implements ServiceNodeDelegate {
 
 	@Override
-	public String getKey() {
-		return "javaDelegate#categorizeContentEntries";
-	}
-
-	@Override
-	protected String doExecute(
+	public String execute(
 			ExecutionContext executionContext,
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
@@ -45,65 +38,56 @@ public class CategorizeContentEntriesServiceNodeDelegate
 		String contentEntriesPayload = inputVariables.get(
 			"contentEntriesPayload");
 
-		JSONArray taxonomyCategoryIdsJSONArray =
-			_getTaxonomyCategoryIdsJSONArray(
-				inputVariables.get("taxonomyCategoryIds"));
+		JSONArray taxonomyCategoryIdsJSONArray = _jsonFactory.createJSONArray();
 
-		if (Validator.isNull(contentEntriesPayload) ||
-			(taxonomyCategoryIdsJSONArray.length() == 0)) {
+		long personaId = GetterUtil.getLong(inputVariables.get("personaId"));
 
-			workflowContext.put("contentEntriesPayload", contentEntriesPayload);
-
-			return contentEntriesPayload;
+		if (personaId > 0) {
+			taxonomyCategoryIdsJSONArray.put(personaId);
 		}
 
-		JSONArray contentEntriesPayloadJSONArray = _jsonFactory.createJSONArray(
-			contentEntriesPayload);
+		long funnelStageId = GetterUtil.getLong(
+			inputVariables.get("funnelStageId"));
 
-		for (int i = 0; i < contentEntriesPayloadJSONArray.length(); i++) {
-			JSONObject jsonObject =
-				contentEntriesPayloadJSONArray.getJSONObject(i);
-
-			jsonObject.put("taxonomyCategoryIds", taxonomyCategoryIdsJSONArray);
+		if (funnelStageId > 0) {
+			taxonomyCategoryIdsJSONArray.put(funnelStageId);
 		}
 
-		workflowContext.put(
-			"contentEntriesPayload", contentEntriesPayloadJSONArray.toString());
+		if (Validator.isNotNull(contentEntriesPayload) &&
+			(taxonomyCategoryIdsJSONArray.length() > 0)) {
 
-		return contentEntriesPayloadJSONArray.toString();
+			JSONArray contentEntriesPayloadJSONArray =
+				_jsonFactory.createJSONArray(contentEntriesPayload);
+
+			for (int i = 0; i < contentEntriesPayloadJSONArray.length(); i++) {
+				JSONObject jsonObject =
+					contentEntriesPayloadJSONArray.getJSONObject(i);
+
+				jsonObject.put(
+					"taxonomyCategoryIds", taxonomyCategoryIdsJSONArray);
+			}
+
+			contentEntriesPayload = contentEntriesPayloadJSONArray.toString();
+		}
+
+		workflowContext.put("contentEntriesPayload", contentEntriesPayload);
+		workflowContext.put("output", contentEntriesPayload);
+
+		WorkflowNodeUtil.completeWorkflowNode(
+			executionContext, workflowContext, _workflowNodeManager);
+
+		return contentEntriesPayload;
 	}
 
-	private JSONArray _getTaxonomyCategoryIdsJSONArray(
-			String taxonomyCategoryIds)
-		throws Exception {
-
-		if (Validator.isNull(taxonomyCategoryIds)) {
-			return _jsonFactory.createJSONArray();
-		}
-
-		String trimmedTaxonomyCategoryIds = taxonomyCategoryIds.trim();
-
-		if (trimmedTaxonomyCategoryIds.startsWith(StringPool.OPEN_BRACKET) &&
-			trimmedTaxonomyCategoryIds.endsWith(StringPool.CLOSE_BRACKET)) {
-
-			return _jsonFactory.createJSONArray(trimmedTaxonomyCategoryIds);
-		}
-
-		return JSONUtil.toJSONArray(
-			StringUtil.split(trimmedTaxonomyCategoryIds),
-			taxonomyCategoryId -> {
-				long taxonomyCategoryIdLong = GetterUtil.getLong(
-					taxonomyCategoryId);
-
-				if (taxonomyCategoryIdLong > 0) {
-					return taxonomyCategoryIdLong;
-				}
-
-				return null;
-			});
+	@Override
+	public String getKey() {
+		return "javaDelegate#categorizeContentEntries";
 	}
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private WorkflowNodeManager _workflowNodeManager;
 
 }

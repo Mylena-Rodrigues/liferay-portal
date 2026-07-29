@@ -5,7 +5,6 @@
 
 package com.liferay.ai.hub.internal.workflow.node.delegate;
 
-import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
 import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
@@ -17,24 +16,16 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.service.component.annotations.Reference;
-
 /**
- * @author Carolina Barbosa
+ * @author Feliphe Marinho
  */
-public abstract class BaseServiceNodeDelegate implements ServiceNodeDelegate {
+public class WorkflowNodeUtil {
 
-	@Override
-	public String execute(
+	public static void completeWorkflowNode(
 			ExecutionContext executionContext,
-			Map<String, String> inputVariables,
-			Map<String, Serializable> workflowContext)
+			Map<String, Serializable> workflowContext,
+			WorkflowNodeManager workflowNodeManager)
 		throws Exception {
-
-		String output = doExecute(
-			executionContext, inputVariables, workflowContext);
-
-		workflowContext.put("output", output);
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
@@ -50,17 +41,6 @@ public abstract class BaseServiceNodeDelegate implements ServiceNodeDelegate {
 			kaleoInstanceToken.getCompanyId(), kaleoInstanceToken.getUserId(),
 			kaleoInstanceToken.getKaleoInstanceTokenId(),
 			kaleoTransition.getName(), workflowContext, false);
-
-		return output;
 	}
-
-	protected abstract String doExecute(
-			ExecutionContext executionContext,
-			Map<String, String> inputVariables,
-			Map<String, Serializable> workflowContext)
-		throws Exception;
-
-	@Reference
-	protected WorkflowNodeManager workflowNodeManager;
 
 }
