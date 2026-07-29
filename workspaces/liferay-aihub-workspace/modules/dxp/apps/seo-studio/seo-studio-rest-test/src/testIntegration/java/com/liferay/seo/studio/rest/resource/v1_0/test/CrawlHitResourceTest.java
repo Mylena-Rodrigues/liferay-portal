@@ -153,7 +153,7 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
-		return new String[] {"title", "url"};
+		return new String[] {"metaDescription", "title", "url"};
 	}
 
 	@Override
@@ -163,7 +163,8 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 
 		_indexDocument(
 			_indexNamesByDomainIdMap.get(seoStudioDomainId),
-			crawlHit.getTitle(), crawlHit.getUrl());
+			crawlHit.getMetaDescription(), crawlHit.getTitle(),
+			crawlHit.getUrl());
 
 		return crawlHit;
 	}
@@ -278,13 +279,18 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 	}
 
 	private void _indexDocument(
-			String indexName, String title, String url, String... links)
+			String indexName, String metaDescription, String title, String url,
+			String... links)
 		throws Exception {
 
 		DocumentBuilder documentBuilder = DocumentBuilderFactory.builder();
 
 		if (ArrayUtil.isNotEmpty(links)) {
 			documentBuilder.setStrings("links", links);
+		}
+
+		if (metaDescription != null) {
+			documentBuilder.setString("meta_description", metaDescription);
 		}
 
 		documentBuilder.setString("title", title);
@@ -325,9 +331,9 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 		String url2 = "https://liferay.com/2";
 		String url3 = "https://liferay.com/3";
 
-		_indexDocument(indexName, RandomTestUtil.randomString(), url1);
-		_indexDocument(indexName, RandomTestUtil.randomString(), url2);
-		_indexDocument(indexName, RandomTestUtil.randomString(), url3);
+		_indexDocument(indexName, null, RandomTestUtil.randomString(), url1);
+		_indexDocument(indexName, null, RandomTestUtil.randomString(), url2);
+		_indexDocument(indexName, null, RandomTestUtil.randomString(), url3);
 
 		Page<CrawlHit> page = crawlHitResource.getSeoStudioDomainCrawlHitsPage(
 			seoStudioDomainId, null, 5);
@@ -367,7 +373,7 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 		String link2 = RandomTestUtil.randomString();
 
 		_indexDocument(
-			_indexNamesByDomainIdMap.get(seoStudioDomainId), title,
+			_indexNamesByDomainIdMap.get(seoStudioDomainId), null, title,
 			RandomTestUtil.randomString(), link1, link2);
 
 		CrawlHit crawlHit = _getOnlyCrawlHit(seoStudioDomainId);
@@ -386,8 +392,8 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 
 		String url = RandomTestUtil.randomString();
 
-		_indexDocument(indexName, RandomTestUtil.randomString(), null);
-		_indexDocument(indexName, RandomTestUtil.randomString(), url);
+		_indexDocument(indexName, null, RandomTestUtil.randomString(), null);
+		_indexDocument(indexName, null, RandomTestUtil.randomString(), url);
 
 		CrawlHit crawlHit = _getOnlyCrawlHit(seoStudioDomainId);
 
@@ -404,7 +410,7 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 				"&highlight=x&filter_category_1=2&utm_cid=7014u&id=5";
 
 		_indexDocument(
-			_indexNamesByDomainIdMap.get(seoStudioDomainId),
+			_indexNamesByDomainIdMap.get(seoStudioDomainId), null,
 			RandomTestUtil.randomString(), url);
 
 		CrawlHit crawlHit = _getOnlyCrawlHit(seoStudioDomainId);
@@ -422,15 +428,15 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 		String indexName = _indexNamesByDomainIdMap.get(seoStudioDomainId);
 
 		_indexDocument(
-			indexName, RandomTestUtil.randomString(), StringPool.BLANK);
+			indexName, null, RandomTestUtil.randomString(), StringPool.BLANK);
 		_indexDocument(
-			indexName, RandomTestUtil.randomString(), StringPool.BLANK);
+			indexName, null, RandomTestUtil.randomString(), StringPool.BLANK);
 		_indexDocument(
-			indexName, RandomTestUtil.randomString(), StringPool.BLANK);
+			indexName, null, RandomTestUtil.randomString(), StringPool.BLANK);
 
 		String url = RandomTestUtil.randomString();
 
-		_indexDocument(indexName, RandomTestUtil.randomString(), url);
+		_indexDocument(indexName, null, RandomTestUtil.randomString(), url);
 
 		Page<CrawlHit> page = crawlHitResource.getSeoStudioDomainCrawlHitsPage(
 			seoStudioDomainId, null, 2);
@@ -450,7 +456,7 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 		long seoStudioDomainId = _addSEOStudioDomainObjectEntry();
 
 		_indexDocument(
-			_indexNamesByDomainIdMap.get(seoStudioDomainId),
+			_indexNamesByDomainIdMap.get(seoStudioDomainId), null,
 			RandomTestUtil.randomString(), "https://liferay.com/de/page foo");
 
 		CrawlHit crawlHit = _getOnlyCrawlHit(seoStudioDomainId);
@@ -467,7 +473,7 @@ public class CrawlHitResourceTest extends BaseCrawlHitResourceTestCase {
 		String url = "https://liferay.com/commerce/";
 
 		_indexDocument(
-			_indexNamesByDomainIdMap.get(seoStudioDomainId),
+			_indexNamesByDomainIdMap.get(seoStudioDomainId), null,
 			RandomTestUtil.randomString(), url);
 
 		CrawlHit crawlHit = _getOnlyCrawlHit(seoStudioDomainId);
