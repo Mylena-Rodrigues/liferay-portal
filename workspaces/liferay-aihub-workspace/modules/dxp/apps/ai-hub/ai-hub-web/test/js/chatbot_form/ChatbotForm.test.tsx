@@ -544,4 +544,3 @@ describe('ChatbotForm suggested questions', () => {
 		).toEqual({en_US: 'Q2\nQ1'});
 	});
 });
->>>>>>> facf450bcc (LPD-96744 Manage suggested questions in the chatbot form)
