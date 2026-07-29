@@ -10,6 +10,7 @@ import com.liferay.ai.hub.agent.DefaultAgent;
 import com.liferay.ai.hub.internal.langchain4j.agentic.internal.InternalAgentImpl;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
@@ -24,6 +25,8 @@ import java.io.Serializable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -60,6 +63,9 @@ public class DefaultAgentImpl implements DefaultAgent {
 	public void resume(AgentContext agentContext, long agentInstanceId)
 		throws Exception {
 
+		AtomicReference<String> transitionNameAtomicReference =
+			new AtomicReference<>();
+
 		WorkflowInstance workflowInstance =
 			_workflowInstanceManager.getWorkflowInstance(
 				agentContext.getCompanyId(), agentInstanceId);
@@ -67,13 +73,17 @@ public class DefaultAgentImpl implements DefaultAgent {
 		Map<String, Serializable> workflowContext = new HashMap<>(
 			workflowInstance.getWorkflowContext());
 
-		Map<String, ?> input = agentContext.getInput();
-
-		if (input != null) {
-			for (String key : input.keySet()) {
-				workflowContext.put(key, MapUtil.getString(input, key));
-			}
-		}
+		MapUtil.isNotEmptyForEach(
+			agentContext.getInput(),
+			(key, value) -> {
+				if (Objects.equals(key, "transitionName")) {
+					transitionNameAtomicReference.set(
+						GetterUtil.getString(value));
+				}
+				else {
+					workflowContext.put(key, GetterUtil.getString(value));
+				}
+			});
 
 		KaleoInstanceToken kaleoInstanceToken =
 			_kaleoInstanceTokenLocalService.getRootKaleoInstanceToken(
@@ -82,8 +92,8 @@ public class DefaultAgentImpl implements DefaultAgent {
 
 		_workflowNodeManager.completeWorkflowNode(
 			agentContext.getCompanyId(), agentContext.getUserId(),
-			kaleoInstanceToken.getKaleoInstanceTokenId(), null, workflowContext,
-			false);
+			kaleoInstanceToken.getKaleoInstanceTokenId(),
+			transitionNameAtomicReference.get(), workflowContext, false);
 	}
 
 	@Reference
