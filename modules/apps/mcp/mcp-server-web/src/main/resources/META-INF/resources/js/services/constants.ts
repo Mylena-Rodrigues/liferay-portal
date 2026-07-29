@@ -4,3 +4,9 @@
  */
 
 export const DATA_MASKS_URL = '/o/data-masks';
+
+export const PROFILE_DATA_MASKS_URL = '/o/mcp/server-profile-data-masks';
+
+export const PROMPTS_URL = '/o/mcp/server-prompts';
+
+export const REDACTION_URL = '/o/headless-data-mask/v1.0/redaction';
