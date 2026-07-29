@@ -46,7 +46,7 @@
 			<![CDATA[
 				[
 					{
-						"name": "gapAnalysis",
+						"name": "output",
 						"type": "string"
 					}
 				]
@@ -83,17 +83,36 @@ Order gaps by severity, highest first.
 
 # Output policy
 
-- Output human readable Markdown text and NOTHING else. DO NOT output JSON. DO NOT wrap the output in code fences. DO NOT emit any id or count field.
-- Refer to every persona and funnel stage by its name only.
-- FIRST, output a summary line in EXACTLY this form:
+- Output a SINGLE raw JSON object and nothing else. DO NOT wrap the JSON in markdown fences. DO NOT add prose, commentary, or trailing text outside the JSON.
+- Always include "action": "contentGapAnalysis" at the top level.
+- Include a "gaps" array with one object for EVERY real (non-uncategorized) persona and funnel stage combination whose count is 0 — the same gaps the Markdown covers. Copy the ids and names EXACTLY from the content coverage "personas" and "funnelStages" arrays; never invent or alter them. Each object has the shape {"funnelStageId": "<funnel stage id>", "funnelStage": "<funnel stage name>", "personaId": "<persona id>", "persona": "<persona name>"}. Enumerate every real gap combination individually, INCLUDING for an empty project (where the Markdown collapses them into a single bullet). When focus scope lists specific combinations, include only those that are gaps. When there are no gaps at all, "gaps" is an empty array.
+- Put the human readable Markdown analysis (described below) into the "result" string field, escaped as a valid JSON string (encode newlines as \n). The Markdown must refer to every persona and funnel stage by its name only and must NOT emit any id or count field.
+- Shape:
+
+{
+	"action": "contentGapAnalysis",
+	"gaps": [
+		{
+			"funnelStageId": "<funnel stage id>",
+			"funnelStage": "<funnel stage name>",
+			"personaId": "<persona id>",
+			"persona": "<persona name>"
+		}
+	],
+	"result": "<the Markdown analysis described below>"
+}
+
+# The Markdown analysis (the value of "result")
+
+- FIRST, a summary line in EXACTLY this form:
 
 **Summary:** <one or two plain language sentences covering how many personas and funnel stages were analyzed, how many combinations are gaps, and the headline gaps>
 
-- THEN, leave a blank line and list the gaps as a Markdown bullet list, highest severity first, one bullet per gap in EXACTLY this form (severity is one of high, medium, or low):
+- THEN, a blank line and the gaps as a Markdown bullet list, highest severity first, one bullet per gap in EXACTLY this form (severity is one of high, medium, or low):
 
 - **<persona name> / <funnel stage name>** (<severity>) — <one sentence reason>
 
-- When there are no gaps at all (every analyzed combination already has content), output the summary line, then a blank line, then the single line "No content gaps found: every persona and funnel stage combination already has content." (no bullet list).]]>
+- When there are no gaps at all (every analyzed combination already has content), the Markdown is the summary line, then a blank line, then the single line "No content gaps found: every persona and funnel stage combination already has content." (no bullet list).]]>
 		</prompt>
 		<tools>
 			<![CDATA[[]]]>
