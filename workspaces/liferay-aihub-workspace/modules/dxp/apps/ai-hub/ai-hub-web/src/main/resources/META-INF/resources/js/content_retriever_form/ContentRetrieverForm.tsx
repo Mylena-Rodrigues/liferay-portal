@@ -9,9 +9,10 @@ import ClayLayout from '@clayui/layout';
 import {Link} from '@clayui/toolbar/src/Link';
 import {openToast} from '@liferay/object-js-components-web';
 import {useFormik} from 'formik';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import Toolbar from '../components/ToolBar';
+import useAvailableLocales from '../hooks/useAvailableLocales';
 import {generateExternalReferenceCode} from '../utils/externalReferenceCode';
 import InlineTextInput from './components/inline_text_input/InlineTextInput';
 import {
@@ -23,7 +24,7 @@ import './ContentRetriever.scss';
 
 import Icon from '@clayui/icon';
 
-import LocalizedTextarea from './components/localized_text_area';
+import LocalizedTextarea from '../components/localized_text_area';
 
 export default function ContentRetrieverForm({
 	backURL,
@@ -42,29 +43,12 @@ export default function ContentRetrieverForm({
 
 	const [shouldNavigate, setShouldNavigate] = useState(false);
 
-	const availableLocales = useMemo(
-		() =>
-			Object.entries(Liferay.Language.available).map(
-				([localeId, displayName]) => ({
-					displayName,
-					icon: localeId.replace(/_/g, '-').toLowerCase(),
-					localeId: localeId as Liferay.Language.Locale,
-				})
-			),
-		[]
-	);
+	const availableLocales = useAvailableLocales();
 
 	const [selectedLocale, setSelectedLocale] =
-		useState<Liferay.Language.Locale>(() => {
-			const defaultLang = Liferay.ThemeDisplay.getDefaultLanguageId();
-
-			return (
-				availableLocales.find((l) => l.localeId === defaultLang)
-					?.localeId ||
-				availableLocales[0]?.localeId ||
-				'en_US'
-			);
-		});
+		useState<Liferay.Language.Locale>(
+			availableLocales[0]?.localeId || 'en_US'
+		);
 
 	useEffect(() => {
 		if (shouldNavigate) {
@@ -294,7 +278,6 @@ export default function ContentRetrieverForm({
 								.description_i18n as LocalizedValue<string>) ||
 							{}
 						}
-						value={formik.values.description_i18n}
 					/>
 				</ClayForm>
 			</ClayLayout.ContainerFluid>

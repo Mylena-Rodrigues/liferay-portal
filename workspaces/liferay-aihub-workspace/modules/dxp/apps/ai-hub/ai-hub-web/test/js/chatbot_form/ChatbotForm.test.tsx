@@ -162,6 +162,7 @@ jest.mock('@liferay/frontend-data-set-web', () => ({
 (global as any).Liferay = {
 	Icons: {spritemap: 'icons.svg'},
 	Language: {
+		available: {en_US: 'English'},
 		get: (key: string) => key,
 	},
 	ThemeDisplay: {
@@ -330,7 +331,7 @@ describe('ChatbotForm disclaimer message', () => {
 
 		render(<ChatbotForm {...defaultProps} />);
 
-		await screen.findByTestId('disclaimerMessage_i18n');
+		await screen.findByLabelText('disclaimer-message');
 
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
@@ -350,7 +351,7 @@ describe('ChatbotForm disclaimer message', () => {
 
 		render(<ChatbotForm {...defaultProps} />);
 
-		fireEvent.change(await screen.findByTestId('disclaimerMessage_i18n'), {
+		fireEvent.change(await screen.findByLabelText('disclaimer-message'), {
 			target: {value: 'Custom disclaimer'},
 		});
 
@@ -363,6 +364,79 @@ describe('ChatbotForm disclaimer message', () => {
 		expect(
 			mockPostChatbotDefinition.mock.calls[0][0].disclaimerMessage_i18n
 		).toEqual({en_US: 'Custom disclaimer'});
+	});
+
+	it('sends the paragraph breaks of the disclaimer to the API payload', async () => {
+		mockPostChatbotDefinition.mockResolvedValue({
+			externalReferenceCode: 'CHATBOT-ERC',
+		});
+
+		render(<ChatbotForm {...defaultProps} />);
+
+		fireEvent.change(await screen.findByLabelText('disclaimer-message'), {
+			target: {value: 'First paragraph.\n\nSecond paragraph.'},
+		});
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPostChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(
+			mockPostChatbotDefinition.mock.calls[0][0].disclaimerMessage_i18n
+		).toEqual({en_US: 'First paragraph.\n\nSecond paragraph.'});
+	});
+});
+
+describe('ChatbotForm intro message', () => {
+	beforeEach(() => {
+		mockOpenToast.mockClear();
+		mockGetChatbotDefinition.mockReset();
+		mockPostChatbotDefinition.mockReset();
+		mockPutChatbotDefinition.mockReset();
+	});
+
+	afterEach(() => {
+		cleanup();
+	});
+
+	it('sends the paragraph breaks of the intro message to the API payload', async () => {
+		mockPostChatbotDefinition.mockResolvedValue({
+			externalReferenceCode: 'CHATBOT-ERC',
+		});
+
+		render(<ChatbotForm {...defaultProps} />);
+
+		fireEvent.change(await screen.findByLabelText('intro-message'), {
+			target: {value: 'Welcome to AskWA.\n\nHow can I help?'},
+		});
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPostChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(
+			mockPostChatbotDefinition.mock.calls[0][0].introMessage_i18n
+		).toEqual({en_US: 'Welcome to AskWA.\n\nHow can I help?'});
+	});
+
+	it('keeps a separate selected locale for the intro and the disclaimer', async () => {
+		render(<ChatbotForm {...defaultProps} />);
+
+		const localeButtons = await screen.findAllByRole('button', {
+			name: 'select-a-language',
+		});
+
+		expect(localeButtons).toHaveLength(2);
+		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'false');
+
+		fireEvent.click(localeButtons[0]);
+
+		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'true');
+		expect(localeButtons[1]).toHaveAttribute('aria-expanded', 'false');
 	});
 });
 

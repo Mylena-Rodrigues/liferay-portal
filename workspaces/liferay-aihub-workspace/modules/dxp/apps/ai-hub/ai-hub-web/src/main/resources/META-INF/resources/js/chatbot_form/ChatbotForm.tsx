@@ -12,13 +12,16 @@ import ClayMultiSelect from '@clayui/multi-select';
 import ClayPanel from '@clayui/panel';
 import {Provider} from '@clayui/provider';
 import {openToast} from '@liferay/object-js-components-web';
+import classNames from 'classnames';
 import {InputLocalized} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import React, {useEffect, useRef, useState} from 'react';
 
 import './ChatbotForm.scss';
 import {getAgentDefinitions} from '../agent_definition_form/services/AgentDefinitionService';
+import LocalizedTextarea from '../components/localized_text_area';
 import Toolbar from '../components/ToolBar';
+import useAvailableLocales from '../hooks/useAvailableLocales';
 import SuggestedQuestionsTable from './SuggestedQuestionsTable';
 import {
 	disassociateChatbotFromAgentDefinition,
@@ -145,6 +148,15 @@ export default function ChatbotForm({
 		SuggestedQuestion[]
 	>([]);
 	const avatarInputRef = useRef<HTMLInputElement>(null);
+
+	const availableLocales = useAvailableLocales();
+
+	const defaultLocale = availableLocales[0]?.localeId || 'en_US';
+
+	const [selectedDisclaimerLocale, setSelectedDisclaimerLocale] =
+		useState<Liferay.Language.Locale>(defaultLocale);
+	const [selectedIntroLocale, setSelectedIntroLocale] =
+		useState<Liferay.Language.Locale>(defaultLocale);
 
 	useEffect(() => {
 		getAgentDefinitions({
@@ -745,23 +757,39 @@ export default function ChatbotForm({
 									</ClayForm.Group>
 
 									<ClayForm.Group>
-										<InputLocalized
-											disabled={readOnly}
-											id="introMessage"
-											label={Liferay.Language.get(
+										<label
+											className={classNames({
+												disabled: readOnly,
+											})}
+											htmlFor="introMessage"
+										>
+											{Liferay.Language.get(
 												'intro-message'
 											)}
-											name="introMessage_i18n"
-											onChange={(value) =>
+										</label>
+
+										<LocalizedTextarea
+											availableLocales={availableLocales}
+											disabled={readOnly}
+											error={false}
+											fieldName="introMessage_i18n"
+											id="introMessage"
+											onSelectedLocaleChange={
+												setSelectedIntroLocale
+											}
+											onTranslationsChange={(
+												translations
+											) =>
 												setFormData((prev) => ({
 													...prev,
-													introMessage_i18n: value,
+													introMessage_i18n:
+														translations,
 												}))
 											}
-											onSelectedLocaleChange={() => {}}
 											placeholder={Liferay.Language.get(
 												'intro-message'
 											)}
+											selectedLocale={selectedIntroLocale}
 											translations={
 												(formData.introMessage_i18n as LocalizedValue<string>) ||
 												{}
@@ -786,24 +814,41 @@ export default function ChatbotForm({
 									</ClayForm.Group>
 
 									<ClayForm.Group>
-										<InputLocalized
-											disabled={readOnly}
-											id="disclaimerMessage"
-											label={Liferay.Language.get(
+										<label
+											className={classNames({
+												disabled: readOnly,
+											})}
+											htmlFor="disclaimerMessage"
+										>
+											{Liferay.Language.get(
 												'disclaimer-message'
 											)}
-											name="disclaimerMessage_i18n"
-											onChange={(value) =>
+										</label>
+
+										<LocalizedTextarea
+											availableLocales={availableLocales}
+											disabled={readOnly}
+											error={false}
+											fieldName="disclaimerMessage_i18n"
+											id="disclaimerMessage"
+											onSelectedLocaleChange={
+												setSelectedDisclaimerLocale
+											}
+											onTranslationsChange={(
+												translations
+											) =>
 												setFormData((prev) => ({
 													...prev,
 													disclaimerMessage_i18n:
-														value,
+														translations,
 												}))
 											}
-											onSelectedLocaleChange={() => {}}
 											placeholder={Liferay.Language.get(
 												'disclaimer-message'
 											)}
+											selectedLocale={
+												selectedDisclaimerLocale
+											}
 											translations={
 												(formData.disclaimerMessage_i18n as LocalizedValue<string>) ||
 												{}

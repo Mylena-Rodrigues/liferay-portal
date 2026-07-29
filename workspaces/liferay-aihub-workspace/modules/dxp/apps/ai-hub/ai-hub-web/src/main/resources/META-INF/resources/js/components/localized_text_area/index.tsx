@@ -26,7 +26,6 @@ interface LocalizedTextareaProps {
 	placeholder?: string;
 	selectedLocale: string;
 	translations: Liferay.Language.LocalizedValue<string>;
-	value: Liferay.Language.LocalizedValue<string>;
 }
 
 export default function LocalizedTextarea({
@@ -41,7 +40,6 @@ export default function LocalizedTextarea({
 	placeholder,
 	selectedLocale,
 	translations,
-	value,
 }: LocalizedTextareaProps) {
 	const alignElementRef = useRef(null);
 	const dropdownMenuRef = useRef(null);
@@ -56,6 +54,11 @@ export default function LocalizedTextarea({
 			<div className="d-flex flex-row">
 				<textarea
 					className={`ddm-field-text form-control${error ? ' is-invalid' : ''}`}
+					dir={
+						Liferay.Language.direction[
+							selectedLocale as Liferay.Language.Locale
+						]
+					}
 					disabled={disabled}
 					id={id}
 					name={fieldName}
@@ -76,14 +79,15 @@ export default function LocalizedTextarea({
 
 				<div>
 					<ClayButton
-						aria-expanded="false"
+						aria-expanded={dropdownActive}
 						aria-haspopup="true"
+						aria-label={Liferay.Language.get('select-a-language')}
 						className="form-control form-control-select form-control-select-secondary form-control-shrink hidden-label ml-2"
-						data-testid="triggerButton"
 						displayType="secondary"
 						monospaced
 						onClick={() => setDropdownActive(!dropdownActive)}
 						ref={alignElementRef}
+						title={Liferay.Language.get('select-a-language')}
 					>
 						<span className="btn-section mr-2">
 							<ClayIcon
@@ -138,7 +142,7 @@ export default function LocalizedTextarea({
 												isTranslated={
 													locale.isTranslated ??
 													Object.hasOwn(
-														value,
+														translations,
 														locale.localeId
 													)
 												}
