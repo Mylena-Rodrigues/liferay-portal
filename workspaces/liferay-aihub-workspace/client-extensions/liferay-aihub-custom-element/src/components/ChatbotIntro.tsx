@@ -7,6 +7,7 @@ import React from 'react';
 
 import ChatbotAvatar from './ChatbotAvatar';
 import Logo from './Logo';
+import Markdown from './Markdown';
 
 interface ChatbotIntroProps {
 	avatar?: string;
@@ -30,7 +31,9 @@ export default function ChatbotIntro({
 
 			<div className="aihub-intro-name">{title}</div>
 
-			<p className="aihub-intro-text">{introMessage}</p>
+			<div className="aihub-intro-text">
+				<Markdown text={introMessage} />
+			</div>
 		</div>
 	);
 }

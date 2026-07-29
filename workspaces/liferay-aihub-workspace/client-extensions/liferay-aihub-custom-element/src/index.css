@@ -222,7 +222,23 @@
 	color: #394452;
 	font-size: 0.875rem;
 	line-height: 1.5;
+}
+
+.aihub-intro-text a {
+	color: var(--aihub-accent);
+	text-decoration: none;
+}
+
+.aihub-intro-text a:hover {
+	text-decoration: underline;
+}
+
+.aihub-intro-text p {
 	margin: 0;
+}
+
+.aihub-intro-text p + p {
+	margin-top: 0.5rem;
 }
 
 .aihub-suggestions {
