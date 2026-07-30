@@ -111,6 +111,13 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 		workflowContext.put(
 			"workflowInstanceId", kaleoInstanceToken.getKaleoInstanceId());
 
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				StringBundler.concat(
+					"Executing service node delegate \"", javaDelegate,
+					"\" on node \"", currentKaleoNode.getName(), "\""));
+		}
+
 		try {
 			JSONArray jsonArray = VariablesUtil.getVariablesJSONArray(
 				"outputVariables", kaleoNodeSettingValues);
