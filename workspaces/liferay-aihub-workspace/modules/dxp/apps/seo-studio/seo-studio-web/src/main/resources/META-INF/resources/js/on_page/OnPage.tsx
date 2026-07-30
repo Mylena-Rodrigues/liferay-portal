@@ -10,8 +10,6 @@ import InsightsView from '../components/insights_view/InsightsView';
 import MetricsDashboard from '../components/metrics_dashboard/MetricsDashboard';
 import {Metrics} from '../components/metrics_dashboard/types';
 
-import './OnPage.scss';
-
 export default function OnPage({
 	apiURL,
 	emptyState,

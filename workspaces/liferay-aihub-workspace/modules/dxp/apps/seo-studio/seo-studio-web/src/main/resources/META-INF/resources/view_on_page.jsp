@@ -11,7 +11,7 @@
 ViewOnPageDisplayContext viewOnPageDisplayContext = (ViewOnPageDisplayContext)request.getAttribute(ViewOnPageDisplayContext.class.getName());
 %>
 
-<div class="seo-studio-on-page">
+<div class="seo-studio-insights-page">
 	<react:component
 		module="{OnPage} from seo-studio-web"
 		props="<%= viewOnPageDisplayContext.getReactData() %>"

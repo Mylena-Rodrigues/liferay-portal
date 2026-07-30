@@ -11,7 +11,7 @@
 ViewTechnicalDisplayContext viewTechnicalDisplayContext = (ViewTechnicalDisplayContext)request.getAttribute(ViewTechnicalDisplayContext.class.getName());
 %>
 
-<div class="seo-studio-on-page">
+<div class="seo-studio-insights-page">
 	<react:component
 		module="{Technical} from seo-studio-web"
 		props="<%= viewTechnicalDisplayContext.getReactData() %>"
