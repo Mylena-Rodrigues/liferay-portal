@@ -369,7 +369,7 @@ CMS search results (JSON): {{findResults}}]]>
 				}
 			]]>
 		</metadata>
-		<java-delegate>javaDelegate#suggestFindMatchAssetsOrGenerateContentGaps</java-delegate>
+		<java-delegate>javaDelegate#suggestFindOrGenerateContent</java-delegate>
 		<labels>
 			<label language-id="en_US">
 				Suggest Actions

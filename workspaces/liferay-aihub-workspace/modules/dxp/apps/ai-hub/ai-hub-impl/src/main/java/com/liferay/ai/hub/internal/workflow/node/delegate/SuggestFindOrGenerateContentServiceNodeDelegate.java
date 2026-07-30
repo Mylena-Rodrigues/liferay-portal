@@ -27,7 +27,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Feliphe Marinho
  */
 @Component(service = ServiceNodeDelegate.class)
-public class RequestContentGapNextActionServiceNodeDelegate
+public class SuggestFindOrGenerateContentServiceNodeDelegate
 	implements ServiceNodeDelegate {
 
 	@Override
@@ -72,7 +72,7 @@ public class RequestContentGapNextActionServiceNodeDelegate
 
 	@Override
 	public String getKey() {
-		return "javaDelegate#suggestFindMatchAssetsOrGenerateContentGaps";
+		return "javaDelegate#suggestFindOrGenerateContent";
 	}
 
 	private String[] _getAgentDefinitionExternalReferenceCodes(
