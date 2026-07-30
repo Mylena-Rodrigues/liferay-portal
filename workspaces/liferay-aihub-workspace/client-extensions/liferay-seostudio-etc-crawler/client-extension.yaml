@@ -11,6 +11,7 @@ liferay-seostudio-etc-crawler-oahs:
         -   seostudiopage.everything
         -   seostudioscan.everything
         -   seostudioscaninsight.everything
+        -   seostudioscanrun.everything
     type: oAuthApplicationHeadlessServer
 liferay-seostudio-etc-crawler-oaua:
     .serviceAddress: localhost:58081
