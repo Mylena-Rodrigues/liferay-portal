@@ -287,11 +287,8 @@ public class AIHubSiteInitializerTest {
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_CHANGE_TONE",
 			"Change Tone");
 		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_CONTENT_GAP_ANALYSIS",
-			"Content Gap Analysis");
-		_assertWorkflowDefinitionExists(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_FIND_MATCHING_ASSETS",
-			"Find Matching Assets");
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB, "L_CONTENT_GAP_ANALYST",
+			"Content Gap Analyst");
 		_assertWorkflowDefinitionExists(
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE_AI_HUB,
 			"L_FIX_SPELLING_AND_GRAMMAR", "Fix Spelling and Grammar");
