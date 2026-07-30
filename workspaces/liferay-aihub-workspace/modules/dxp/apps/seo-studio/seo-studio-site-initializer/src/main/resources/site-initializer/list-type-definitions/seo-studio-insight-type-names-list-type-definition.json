@@ -2,9 +2,9 @@
 	"externalReferenceCode": "L_SEO_STUDIO_INSIGHT_TYPE_NAMES",
 	"listTypeEntries": [
 		{
-			"externalReferenceCode": "MISSING_META_DESCRIPTION",
-			"key": "missingMetaDescription",
-			"name": "Missing Meta Description",
+			"externalReferenceCode": "MISSING_OR_EMPTY_META_DESCRIPTION_TAG",
+			"key": "missingOrEmptyMetaDescriptionTag",
+			"name": "Missing or Empty Meta Description Tag",
 			"system": true
 		},
 		{

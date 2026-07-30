@@ -48,6 +48,6 @@ export const DESCRIPTION_AUTOFIX_DEFINITION: AutofixDefinition = {
 		Liferay.Language.get(
 			'here-are-some-optimized-description-options-for-this-page'
 		),
-	insightTypeName: 'missingOrEmptyMetaDescription',
+	insightTypeName: 'missingOrEmptyMetaDescriptionTag',
 	parseCandidates,
 };

@@ -19,7 +19,7 @@ public class DescriptionAutofix extends BaseAutofix {
 
 	@Override
 	public String getInsightType() {
-		return "missingOrEmptyMetaDescription";
+		return "missingOrEmptyMetaDescriptionTag";
 	}
 
 	@Override

@@ -186,7 +186,8 @@ public class CrawlerRestController extends BaseRestController {
 	private List<JSONObject> _getMetadataInsightJSONObjects(
 		List<CrawlHit> crawlHits) {
 
-		Set<String> missingMetaDescriptionPageURLs = new LinkedHashSet<>();
+		Set<String> missingOrEmptyMetaDescriptionTagPageURLs =
+			new LinkedHashSet<>();
 		Set<String> missingTitleTagPageURLs = new LinkedHashSet<>();
 
 		for (CrawlHit crawlHit : crawlHits) {
@@ -197,7 +198,7 @@ public class CrawlerRestController extends BaseRestController {
 			}
 
 			if (Validator.isNull(crawlHit.getMetaDescription())) {
-				missingMetaDescriptionPageURLs.add(canonicalURL);
+				missingOrEmptyMetaDescriptionTagPageURLs.add(canonicalURL);
 			}
 
 			if (Validator.isNull(crawlHit.getTitle())) {
@@ -205,32 +206,34 @@ public class CrawlerRestController extends BaseRestController {
 			}
 		}
 
-		JSONObject missingMetaDescriptionInsightJSONObject = new JSONObject(
-		).put(
-			"category", "metadata"
-		).put(
-			"classification", "opportunity"
-		).put(
-			"description",
-			StringBundler.concat(
-				"This page has no <meta name=\"description\"> tag, or its ",
-				"content attribute is empty. Without one, Google ",
-				"autogenerates a snippet from body text — typically producing ",
-				"a less compelling preview than an authored description.")
-		).put(
-			"fixHint",
-			StringBundler.concat(
-				"Add a unique meta description of roughly 150 to 160 ",
-				"characters that summarizes the page and includes its primary ",
-				"keywords, so search engines show it verbatim in the results ",
-				"snippet.")
-		).put(
-			"name", "missingMetaDescription"
-		).put(
-			"pageURLs", missingMetaDescriptionPageURLs
-		).put(
-			"severity", "2"
-		);
+		JSONObject missingOrEmptyMetaDescriptionTagInsightJSONObject =
+			new JSONObject(
+			).put(
+				"category", "metadata"
+			).put(
+				"classification", "opportunity"
+			).put(
+				"description",
+				StringBundler.concat(
+					"This page has no <meta name=\"description\"> tag, or its ",
+					"content attribute is empty. Without one, Google ",
+					"autogenerates a snippet from body text — typically ",
+					"producing a less compelling preview than an authored ",
+					"description.")
+			).put(
+				"fixHint",
+				StringBundler.concat(
+					"Add a unique meta description of roughly 150 to 160 ",
+					"characters that summarizes the page and includes its ",
+					"primary keywords, so search engines show it verbatim in ",
+					"the results snippet.")
+			).put(
+				"name", "missingOrEmptyMetaDescriptionTag"
+			).put(
+				"pageURLs", missingOrEmptyMetaDescriptionTagPageURLs
+			).put(
+				"severity", "2"
+			);
 
 		JSONObject missingTitleTagInsightJSONObject = new JSONObject(
 		).put(
@@ -259,7 +262,7 @@ public class CrawlerRestController extends BaseRestController {
 		);
 
 		return Arrays.asList(
-			missingMetaDescriptionInsightJSONObject,
+			missingOrEmptyMetaDescriptionTagInsightJSONObject,
 			missingTitleTagInsightJSONObject);
 	}
 
