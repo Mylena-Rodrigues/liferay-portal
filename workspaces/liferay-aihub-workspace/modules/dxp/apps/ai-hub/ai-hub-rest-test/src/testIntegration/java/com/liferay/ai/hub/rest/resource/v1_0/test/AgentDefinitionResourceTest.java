@@ -933,7 +933,7 @@ public class AgentDefinitionResourceTest
 			new AgentDefinition() {
 				{
 					active = true;
-					externalReferenceCode = "L_CONTENT_GAP_ANALYSIS";
+					externalReferenceCode = "L_CONTENT_GAP_ANALYST";
 					inputVariables = new Variable[] {
 						new Variable() {
 							{
@@ -944,64 +944,12 @@ public class AgentDefinitionResourceTest
 					};
 					outputVariable = new Variable() {
 						{
-							name = "gapAnalysis";
+							name = "output";
 							type = "string";
 						}
 					};
 					version = 1;
-					workflowDefinitionName = "Content Gap Analysis";
-				}
-			},
-			new AgentDefinition() {
-				{
-					active = true;
-					externalReferenceCode = "L_FIND_MATCHING_ASSETS";
-					inputVariables = new Variable[] {
-						new Variable() {
-							{
-								name = "cmsGroupId";
-								type = "string";
-							}
-						},
-						new Variable() {
-							{
-								name = "funnelStageId";
-								type = "string";
-							}
-						},
-						new Variable() {
-							{
-								name = "keywords";
-								type = "string";
-							}
-						},
-						new Variable() {
-							{
-								name = "personaId";
-								type = "string";
-							}
-						},
-						new Variable() {
-							{
-								name = "portalURL";
-								type = "string";
-							}
-						},
-						new Variable() {
-							{
-								name = "tasks";
-								type = "string";
-							}
-						}
-					};
-					outputVariable = new Variable() {
-						{
-							name = "matchingAssets";
-							type = "string";
-						}
-					};
-					version = 1;
-					workflowDefinitionName = "Find Matching Assets";
+					workflowDefinitionName = "Content Gap Analyst";
 				}
 			},
 			new AgentDefinition() {
