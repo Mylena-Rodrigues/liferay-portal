@@ -976,7 +976,7 @@ public class AgentDefinitionResourceTest
 			},
 			new AgentDefinition() {
 				{
-					active = false;
+					active = true;
 					externalReferenceCode = "L_GENERATE_IMAGE";
 					inputVariables = new Variable[] {
 						new Variable() {
@@ -984,17 +984,11 @@ public class AgentDefinitionResourceTest
 								name = "description";
 								type = "string";
 							}
-						},
-						new Variable() {
-							{
-								name = "style";
-								type = "string";
-							}
 						}
 					};
 					outputVariable = new Variable() {
 						{
-							name = "imageBase64";
+							name = "output";
 							type = "string";
 						}
 					};
