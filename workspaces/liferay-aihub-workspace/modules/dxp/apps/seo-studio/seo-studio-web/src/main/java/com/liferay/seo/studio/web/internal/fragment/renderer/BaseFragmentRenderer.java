@@ -12,11 +12,13 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -33,6 +35,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Reference;
@@ -136,6 +141,30 @@ public abstract class BaseFragmentRenderer<T> implements FragmentRenderer {
 		);
 	}
 
+	protected ObjectEntry fetchSEOStudioScanRunObjectEntry(
+			HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		long companyId = portal.getCompanyId(httpServletRequest);
+
+		ObjectDefinition objectDefinition =
+			objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_SEO_STUDIO_SCAN_RUN", companyId);
+
+		if (objectDefinition == null) {
+			return null;
+		}
+
+		Page<ObjectEntry> page = objectEntryManager.getObjectEntries(
+			companyId, objectDefinition, null, null,
+			getDTOConverterContext(objectDefinition), "state eq 'completed'",
+			Pagination.of(1, 1), null,
+			new Sort[] {new Sort("requestDate", true)});
+
+		return page.fetchFirstItem();
+	}
+
 	protected T getDisplayContext(HttpServletRequest httpServletRequest) {
 		return null;
 	}
@@ -150,6 +179,47 @@ public abstract class BaseFragmentRenderer<T> implements FragmentRenderer {
 	}
 
 	protected abstract String getJSPPath();
+
+	protected List<Long> getSEOStudioScanIds(
+			HttpServletRequest httpServletRequest, long seoStudioScanRunId)
+		throws Exception {
+
+		long companyId = portal.getCompanyId(httpServletRequest);
+
+		ObjectDefinition objectDefinition =
+			objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_SEO_STUDIO_SCAN", companyId);
+
+		if (objectDefinition == null) {
+			return Collections.emptyList();
+		}
+
+		List<Long> seoStudioScanIds = new ArrayList<>();
+
+		String filterString = StringBundler.concat(
+			"r_seoStudioScanRunToSEOStudioScans_seoStudioScanRunId eq '",
+			seoStudioScanRunId, "'");
+		int page = 1;
+
+		while (true) {
+			Page<ObjectEntry> objectEntriesPage =
+				objectEntryManager.getObjectEntries(
+					companyId, objectDefinition, null, null,
+					getDTOConverterContext(objectDefinition), filterString,
+					Pagination.of(page, 100), null, null);
+
+			seoStudioScanIds.addAll(
+				TransformUtil.transform(
+					objectEntriesPage.getItems(), ObjectEntry::getId));
+
+			if (!objectEntriesPage.hasNext()) {
+				return seoStudioScanIds;
+			}
+
+			page++;
+		}
+	}
 
 	@Reference
 	protected FDSSerializer fdsSerializer;

@@ -6,16 +6,11 @@
 package com.liferay.seo.studio.web.internal.fragment.renderer;
 
 import com.liferay.fragment.renderer.FragmentRenderer;
-import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
-import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Sort;
-import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.seo.studio.web.internal.constants.SEOStudioFDSNames;
 import com.liferay.seo.studio.web.internal.display.context.ViewTechnicalDisplayContext;
 
@@ -51,22 +46,26 @@ public class ViewTechnicalFragmentRenderer
 		try {
 			JSONArray filtersJSONArray = fdsSerializer.serializeFilters(
 				SEOStudioFDSNames.INSIGHT_TYPE_SECTION, httpServletRequest);
-			ObjectEntry objectEntry = _fetchObjectEntry(httpServletRequest);
-
-			JSONObject seoStudioScanMetricJSONObject = null;
-
-			if (objectEntry != null) {
-				seoStudioScanMetricJSONObject =
-					fetchSEOStudioScanMetricJSONObject(
-						httpServletRequest, "technical", objectEntry.getId());
-			}
-
+			ObjectEntry seoStudioScanRunObjectEntry =
+				fetchSEOStudioScanRunObjectEntry(httpServletRequest);
 			JSONArray viewsJSONArray = fdsSerializer.serializeViews(
 				SEOStudioFDSNames.INSIGHT_TYPE_SECTION, httpServletRequest);
 
+			List<Long> seoStudioScanIds = Collections.emptyList();
+			JSONObject seoStudioScanMetricJSONObject = null;
+
+			if (seoStudioScanRunObjectEntry != null) {
+				seoStudioScanIds = getSEOStudioScanIds(
+					httpServletRequest, seoStudioScanRunObjectEntry.getId());
+				seoStudioScanMetricJSONObject =
+					fetchSEOStudioScanMetricJSONObject(
+						httpServletRequest, "technical",
+						seoStudioScanRunObjectEntry.getId());
+			}
+
 			return new ViewTechnicalDisplayContext(
-				filtersJSONArray, httpServletRequest, language, objectEntry,
-				_getSEOStudioScanIds(httpServletRequest, objectEntry),
+				filtersJSONArray, httpServletRequest, language,
+				seoStudioScanRunObjectEntry, seoStudioScanIds,
 				seoStudioScanMetricJSONObject, viewsJSONArray);
 		}
 		catch (Exception exception) {
@@ -81,58 +80,6 @@ public class ViewTechnicalFragmentRenderer
 	@Override
 	protected String getJSPPath() {
 		return "/view_technical.jsp";
-	}
-
-	private ObjectEntry _fetchObjectEntry(HttpServletRequest httpServletRequest)
-		throws Exception {
-
-		long companyId = portal.getCompanyId(httpServletRequest);
-
-		ObjectDefinition objectDefinition =
-			objectDefinitionLocalService.
-				fetchObjectDefinitionByExternalReferenceCode(
-					"L_SEO_STUDIO_SCAN_RUN", companyId);
-
-		if (objectDefinition == null) {
-			return null;
-		}
-
-		Page<ObjectEntry> page = objectEntryManager.getObjectEntries(
-			companyId, objectDefinition, null, null,
-			getDTOConverterContext(objectDefinition), "state eq 'completed'",
-			Pagination.of(1, 1), null,
-			new Sort[] {new Sort("requestDate", true)});
-
-		return page.fetchFirstItem();
-	}
-
-	private List<Long> _getSEOStudioScanIds(
-			HttpServletRequest httpServletRequest, ObjectEntry objectEntry)
-		throws Exception {
-
-		if (objectEntry == null) {
-			return Collections.emptyList();
-		}
-
-		long companyId = portal.getCompanyId(httpServletRequest);
-
-		ObjectDefinition objectDefinition =
-			objectDefinitionLocalService.
-				fetchObjectDefinitionByExternalReferenceCode(
-					"L_SEO_STUDIO_SCAN", companyId);
-
-		if (objectDefinition == null) {
-			return Collections.emptyList();
-		}
-
-		Page<ObjectEntry> page = objectEntryManager.getObjectEntries(
-			companyId, objectDefinition, null, null,
-			getDTOConverterContext(objectDefinition),
-			"r_seoStudioScanRunToSEOStudioScans_seoStudioScanRunId eq '" +
-				objectEntry.getId() + "'",
-			Pagination.of(1, 100), null, null);
-
-		return TransformUtil.transform(page.getItems(), ObjectEntry::getId);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
