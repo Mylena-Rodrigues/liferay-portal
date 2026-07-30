@@ -67,10 +67,10 @@
 		},
 		{
 			"active": true,
-			"description": "Generate images based on a description and style. This agent requires both information, if style is not specified suggest one of them: Digital Art, Illustration, Photorealistic or Watercolor",
+			"description": "This agent generates one or more images from a description; use this agent whenever a user asks to generate, create, draw, or produce an image, picture, illustration, or photo, extracting the parameter 'description' (a clear description of the image's subject and expected appearance, such as 'a golden retriever running on a beach at sunset', including the number of images requested when the user gives one), with the strict requirement that if the provided description is unclear or not well-described, you must always ask the user for clarification before proceeding, although you may proceed with their subsequent response even if it remains vague.",
 			"externalReferenceCode": "L_GENERATE_IMAGE",
-			"inputVariables": "description,request,style",
-			"outputVariable": "brief",
+			"inputVariables": "description",
+			"outputVariable": "output",
 			"r_accountToAIHubAgentDefinitions_accountEntryERC": "L_AI_HUB",
 			"system": true,
 			"title_i18n": {

@@ -7,6 +7,47 @@
 >
 	<name>Generate Image</name>
 	<version>1</version>
+	<service>
+		<name>requestImageStyle</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						276,
+						130
+					]
+				}
+			]]>
+		</metadata>
+		<java-delegate>javaDelegate#requestImageStyle</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Request Image Style
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "style",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Generate Image
+					</label>
+				</labels>
+				<name>generateImage</name>
+				<target>generateImage</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</service>
 	<llm>
 		<name>generateImage</name>
 		<metadata>
@@ -32,10 +73,6 @@
 						"type": "string"
 					},
 					{
-						"name": "request",
-						"type": "string"
-					},
-					{
 						"name": "style",
 						"type": "string"
 					}
@@ -46,14 +83,14 @@
 			<![CDATA[
 				[
 					{
-						"name": "brief",
+						"name": "output",
 						"type": "string"
 					}
 				]
 			]]>
 		</output-variables>
 		<prompt>
-			<![CDATA[You are an image generation assistant. Generate images by calling the image generation tool. When you call the tool, compose the prompt as follows: "Generate exactly N separate images. Each image must be its own standalone image output, not a collage and not a grid. Produce the images one after another. Description of the images: <the user's complete request>", replacing N with the number of images the user requested and defaulting to 1 when no quantity is given. When the user has not specified an artistic style, ask them to choose one of the following before calling the tool: Digital Art, Illustration, Photorealistic or Watercolor. When the user has already specified a style, use it and do not ask.]]>
+			<![CDATA[You are an image generation assistant. Generate images by calling the image generation tool. When you call the tool, compose the prompt as follows: "Generate exactly N separate images. Each image must be its own standalone image output, not a collage and not a grid. Produce the images one after another. Description of the images: <the user's complete request>. Artistic style: <the artistic style given in the user message>", replacing N with the number of images the user requested and defaulting to 1 when no quantity is given. Never ask the user which artistic style to use; the style is always chosen before you are called and is given in the user message.]]>
 		</prompt>
 		<tools>
 			<![CDATA[
@@ -78,7 +115,9 @@
 			</transition>
 		</transitions>
 		<user-message>
-			<![CDATA[{{request}}]]>
+			<![CDATA[{{description}}
+
+Apply this artistic style: {{style}}]]>
 		</user-message>
 	</llm>
 	<state>
@@ -103,11 +142,11 @@
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Generate Image
+						Request Image Style
 					</label>
 				</labels>
-				<name>generateImage</name>
-				<target>generateImage</target>
+				<name>requestImageStyle</name>
+				<target>requestImageStyle</target>
 				<default>true</default>
 			</transition>
 		</transitions>
