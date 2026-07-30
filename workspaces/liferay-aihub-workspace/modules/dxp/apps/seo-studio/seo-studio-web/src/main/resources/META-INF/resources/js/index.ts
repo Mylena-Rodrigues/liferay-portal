@@ -11,3 +11,4 @@ export {default as Integrations} from './integrations/Integrations';
 export {default as OnPage} from './on_page/OnPage';
 export {default as PageSpeedCharts} from './pagespeed/PageSpeedCharts';
 export {default as PageSpeedConfiguration} from './pagespeed/PageSpeedConfiguration';
+export {default as Technical} from './technical/Technical';

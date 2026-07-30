@@ -6,6 +6,7 @@
 const CATEGORY_COLORS: Record<string, string> = {
 	contentStructure: '#4B9FFF',
 	images: '#FFBB00',
+	linksAndURLs: '#FFBB00',
 	metadata: '#458613',
 };
 
@@ -27,6 +28,7 @@ function getCategoryLabel(category: string): string {
 	const labels: Record<string, string> = {
 		contentStructure: Liferay.Language.get('content-structure'),
 		images: Liferay.Language.get('image-and-media'),
+		linksAndURLs: Liferay.Language.get('links-and-urls'),
 		metadata: Liferay.Language.get('page-metadata'),
 	};
 

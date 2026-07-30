@@ -10,9 +10,11 @@ import './SectionHeader.scss';
 
 export default function SectionHeader({
 	lastScanDate,
+	showRunScanButton = true,
 	title,
 }: {
 	lastScanDate: string | null;
+	showRunScanButton?: boolean;
 	title: string;
 }) {
 	const lastScanLabel = lastScanDate || Liferay.Language.get('never');
@@ -22,13 +24,15 @@ export default function SectionHeader({
 			<h2 className="seo-studio-section-header-title">{title}</h2>
 
 			<div className="seo-studio-section-header-actions text-right">
-				<ClayButton
-					disabled
-					displayType="primary"
-					title={Liferay.Language.get('run-scan-now')}
-				>
-					{Liferay.Language.get('run-scan-now')}
-				</ClayButton>
+				{showRunScanButton && (
+					<ClayButton
+						disabled
+						displayType="primary"
+						title={Liferay.Language.get('run-scan-now')}
+					>
+						{Liferay.Language.get('run-scan-now')}
+					</ClayButton>
+				)}
 
 				<div className="seo-studio-section-header-last-scan text-secondary">
 					{Liferay.Language.get('last-scan')}: {lastScanLabel}
