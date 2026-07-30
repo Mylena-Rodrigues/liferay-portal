@@ -35,7 +35,7 @@ public class CategorizeContentEntriesServiceNodeDelegate
 			Map<String, Serializable> workflowContext)
 		throws Exception {
 
-		String contentEntriesPayload = inputVariables.get(
+		String contentEntriesPayloadJSON = inputVariables.get(
 			"contentEntriesPayload");
 
 		JSONArray taxonomyCategoryIdsJSONArray = _jsonFactory.createJSONArray();
