@@ -1,0 +1,11 @@
+{
+	"active": true,
+	"externalReferenceCode": "L_CONTENT_GAP_ANALYST",
+	"groupExternalReferenceCode": "[$ACCOUNT_ENTRY_GROUP_ERC:L_AI_HUB$]",
+	"name": "Content Gap Analyst",
+	"scope": "ai",
+	"title": "Content Gap Analyst",
+	"title_i18n": {
+		"en_US": "Content Gap Analyst"
+	}
+}
