@@ -151,6 +151,17 @@ public class AIHubSiteInitializerTest {
 			"ADD_OBJECT_ENTRY");
 		_assertLayoutExists("/account-management", "Account Management");
 		_assertLayoutExists("/guardrails", "Guardrails");
+		_assertLayoutSiteMemberRoleViewPermission("/account-management");
+		_assertLayoutSiteMemberRoleViewPermission("/agent");
+		_assertLayoutSiteMemberRoleViewPermission("/agent-builder");
+		_assertLayoutSiteMemberRoleViewPermission("/chatbot");
+		_assertLayoutSiteMemberRoleViewPermission("/chatbots");
+		_assertLayoutSiteMemberRoleViewPermission("/configurations");
+		_assertLayoutSiteMemberRoleViewPermission("/content-retriever");
+		_assertLayoutSiteMemberRoleViewPermission("/guardrails");
+		_assertLayoutSiteMemberRoleViewPermission("/instruction");
+		_assertLayoutSiteMemberRoleViewPermission("/issue-reports");
+		_assertLayoutSiteMemberRoleViewPermission("/workflow-definition");
 		_assertLayoutUtilityPageEntryExists(
 			"L_AI_HUB_CREATE_ACCOUNT_UTILITY_PAGE",
 			LayoutUtilityPageEntryConstants.TYPE_CREATE_ACCOUNT);
@@ -400,6 +411,22 @@ public class AIHubSiteInitializerTest {
 			TestPropsValues.getGroupId(), false, friendlyURL);
 
 		Assert.assertEquals(name, layout.getName(LocaleUtil.getSiteDefault()));
+	}
+
+	private void _assertLayoutSiteMemberRoleViewPermission(String friendlyURL)
+		throws Exception {
+
+		Layout layout = _layoutLocalService.fetchLayoutByFriendlyURL(
+			TestPropsValues.getGroupId(), false, friendlyURL);
+		Role role = _roleLocalService.getRole(
+			TestPropsValues.getCompanyId(), RoleConstants.SITE_MEMBER);
+
+		Assert.assertTrue(
+			_resourcePermissionLocalService.hasResourcePermission(
+				TestPropsValues.getCompanyId(), layout.getModelClassName(),
+				ResourceConstants.SCOPE_INDIVIDUAL,
+				String.valueOf(layout.getPlid()), role.getRoleId(),
+				ActionKeys.VIEW));
 	}
 
 	private void _assertLayoutUtilityPageEntryExists(
