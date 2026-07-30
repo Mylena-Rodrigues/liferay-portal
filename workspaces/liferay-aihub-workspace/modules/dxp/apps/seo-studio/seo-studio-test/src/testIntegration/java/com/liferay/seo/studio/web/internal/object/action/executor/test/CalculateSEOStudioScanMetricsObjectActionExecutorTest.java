@@ -28,6 +28,7 @@ import com.liferay.seo.studio.web.internal.test.BaseTestCase;
 import java.io.Serializable;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,6 +84,9 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 		ObjectEntry imagesHighInsightTypeObjectEntry =
 			_addSEOStudioInsightTypeObjectEntry(
 				"images", completedScanObjectEntry, "3");
+		ObjectEntry linksAndURLsMediumInsightTypeObjectEntry =
+			_addSEOStudioInsightTypeObjectEntry(
+				"linksAndURLs", completedScanObjectEntry, "2");
 		ObjectEntry metadataHighInsightTypeObjectEntry =
 			_addSEOStudioInsightTypeObjectEntry(
 				"metadata", completedScanObjectEntry, "3");
@@ -107,6 +111,9 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 			imagesHighInsightTypeObjectEntry, pageObjectEntry1,
 			completedScanObjectEntry);
 		_addSEOStudioScanInsightObjectEntry(
+			linksAndURLsMediumInsightTypeObjectEntry, pageObjectEntry2,
+			completedScanObjectEntry);
+		_addSEOStudioScanInsightObjectEntry(
 			metadataHighInsightTypeObjectEntry, pageObjectEntry1,
 			completedScanObjectEntry);
 		_addSEOStudioScanInsightObjectEntry(
@@ -118,51 +125,87 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 
 		_executeCalculateScanMetrics(completedScanObjectEntry);
 
-		List<ObjectEntry> seoStudioScanMetricObjectEntries =
-			_getSEOStudioScanMetricObjectEntries(_seoStudioScanRunObjectEntry);
+		Map<String, Map<String, Serializable>> seoStudioScanMetricValuesMap =
+			_getSEOStudioScanMetricValuesMap(
+				_getSEOStudioScanMetricObjectEntries(
+					_seoStudioScanRunObjectEntry));
 
-		ObjectEntry seoStudioScanMetricObjectEntry =
-			seoStudioScanMetricObjectEntries.get(0);
-
-		Map<String, Serializable> values = objectEntryLocalService.getValues(
-			seoStudioScanMetricObjectEntry.getObjectEntryId());
+		Map<String, Serializable> onPageValues =
+			seoStudioScanMetricValuesMap.get("onPage");
 
 		Assert.assertEquals(
-			3, MapUtil.getInteger(values, "affectedPagesCount"));
+			3, MapUtil.getInteger(onPageValues, "affectedPagesCount"));
 		Assert.assertEquals(
 			5.0 / 3.0,
-			MapUtil.getDouble(values, "averageInsightsPerAffectedPage"), 0.001);
-		Assert.assertEquals(3, MapUtil.getInteger(values, "criticalInsights"));
-		Assert.assertEquals(5, MapUtil.getInteger(values, "totalInsights"));
-
-		JSONObject categoryBreakdownJSONObject =
-			JSONFactoryUtil.createJSONObject(
-				MapUtil.getString(values, "categoryBreakdown"));
-
-		Assert.assertFalse(categoryBreakdownJSONObject.has("aeoReadiness"));
+			MapUtil.getDouble(onPageValues, "averageInsightsPerAffectedPage"),
+			0.001);
 		Assert.assertEquals(
-			1, categoryBreakdownJSONObject.getInt("contentStructure"));
-		Assert.assertEquals(1, categoryBreakdownJSONObject.getInt("images"));
-		Assert.assertEquals(3, categoryBreakdownJSONObject.getInt("metadata"));
+			3, MapUtil.getInteger(onPageValues, "criticalInsights"));
+		Assert.assertEquals(
+			5, MapUtil.getInteger(onPageValues, "totalInsights"));
 
-		JSONObject impactMixJSONObject = JSONFactoryUtil.createJSONObject(
-			MapUtil.getString(values, "impactMix"));
+		JSONObject onPageCategoryBreakdownJSONObject =
+			JSONFactoryUtil.createJSONObject(
+				MapUtil.getString(onPageValues, "categoryBreakdown"));
+
+		Assert.assertFalse(
+			onPageCategoryBreakdownJSONObject.has("aeoReadiness"));
+		Assert.assertEquals(
+			1, onPageCategoryBreakdownJSONObject.getInt("contentStructure"));
+		Assert.assertEquals(
+			1, onPageCategoryBreakdownJSONObject.getInt("images"));
+		Assert.assertEquals(
+			3, onPageCategoryBreakdownJSONObject.getInt("metadata"));
+
+		JSONObject onPageImpactMixJSONObject = JSONFactoryUtil.createJSONObject(
+			MapUtil.getString(onPageValues, "impactMix"));
 
 		JSONObject contentStructureImpactMixJSONObject =
-			impactMixJSONObject.getJSONObject("contentStructure");
+			onPageImpactMixJSONObject.getJSONObject("contentStructure");
 
 		Assert.assertEquals(1, contentStructureImpactMixJSONObject.getInt("2"));
 
 		JSONObject imagesImpactMixJSONObject =
-			impactMixJSONObject.getJSONObject("images");
+			onPageImpactMixJSONObject.getJSONObject("images");
 
 		Assert.assertEquals(1, imagesImpactMixJSONObject.getInt("3"));
 
 		JSONObject metadataImpactMixJSONObject =
-			impactMixJSONObject.getJSONObject("metadata");
+			onPageImpactMixJSONObject.getJSONObject("metadata");
 
 		Assert.assertEquals(1, metadataImpactMixJSONObject.getInt("1"));
 		Assert.assertEquals(2, metadataImpactMixJSONObject.getInt("3"));
+
+		Map<String, Serializable> technicalValues =
+			seoStudioScanMetricValuesMap.get("technical");
+
+		Assert.assertEquals(
+			1, MapUtil.getInteger(technicalValues, "affectedPagesCount"));
+		Assert.assertEquals(
+			1.0,
+			MapUtil.getDouble(
+				technicalValues, "averageInsightsPerAffectedPage"),
+			0.001);
+		Assert.assertEquals(
+			0, MapUtil.getInteger(technicalValues, "criticalInsights"));
+		Assert.assertEquals(
+			1, MapUtil.getInteger(technicalValues, "totalInsights"));
+
+		JSONObject technicalCategoryBreakdownJSONObject =
+			JSONFactoryUtil.createJSONObject(
+				MapUtil.getString(technicalValues, "categoryBreakdown"));
+
+		Assert.assertEquals(
+			1, technicalCategoryBreakdownJSONObject.getInt("linksAndURLs"));
+
+		JSONObject technicalImpactMixJSONObject =
+			JSONFactoryUtil.createJSONObject(
+				MapUtil.getString(technicalValues, "impactMix"));
+
+		JSONObject linksAndURLsImpactMixJSONObject =
+			technicalImpactMixJSONObject.getJSONObject("linksAndURLs");
+
+		Assert.assertEquals(1, linksAndURLsImpactMixJSONObject.getInt("2"));
 	}
 
 	@Test
@@ -184,7 +227,7 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 			_getSEOStudioScanMetricObjectEntries(_seoStudioScanRunObjectEntry);
 
 		Assert.assertEquals(
-			seoStudioScanMetricObjectEntries.toString(), 1,
+			seoStudioScanMetricObjectEntries.toString(), 2,
 			seoStudioScanMetricObjectEntries.size());
 	}
 
@@ -212,20 +255,16 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 			_getSEOStudioScanMetricObjectEntries(_seoStudioScanRunObjectEntry);
 
 		Assert.assertEquals(
-			seoStudioScanMetricObjectEntries.toString(), 1,
+			seoStudioScanMetricObjectEntries.toString(), 2,
 			seoStudioScanMetricObjectEntries.size());
 
-		ObjectEntry seoStudioScanMetricObjectEntry =
-			seoStudioScanMetricObjectEntries.get(0);
+		Map<String, Map<String, Serializable>> seoStudioScanMetricValuesMap =
+			_getSEOStudioScanMetricValuesMap(seoStudioScanMetricObjectEntries);
 
-		Map<String, Serializable> values = objectEntryLocalService.getValues(
-			seoStudioScanMetricObjectEntry.getObjectEntryId());
-
-		Assert.assertEquals(
-			0, MapUtil.getInteger(values, "affectedPagesCount"));
-		Assert.assertEquals(0, MapUtil.getInteger(values, "criticalInsights"));
-		Assert.assertEquals("onPage", MapUtil.getString(values, "scope"));
-		Assert.assertEquals(0, MapUtil.getInteger(values, "totalInsights"));
+		_assertEmptySEOStudioScanMetric(
+			seoStudioScanMetricValuesMap.get("onPage"));
+		_assertEmptySEOStudioScanMetric(
+			seoStudioScanMetricValuesMap.get("technical"));
 	}
 
 	@Test
@@ -355,6 +394,15 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 			).build());
 	}
 
+	private void _assertEmptySEOStudioScanMetric(
+		Map<String, Serializable> values) {
+
+		Assert.assertEquals(
+			0, MapUtil.getInteger(values, "affectedPagesCount"));
+		Assert.assertEquals(0, MapUtil.getInteger(values, "criticalInsights"));
+		Assert.assertEquals(0, MapUtil.getInteger(values, "totalInsights"));
+	}
+
 	private void _executeCalculateScanMetrics(
 			ObjectEntry seoStudioScanObjectEntry)
 		throws Exception {
@@ -383,6 +431,28 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 		return getRelatedObjectEntries(
 			seoStudioScanRunObjectEntry,
 			"seoStudioScanRunToSEOStudioScanMetrics");
+	}
+
+	private Map<String, Map<String, Serializable>>
+			_getSEOStudioScanMetricValuesMap(
+				List<ObjectEntry> seoStudioScanMetricObjectEntries)
+		throws Exception {
+
+		Map<String, Map<String, Serializable>> seoStudioScanMetricValuesMap =
+			new LinkedHashMap<>();
+
+		for (ObjectEntry seoStudioScanMetricObjectEntry :
+				seoStudioScanMetricObjectEntries) {
+
+			Map<String, Serializable> values =
+				objectEntryLocalService.getValues(
+					seoStudioScanMetricObjectEntry.getObjectEntryId());
+
+			seoStudioScanMetricValuesMap.put(
+				MapUtil.getString(values, "scope"), values);
+		}
+
+		return seoStudioScanMetricValuesMap;
 	}
 
 	private String _getState(ObjectEntry objectEntry) throws Exception {
