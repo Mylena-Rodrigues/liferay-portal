@@ -11,6 +11,8 @@ import com.liferay.ai.hub.internal.workflow.kaleo.runtime.node.util.VariablesUti
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
@@ -109,6 +111,15 @@ public class HTTPRequestNodeExecutor extends BaseNodeExecutor {
 				GetterUtil.getInteger(
 					kaleoNodeSettingValues.get("timeout"), 10000));
 
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					StringBundler.concat(
+						"Executing HTTP request node \"",
+						currentKaleoNode.getName(), "\" with method ",
+						options.getMethod(), ", URL ", options.getLocation(),
+						", and request body ", requestBody));
+			}
+
 			String responseBody = _http.URLtoString(options);
 
 			Http.Response response = options.getResponse();
@@ -150,6 +161,9 @@ public class HTTPRequestNodeExecutor extends BaseNodeExecutor {
 		KaleoNode currentKaleoNode, ExecutionContext executionContext,
 		List<PathElement> remainingPathElements) {
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		HTTPRequestNodeExecutor.class);
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
