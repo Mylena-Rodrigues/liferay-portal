@@ -384,7 +384,9 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorImpl
 	}
 
 	private static final Map<String, Set<String>> _categoriesMapByScope =
-		Map.of("onPage", Set.of("contentStructure", "images", "metadata"));
+		Map.of(
+			"onPage", Set.of("contentStructure", "images", "metadata"),
+			"technical", Set.of("linksAndURLs"));
 
 	@Reference
 	private JSONFactory _jsonFactory;

@@ -1,0 +1,37 @@
+{
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"indexed": true,
+					"layout": {
+					}
+				},
+				"id": "2be393f8-9da7-4d4c-af78-de524347fbca",
+				"pageElements": [
+					{
+						"definition": {
+							"fragment": {
+								"key": "com.liferay.seo.studio.web.internal.fragment.renderer.ViewTechnicalInsightDetailsFragmentRenderer"
+							},
+							"fragmentConfig": {
+							},
+							"fragmentFields": [
+							],
+							"indexed": true
+						},
+						"type": "Fragment"
+					}
+				],
+				"type": "Section"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"masterPage": {
+			"key": "seo-studio-master"
+		}
+	},
+	"version": 1.0
+}

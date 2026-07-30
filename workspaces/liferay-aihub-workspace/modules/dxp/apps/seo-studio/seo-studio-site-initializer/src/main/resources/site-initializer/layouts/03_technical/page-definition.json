@@ -13,6 +13,19 @@
 					"indexed": true
 				},
 				"type": "Fragment"
+			},
+			{
+				"definition": {
+					"fragment": {
+						"key": "com.liferay.seo.studio.web.internal.fragment.renderer.ViewTechnicalFragmentRenderer"
+					},
+					"fragmentConfig": {
+					},
+					"fragmentFields": [
+					],
+					"indexed": true
+				},
+				"type": "Fragment"
 			}
 		],
 		"type": "Root"
