@@ -38,6 +38,7 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import dev.langchain4j.agentic.AgenticServices;
+import dev.langchain4j.agentic.agent.AgentInvocationException;
 import dev.langchain4j.agentic.internal.InternalAgent;
 import dev.langchain4j.agentic.scope.AgentInvocation;
 import dev.langchain4j.agentic.scope.AgenticScope;
@@ -230,6 +231,14 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 				_language.get(
 					dtoConverterContext.getLocale(),
 					"you-have-exceeded-your-quota"),
+				"Chat Message Sent", null, agentContext.getSseEventSinkKey());
+		}
+
+		if (exception instanceof AgentInvocationException) {
+			SseUtil.send(
+				_language.get(
+					dtoConverterContext.getLocale(),
+					"i-cannot-fulfill-this-request"),
 				"Chat Message Sent", null, agentContext.getSseEventSinkKey());
 		}
 	}
