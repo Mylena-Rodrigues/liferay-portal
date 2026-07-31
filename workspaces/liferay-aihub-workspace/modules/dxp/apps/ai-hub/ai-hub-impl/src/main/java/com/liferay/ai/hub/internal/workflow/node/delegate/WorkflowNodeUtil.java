@@ -37,10 +37,24 @@ public class WorkflowNodeUtil {
 
 		KaleoTransition kaleoTransition = kaleoTransitions.get(0);
 
+		completeWorkflowNode(
+			executionContext, kaleoTransition.getName(), workflowContext,
+			workflowNodeManager);
+	}
+
+	public static void completeWorkflowNode(
+			ExecutionContext executionContext, String transitionName,
+			Map<String, Serializable> workflowContext,
+			WorkflowNodeManager workflowNodeManager)
+		throws Exception {
+
+		KaleoInstanceToken kaleoInstanceToken =
+			executionContext.getKaleoInstanceToken();
+
 		workflowNodeManager.completeWorkflowNode(
 			kaleoInstanceToken.getCompanyId(), kaleoInstanceToken.getUserId(),
-			kaleoInstanceToken.getKaleoInstanceTokenId(),
-			kaleoTransition.getName(), workflowContext, false);
+			kaleoInstanceToken.getKaleoInstanceTokenId(), transitionName,
+			workflowContext, false);
 	}
 
 }

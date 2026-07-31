@@ -63,7 +63,7 @@ public class SuggestProjectLinkServiceNodeDelegate
 				GetterUtil.getString(workflowContext.get("sseEventSinkKey")));
 
 			WorkflowNodeUtil.completeWorkflowNode(
-				executionContext, workflowContext, _workflowNodeManager);
+				executionContext, "no", workflowContext, _workflowNodeManager);
 
 			return StringPool.BLANK;
 		}
