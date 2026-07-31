@@ -1,12 +1,9 @@
 dependencies {
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.account.api", version: "default"
-	testIntegrationImplementation group: "com.liferay", name: "com.liferay.ai.hub.cell.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.configuration.admin.api", version: "default"
-	testIntegrationImplementation group: "com.liferay", name: "com.liferay.oauth2.provider.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.object.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.configuration.metatype.api", version: "default"
-	testIntegrationImplementation group: "com.liferay", name: "com.liferay.portal.configuration.module.configuration.api", version: "default"
 	testIntegrationImplementation group: "com.liferay", name: "com.liferay.site.api", version: "default"
 	testIntegrationImplementation group: "com.liferay.portal", name: "com.liferay.portal.test", version: "default"
 	testIntegrationImplementation group: "com.liferay.portal", name: "com.liferay.portal.test.integration", version: "default"
