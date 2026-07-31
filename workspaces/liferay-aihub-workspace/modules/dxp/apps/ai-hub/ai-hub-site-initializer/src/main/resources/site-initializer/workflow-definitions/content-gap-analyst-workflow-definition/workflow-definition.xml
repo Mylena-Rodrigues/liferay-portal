@@ -8,7 +8,7 @@
 	<name>Content Gap Analyst</name>
 	<version>1</version>
 	<llm>
-		<name>contentGapAnalysis</name>
+		<name>analyseGaps</name>
 		<metadata>
 			<![CDATA[
 				{
@@ -21,7 +21,7 @@
 		</metadata>
 		<labels>
 			<label language-id="en_US">
-				Content Gap Analysis
+				Analyse Gaps
 			</label>
 		</labels>
 		<input-variables>
@@ -46,7 +46,7 @@
 			<![CDATA[
 				[
 					{
-						"name": "output",
+						"name": "analysisResult",
 						"type": "string"
 					}
 				]
@@ -84,13 +84,11 @@ Order gaps by severity, highest first.
 # Output policy
 
 - Output a SINGLE raw JSON object and nothing else. DO NOT wrap the JSON in markdown fences. DO NOT add prose, commentary, or trailing text outside the JSON.
-- Always include "action": "contentGapAnalysis" at the top level.
 - Include a "gaps" array with one object for EVERY real (non-uncategorized) persona and funnel stage combination whose count is 0 — the same gaps the Markdown covers. Copy the ids and names EXACTLY from the content coverage "personas" and "funnelStages" arrays; never invent or alter them. Each object has the shape {"funnelStageId": "<funnel stage id>", "funnelStage": "<funnel stage name>", "personaId": "<persona id>", "persona": "<persona name>"}. Enumerate every real gap combination individually, INCLUDING for an empty project (where the Markdown collapses them into a single bullet). When focus scope lists specific combinations, include only those that are gaps. When there are no gaps at all, "gaps" is an empty array.
 - Put the human readable Markdown analysis (described below) into the "result" string field, escaped as a valid JSON string (encode newlines as \n). The Markdown must refer to every persona and funnel stage by its name only and must NOT emit any id or count field.
 - Shape:
 
 {
-	"action": "contentGapAnalysis",
 	"gaps": [
 		{
 			"funnelStageId": "<funnel stage id>",
@@ -146,8 +144,8 @@ Focus scope:
 			<![CDATA[
 				{
 					"xy": [
-						224.765625,
-						795
+						576.2409198598582,
+						779.657689242004
 					]
 				}
 			]]>
@@ -196,7 +194,6 @@ For each asset in findResults, find EVERY gap it fills. An asset fills a gap whe
 # Output policy
 
 - Output a SINGLE raw JSON object and nothing else. DO NOT wrap the JSON in markdown fences. DO NOT add prose, commentary, or trailing text outside the JSON.
-- Always include "action": "findMatchingAssets" at the top level.
 - Each object in "results":
 	- "funnelStage": the matched gap's funnel stage name, copied from "gaps".
 	- "id": the asset id, copied EXACTLY as the integer in that item's "embedded".id. Never invent or alter it.
@@ -208,7 +205,6 @@ For each asset in findResults, find EVERY gap it fills. An asset fills a gap whe
 - Shape:
 
 {
-	"action": "findMatchingAssets",
 	"results": [
 		{
 			"funnelStage": "<funnel stage name>",
@@ -243,7 +239,7 @@ CMS search results (JSON): {{findResults}}]]>
 		</user-message>
 	</llm>
 	<http-request>
-		<name>getContentCoverage</name>
+		<name>getCoverage</name>
 		<metadata>
 			<![CDATA[
 				{
@@ -256,7 +252,7 @@ CMS search results (JSON): {{findResults}}]]>
 		</metadata>
 		<labels>
 			<label language-id="en_US">
-				Get Content Coverage
+				Get Coverage
 			</label>
 		</labels>
 		<http-method>GET</http-method>
@@ -289,11 +285,11 @@ CMS search results (JSON): {{findResults}}]]>
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Content Gap Analysis
+						Analyse
 					</label>
 				</labels>
-				<name>contentGapAnalysis</name>
-				<target>contentGapAnalysis</target>
+				<name>analyse</name>
+				<target>analyseGaps</target>
 				<default>true</default>
 			</transition>
 		</transitions>
@@ -305,8 +301,8 @@ CMS search results (JSON): {{findResults}}]]>
 			<![CDATA[
 				{
 					"xy": [
-						225.765625,
-						613
+						574.4515209422138,
+						599.0525157636289
 					]
 				}
 			]]>
@@ -422,7 +418,6 @@ CMS search results (JSON): {{findResults}}]]>
 	</http-request>
 	<service>
 		<name>suggestActions</name>
-		<description>Find Match Assets or Generate Content Gaps</description>
 		<metadata>
 			<![CDATA[
 				{
@@ -453,24 +448,104 @@ CMS search results (JSON): {{findResults}}]]>
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Compose Gap Search
+						Find Matching Assets
 					</label>
 				</labels>
-				<name>composeGapSearch</name>
+				<name>findMatchingAssets</name>
 				<target>composeGapSearch</target>
+				<default>true</default>
+			</transition>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Generate Content
+					</label>
+				</labels>
+				<name>generateContent</name>
+				<target>generateContent</target>
+				<default>false</default>
+			</transition>
+		</transitions>
+	</service>
+	<service>
+		<name>generateContent</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						-81.23073092306339,
+						433.03089905122823
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "count",
+						"type": "string"
+					},
+					{
+						"name": "gaps",
+						"type": "string"
+					},
+					{
+						"name": "objectFields",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					},
+					{
+						"name": "projectScopeKey",
+						"type": "string"
+					},
+					{
+						"name": "spacesJSONArray",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#generateGapContent</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Generate Gap Content
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "response",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Generated
+					</label>
+				</labels>
+				<name>generated</name>
+				<target>generated</target>
 				<default>true</default>
 			</transition>
 		</transitions>
 	</service>
 	<service>
 		<name>composeGapSearch</name>
-		<description>Composes Gap Search</description>
 		<metadata>
 			<![CDATA[
 				{
 					"xy": [
-						228.16033883460017,
-						443.1840845490679
+						572.6619517677742,
+						438.9998061904852
 					]
 				}
 			]]>
@@ -579,13 +654,12 @@ CMS search results (JSON): {{findResults}}]]>
 	</service>
 	<service>
 		<name>suggestProjectLink</name>
-		<description>Suggest Project Link</description>
 		<metadata>
 			<![CDATA[
 				{
 					"xy": [
-						226.64589879672656,
-						996.5862551242059
+						575.3317485734433,
+						950.5595023194422
 					]
 				}
 			]]>
@@ -624,7 +698,7 @@ CMS search results (JSON): {{findResults}}]]>
 					</label>
 				</labels>
 				<name>no</name>
-				<target>1b4c9ca4-ffe6-447d-b74f-5bdf8177213c</target>
+				<target>matchesDiscarded</target>
 				<default>false</default>
 			</transition>
 		</transitions>
@@ -651,17 +725,17 @@ CMS search results (JSON): {{findResults}}]]>
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Get Content Coverage
+						Get Coverage
 					</label>
 				</labels>
-				<name>getContentCoverage</name>
-				<target>getContentCoverage</target>
+				<name>getCoverage</name>
+				<target>getCoverage</target>
 				<default>true</default>
 			</transition>
 		</transitions>
 	</state>
 	<state>
-		<name>end</name>
+		<name>matchesLinked</name>
 		<metadata>
 			<![CDATA[
 				{
@@ -675,26 +749,45 @@ CMS search results (JSON): {{findResults}}]]>
 		</metadata>
 		<labels>
 			<label language-id="en_US">
-				End
+				Matches Linked
 			</label>
 		</labels>
 	</state>
 	<state>
-		<name>1b4c9ca4-ffe6-447d-b74f-5bdf8177213c</name>
+		<name>matchesDiscarded</name>
 		<metadata>
 			<![CDATA[
 				{
 					"terminal": true,
 					"xy": [
-						689.5450687186018,
-						995.1908083468621
+						981.0463705137952,
+						949.164077625911
 					]
 				}
 			]]>
 		</metadata>
 		<labels>
 			<label language-id="en_US">
-				End
+				Matches Discarded
+			</label>
+		</labels>
+	</state>
+	<state>
+		<name>generated</name>
+		<metadata>
+			<![CDATA[
+				{
+					"terminal": true,
+					"xy": [
+						-78.93361946466274,
+						595.028363057253
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Generated
 			</label>
 		</labels>
 	</state>
