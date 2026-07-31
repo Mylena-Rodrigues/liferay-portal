@@ -107,7 +107,7 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Executing LLM node \"" + currentKaleoNode.getName() + "\"");
+				"Executing Kaleo node \"" + currentKaleoNode.getName() + "\"");
 		}
 
 		KaleoInstanceToken kaleoInstanceToken =
