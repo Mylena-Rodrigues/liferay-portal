@@ -11,6 +11,7 @@ import com.liferay.ai.hub.internal.audit.constants.AIHubEventTypes;
 import com.liferay.ai.hub.internal.constants.AIHubDestinationNames;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.portal.kernel.encryptor.EncryptorUtil;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
@@ -155,7 +156,15 @@ public class InternalAgentImpl implements InternalAgent, InvocationHandler {
 						continue;
 					}
 
-					workflowContext.put(key, MapUtil.getString(input, key));
+					if (input.get(key) instanceof List<?> list) {
+						JSONArray jsonArray = JSONFactoryUtil.createJSONArray(
+							list);
+
+						workflowContext.put(key, jsonArray.toString());
+					}
+					else {
+						workflowContext.put(key, MapUtil.getString(input, key));
+					}
 				}
 			}
 
