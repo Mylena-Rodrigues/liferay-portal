@@ -26,6 +26,7 @@ import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
+import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
@@ -50,11 +51,13 @@ import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.NoSuchWorkflowDefinitionException;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
@@ -85,7 +88,11 @@ import org.junit.runner.RunWith;
  * @author Feliphe Marinho
  * @author João Victor Alves
  */
-@FeatureFlag("LPD-62272")
+@FeatureFlags(
+	featureFlags = {
+		@FeatureFlag(value = "LPD-62272"), @FeatureFlag(value = "LPD-85515")
+	}
+)
 @RunWith(Arquillian.class)
 public class AgentDefinitionResourceTest
 	extends BaseAgentDefinitionResourceTestCase {
@@ -164,6 +171,7 @@ public class AgentDefinitionResourceTest
 	@Test
 	public void testGetAgentDefinitionsPage() throws Exception {
 		_testGetAgentDefinitionsPage();
+		_testGetAgentDefinitionsPageWithContentSiteGeneratorDisabled();
 		_testGetAgentDefinitionsPageWithFilter();
 		_testGetAgentDefinitionsPageWithMissingWorkflowDefinition();
 		_testGetAgentDefinitionsPageWithModel();
@@ -646,6 +654,29 @@ public class AgentDefinitionResourceTest
 
 		assertEquals(
 			_systemAgentDefinitions, (List<AgentDefinition>)page.getItems());
+	}
+
+	private void _testGetAgentDefinitionsPageWithContentSiteGeneratorDisabled()
+		throws Exception {
+
+		PropsUtil.set(FeatureFlagConstants.getKey("LPD-85515"), "false");
+
+		try {
+			Page<AgentDefinition> page =
+				agentDefinitionResource.getAgentDefinitionsPage(
+					null, null, Pagination.of(1, 20), null);
+
+			assertEquals(
+				ListUtil.filter(
+					_systemAgentDefinitions,
+					systemAgentDefinition -> !Objects.equals(
+						systemAgentDefinition.getExternalReferenceCode(),
+						"L_SITE_BUILDER")),
+				(List<AgentDefinition>)page.getItems());
+		}
+		finally {
+			PropsUtil.set(FeatureFlagConstants.getKey("LPD-85515"), "true");
+		}
 	}
 
 	private void _testGetAgentDefinitionsPageWithFilter() throws Exception {

@@ -22,9 +22,11 @@ import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -141,8 +143,8 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 
 		Page<ObjectEntry> page = _objectEntryManager.getObjectEntries(
 			companyId, _getObjectDefinition(companyId), null, null,
-			dtoConverterContext, _getFilterString(filterString), pagination,
-			search, sorts);
+			dtoConverterContext, _getFilterString(companyId, filterString),
+			pagination, search, sorts);
 
 		return Page.of(
 			actions,
@@ -386,13 +388,21 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 		}
 	}
 
-	private String _getFilterString(String filterString) {
-		if (Validator.isNull(filterString)) {
-			return "externalReferenceCode ne 'L_PAGE_BUILDER'";
+	private String _getFilterString(long companyId, String filterString) {
+		String excludeFilterString =
+			"externalReferenceCode ne 'L_PAGE_BUILDER'";
+
+		if (!FeatureFlagManagerUtil.isEnabled(companyId, "LPD-85515")) {
+			excludeFilterString +=
+				" and externalReferenceCode ne 'L_SITE_BUILDER'";
 		}
 
-		return "(" + filterString +
-			") and externalReferenceCode ne 'L_PAGE_BUILDER'";
+		if (Validator.isNull(filterString)) {
+			return excludeFilterString;
+		}
+
+		return StringBundler.concat(
+			"(", filterString, ") and ", excludeFilterString);
 	}
 
 	private ObjectDefinition _getObjectDefinition(long companyId)
