@@ -208,9 +208,11 @@ public class AgentDefinitionResourceTest
 			(DefaultObjectEntryManager)_objectEntryManager;
 
 		NestedFieldsContext nestedFieldsContext =
-			NestedFieldsContextThreadLocal.getAndSetNestedFieldsContext(
-				new NestedFieldsContext(
-					1, List.of("agentDefinitionsToContentRetrievers")));
+			NestedFieldsContextThreadLocal.getNestedFieldsContext();
+
+		NestedFieldsContextThreadLocal.setNestedFieldsContext(
+			new NestedFieldsContext(
+				1, List.of("agentDefinitionsToContentRetrievers")));
 
 		try {
 			ObjectEntry objectEntry1 =
