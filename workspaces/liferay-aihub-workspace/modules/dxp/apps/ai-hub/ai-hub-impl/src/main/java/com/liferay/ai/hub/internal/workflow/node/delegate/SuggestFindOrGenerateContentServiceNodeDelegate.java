@@ -9,6 +9,7 @@ import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -22,6 +23,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Feliphe Marinho
@@ -39,6 +41,15 @@ public class SuggestFindOrGenerateContentServiceNodeDelegate
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
+
+		JSONObject jsonObject = _jsonFactory.createJSONObject(
+			MapUtil.getString(workflowContext, "analysisResult"));
+
+		SseUtil.send(
+			_getAgentDefinitionExternalReferenceCodes(workflowContext),
+			jsonObject.getString("result"), "Chat Message Sent",
+			kaleoInstanceToken.getCurrentKaleoNodeName(),
+			MapUtil.getString(workflowContext, "sseEventSinkKey"));
 
 		String resumeURL = StringBundler.concat(
 			MapUtil.getString(workflowContext, "aiHubCellLiferayDXPURL"),
@@ -109,5 +120,8 @@ public class SuggestFindOrGenerateContentServiceNodeDelegate
 			"label", label
 		);
 	}
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }
