@@ -39,11 +39,10 @@ public class SuggestFindOrGenerateContentServiceNodeDelegate
 			Map<String, Serializable> workflowContext)
 		throws Exception {
 
-		KaleoInstanceToken kaleoInstanceToken =
-			executionContext.getKaleoInstanceToken();
-
 		JSONObject jsonObject = _jsonFactory.createJSONObject(
 			MapUtil.getString(workflowContext, "analysisResult"));
+		KaleoInstanceToken kaleoInstanceToken =
+			executionContext.getKaleoInstanceToken();
 
 		SseUtil.send(
 			_getAgentDefinitionExternalReferenceCodes(workflowContext),
