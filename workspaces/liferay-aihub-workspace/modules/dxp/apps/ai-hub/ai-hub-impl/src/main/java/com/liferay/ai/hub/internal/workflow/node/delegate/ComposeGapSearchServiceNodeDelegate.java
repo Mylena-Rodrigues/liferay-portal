@@ -11,8 +11,8 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
@@ -43,8 +43,16 @@ public class ComposeGapSearchServiceNodeDelegate
 			Map<String, Serializable> workflowContext)
 		throws Exception {
 
-		String gapSearchFilter = _getGapSearchFilter(
-			inputVariables.get("gaps"));
+		JSONObject jsonObject = _jsonFactory.createJSONObject(
+			MapUtil.getString(workflowContext, "analysisResult"));
+
+		JSONArray gapsJSONArray = jsonObject.getJSONArray("gaps");
+
+		if (gapsJSONArray != null) {
+			workflowContext.put("gaps", gapsJSONArray.toString());
+		}
+
+		String gapSearchFilter = _getGapSearchFilter(gapsJSONArray);
 
 		workflowContext.put("gapSearchFilter", gapSearchFilter);
 
@@ -59,7 +67,7 @@ public class ComposeGapSearchServiceNodeDelegate
 		return "javaDelegate#composeGapSearch";
 	}
 
-	private String _getGapSearchFilter(String gaps) throws Exception {
+	private String _getGapSearchFilter(JSONArray jsonArray) throws Exception {
 		StringBundler sb = new StringBundler();
 
 		sb.append("cmsSection in ('contents', 'files') and ");
@@ -67,9 +75,7 @@ public class ComposeGapSearchServiceNodeDelegate
 
 		List<String> gapClauses = new ArrayList<>();
 
-		if (Validator.isNotNull(gaps)) {
-			JSONArray jsonArray = _jsonFactory.createJSONArray(gaps);
-
+		if (jsonArray != null) {
 			for (int i = 0; i < jsonArray.length(); i++) {
 				JSONObject jsonObject = jsonArray.getJSONObject(i);
 
