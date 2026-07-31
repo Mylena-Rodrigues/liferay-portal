@@ -212,6 +212,14 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 			return;
 		}
 
+		if (exception instanceof AgentInvocationException) {
+			SseUtil.send(
+				_language.get(
+					dtoConverterContext.getLocale(),
+					"i-cannot-fulfill-this-request"),
+				"Chat Message Sent", null, agentContext.getSseEventSinkKey());
+		}
+
 		if ((invocationTargetException.getCause() instanceof
 				RuntimeException runtimeException) &&
 			(runtimeException.getCause() instanceof
@@ -231,14 +239,6 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 				_language.get(
 					dtoConverterContext.getLocale(),
 					"you-have-exceeded-your-quota"),
-				"Chat Message Sent", null, agentContext.getSseEventSinkKey());
-		}
-
-		if (exception instanceof AgentInvocationException) {
-			SseUtil.send(
-				_language.get(
-					dtoConverterContext.getLocale(),
-					"i-cannot-fulfill-this-request"),
 				"Chat Message Sent", null, agentContext.getSseEventSinkKey());
 		}
 	}
