@@ -1,0 +1,345 @@
+[
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioDomain$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioGSCCredentials$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioInsightType$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioInstance$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioIntegration$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioPage$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioPageSpeedResult$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioScan$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioScanInsight$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioScanMetric$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SEOStudioScanRun$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Insight Type Names$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Instance States$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Integration Scopes$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Integration States$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Integration Types$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Metric Scopes$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Days of Week$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Engine Ranking Methods$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Engine Scopes$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Frequencies$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Insight Categories$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Insight Classifications$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Insight Severities$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Ranges$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Scopes$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan States$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Triggers$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$LIST_TYPE_DEFINITION_ID:SEO Studio Scan Types$]",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:SEOStudioDomain$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:SEOStudioGSCCredentials$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:SEOStudioInstance$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:SEOStudioIntegration$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:SEOStudioScan$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:SEOStudioScanMetric$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:SEOStudioScanRun$]",
+		"roleName": "SEO Studio Administrator",
+		"scope": "3"
+	}
+]

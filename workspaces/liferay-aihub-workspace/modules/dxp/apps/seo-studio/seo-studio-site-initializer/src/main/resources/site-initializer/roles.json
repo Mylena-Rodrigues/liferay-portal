@@ -1,0 +1,13 @@
+[
+	{
+		"description": {
+			"en_US": "This role grants administrative access to SEO Studio resources within an account."
+		},
+		"externalReferenceCode": "L_SEO_STUDIO_ADMINISTRATOR",
+		"name": "SEO Studio Administrator",
+		"name_i18n": {
+			"en_US": "SEO Studio Administrator"
+		},
+		"type": 6
+	}
+]
