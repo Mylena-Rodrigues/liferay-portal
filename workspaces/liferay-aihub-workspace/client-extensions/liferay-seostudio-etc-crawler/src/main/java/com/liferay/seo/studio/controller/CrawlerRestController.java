@@ -297,36 +297,35 @@ public class CrawlerRestController extends BaseRestController {
 				return canonicalURL;
 			});
 
-		JSONObject insightJSONObject = new JSONObject(
-		).put(
-			"category", "linksAndURLs"
-		).put(
-			"classification", "problem"
-		).put(
-			"description",
-			StringBundler.concat(
-				"This page is published and indexable but has zero internal ",
-				"links pointing to it. Orphan pages are nearly invisible to ",
-				"both users browsing the site and crawlers building the link ",
-				"graph. Even when they are listed in a sitemap, they collect ",
-				"very little ranking authority.")
-		).put(
-			"fixHint",
-			StringBundler.concat(
-				"Identify 2-5 topically related pages and add contextual ",
-				"internal links pointing to the orphan, with descriptive ",
-				"anchor text. If no relevant linking context exists anywhere ",
-				"on the site, that is a signal the page may not belong in the ",
-				"public site at all.")
-		).put(
-			"name", "orphanPages"
-		).put(
-			"pageURLs", pageURLs
-		).put(
-			"severity", "2"
-		);
-
-		return Arrays.asList(insightJSONObject);
+		return Arrays.asList(
+			new JSONObject(
+			).put(
+				"category", "linksAndURLs"
+			).put(
+				"classification", "problem"
+			).put(
+				"description",
+				StringBundler.concat(
+					"This page is published and indexable but has zero ",
+					"internal links pointing to it. Orphan pages are nearly ",
+					"invisible to both users browsing the site and crawlers ",
+					"building the link graph. Even when they are listed in a ",
+					"sitemap, they collect very little ranking authority.")
+			).put(
+				"fixHint",
+				StringBundler.concat(
+					"Identify 2-5 topically related pages and add contextual ",
+					"internal links pointing to the orphan, with descriptive ",
+					"anchor text. If no relevant linking context exists ",
+					"anywhere on the site, that is a signal the page may not ",
+					"belong in the public site at all.")
+			).put(
+				"name", "orphanPages"
+			).put(
+				"pageURLs", pageURLs
+			).put(
+				"severity", "2"
+			));
 	}
 
 	private boolean _isSitemapReachable(String sitemapURL) {
