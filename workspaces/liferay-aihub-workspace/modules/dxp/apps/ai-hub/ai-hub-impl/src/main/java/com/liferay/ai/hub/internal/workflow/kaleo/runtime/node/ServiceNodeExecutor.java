@@ -11,12 +11,17 @@ import com.liferay.ai.hub.internal.workflow.kaleo.runtime.node.util.VariablesUti
 import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.petra.concurrent.NoticeableExecutorService;
+import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.workflow.kaleo.definition.NodeType;
@@ -37,6 +42,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Iliyan Peychev
@@ -51,6 +57,8 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
+		_noticeableExecutorService = _portalExecutorManager.getPortalExecutor(
+			ServiceNodeExecutor.class.getName());
 		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
 			bundleContext, ServiceNodeDelegate.class, null,
 			(serviceReference, emitter) -> {
@@ -65,6 +73,7 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 
 	@Deactivate
 	protected void deactivate() {
+		_noticeableExecutorService.shutdown();
 		_serviceTrackerMap.close();
 	}
 
@@ -118,31 +127,53 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 					"\" on node \"", currentKaleoNode.getName(), "\""));
 		}
 
-		try {
-			JSONArray jsonArray = VariablesUtil.getVariablesJSONArray(
-				"outputVariables", kaleoNodeSettingValues);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
-			if ((jsonArray != null) && (jsonArray.length() > 0)) {
-				JSONObject jsonObject = jsonArray.getJSONObject(0);
+		_noticeableExecutorService.submit(
+			new CompanyInheritableThreadLocalCallable<>(
+				() -> {
+					PermissionChecker originalPermissionChecker =
+						PermissionThreadLocal.getPermissionChecker();
 
-				workflowContext.put(
-					jsonObject.getString("name"),
-					serviceNodeDelegate.execute(
-						executionContext,
-						VariablesUtil.getInputVariables(
-							kaleoNodeSettingValues, workflowContext),
-						workflowContext));
-			}
-		}
-		catch (Exception exception) {
-			_log.error(
-				StringBundler.concat(
-					"Unable to execute service node delegate \"", javaDelegate,
-					"\" on node \"", currentKaleoNode.getName(), "\""),
-				exception);
+					try {
+						PermissionThreadLocal.setPermissionChecker(
+							permissionChecker);
 
-			throw new PortalException(exception);
-		}
+						JSONArray jsonArray =
+							VariablesUtil.getVariablesJSONArray(
+								"outputVariables", kaleoNodeSettingValues);
+
+						if ((jsonArray != null) && (jsonArray.length() > 0)) {
+							JSONObject jsonObject = jsonArray.getJSONObject(0);
+
+							workflowContext.put(
+								jsonObject.getString("name"),
+								serviceNodeDelegate.execute(
+									executionContext,
+									VariablesUtil.getInputVariables(
+										kaleoNodeSettingValues,
+										workflowContext),
+									workflowContext));
+						}
+					}
+					catch (Exception exception) {
+						_log.error(
+							StringBundler.concat(
+								"Unable to execute service node delegate \"",
+								javaDelegate, "\" on node \"",
+								currentKaleoNode.getName(), "\""),
+							exception);
+
+						throw new PortalException(exception);
+					}
+					finally {
+						PermissionThreadLocal.setPermissionChecker(
+							originalPermissionChecker);
+					}
+
+					return null;
+				}));
 	}
 
 	@Override
@@ -172,6 +203,11 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ServiceNodeExecutor.class);
+
+	private NoticeableExecutorService _noticeableExecutorService;
+
+	@Reference
+	private PortalExecutorManager _portalExecutorManager;
 
 	private ServiceTrackerMap<String, ServiceNodeDelegate> _serviceTrackerMap;
 
