@@ -206,7 +206,7 @@ public class CrawlerRestController extends BaseRestController {
 			}
 		}
 
-		JSONObject missingOrEmptyMetaDescriptionTagInsightJSONObject =
+		return Arrays.asList(
 			new JSONObject(
 			).put(
 				"category", "metadata"
@@ -233,37 +233,32 @@ public class CrawlerRestController extends BaseRestController {
 				"pageURLs", missingOrEmptyMetaDescriptionTagPageURLs
 			).put(
 				"severity", "2"
-			);
-
-		JSONObject missingOrEmptyTitleTagInsightJSONObject = new JSONObject(
-		).put(
-			"category", "metadata"
-		).put(
-			"classification", "problem"
-		).put(
-			"description",
-			StringBundler.concat(
-				"This page has no <title> tag, or the tag is present but ",
-				"empty. The title is the first thing search engines and users ",
-				"read in SERP listings and carries one of the strongest on ",
-				"page ranking signals.")
-		).put(
-			"fixHint",
-			StringBundler.concat(
-				"Add a concise, unique <title> of roughly 50 to 60 characters ",
-				"that leads with the page's primary keyword and reflects its ",
-				"actual content.")
-		).put(
-			"name", "missingOrEmptyTitleTag"
-		).put(
-			"pageURLs", missingOrEmptyTitleTagPageURLs
-		).put(
-			"severity", "3"
-		);
-
-		return Arrays.asList(
-			missingOrEmptyMetaDescriptionTagInsightJSONObject,
-			missingOrEmptyTitleTagInsightJSONObject);
+			),
+			new JSONObject(
+			).put(
+				"category", "metadata"
+			).put(
+				"classification", "problem"
+			).put(
+				"description",
+				StringBundler.concat(
+					"This page has no <title> tag, or the tag is present but ",
+					"empty. The title is the first thing search engines and ",
+					"users read in SERP listings and carries one of the ",
+					"strongest on page ranking signals.")
+			).put(
+				"fixHint",
+				StringBundler.concat(
+					"Add a concise, unique <title> of roughly 50 to 60 ",
+					"characters that leads with the page's primary keyword ",
+					"and reflects its actual content.")
+			).put(
+				"name", "missingOrEmptyTitleTag"
+			).put(
+				"pageURLs", missingOrEmptyTitleTagPageURLs
+			).put(
+				"severity", "3"
+			));
 	}
 
 	private List<JSONObject> _getOrphanPagesInsightJSONObjects(
