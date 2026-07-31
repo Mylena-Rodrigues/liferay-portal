@@ -356,6 +356,70 @@ CMS search results (JSON): {{findResults}}]]>
 		</transitions>
 		<url>{{aiHubCellLiferayDXPURL}}/o/search/v1.0/search?emptySearch=true&amp;pageSize=100&amp;nestedFields=embedded&amp;filter={{gapSearchFilter}}</url>
 	</http-request>
+	<http-request>
+		<name>linkMatchedAssetsToProject</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						576,
+						1291
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Link Matched Assets to Project
+			</label>
+		</labels>
+		<http-method>POST</http-method>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "aiHubCellLiferayDXPURL",
+						"type": "string"
+					},
+					{
+						"name": "projectLinksPayload",
+						"type": "string"
+					},
+					{
+						"name": "projectScopeKey",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "linkResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<request-body>
+			<![CDATA[{{projectLinksPayload}}]]>
+		</request-body>
+		<timeout>10000</timeout>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Matches Linked
+					</label>
+				</labels>
+				<name>matchesLinked</name>
+				<target>matchesLinked</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/headless-batch-engine/v1.0/import-task/com.liferay.object.rest.dto.v1_0.ObjectEntry?createStrategy=INSERT&amp;importStrategy=ON_ERROR_CONTINUE&amp;scopeKey={{projectScopeKey}}&amp;taskItemDelegateName=CMPProjectLink</url>
+	</http-request>
 	<service>
 		<name>suggestActions</name>
 		<description>Find Match Assets or Generate Content Gaps</description>
@@ -451,6 +515,69 @@ CMS search results (JSON): {{findResults}}]]>
 		</transitions>
 	</service>
 	<service>
+		<name>composeProjectLinks</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						576,
+						1121
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "findResults",
+						"type": "string"
+					},
+					{
+						"name": "output",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					},
+					{
+						"name": "projectScopeKey",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#composeProjectLinks</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Compose Project Links
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "projectLinksPayload",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Link Matched Assets to Project
+					</label>
+				</labels>
+				<name>linkMatchedAssetsToProject</name>
+				<target>linkMatchedAssetsToProject</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</service>
+	<service>
 		<name>suggestProjectLink</name>
 		<description>Suggest Project Link</description>
 		<metadata>
@@ -487,7 +614,7 @@ CMS search results (JSON): {{findResults}}]]>
 					</label>
 				</labels>
 				<name>yes</name>
-				<target>end</target>
+				<target>composeProjectLinks</target>
 				<default>true</default>
 			</transition>
 			<transition>
@@ -540,8 +667,8 @@ CMS search results (JSON): {{findResults}}]]>
 				{
 					"terminal": true,
 					"xy": [
-						226.36198946074654,
-						1193.940761695376
+						576,
+						1461
 					]
 				}
 			]]>

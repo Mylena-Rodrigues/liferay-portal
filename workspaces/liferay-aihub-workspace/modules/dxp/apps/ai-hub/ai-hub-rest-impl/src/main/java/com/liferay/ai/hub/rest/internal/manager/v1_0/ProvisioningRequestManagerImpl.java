@@ -195,6 +195,7 @@ public class ProvisioningRequestManagerImpl
 				"Liferay.AI.Hub.REST.everything.read",
 				"Liferay.AI.Hub.REST.everything.write",
 				"Liferay.Headless.Admin.List.Type.everything.read",
+				"Liferay.Headless.Batch.Engine.everything",
 				"Liferay.Portal.Search.REST.everything",
 				"Liferay.Portal.Search.REST.everything.read",
 				"Liferay.Portal.Search.REST.everything.write",
