@@ -1,0 +1,11 @@
+{
+	"active": true,
+	"externalReferenceCode": "L_GENERATE_GAP_CONTENT",
+	"groupExternalReferenceCode": "[$ACCOUNT_ENTRY_GROUP_ERC:L_AI_HUB$]",
+	"name": "Generate Gap Content",
+	"scope": "ai",
+	"title": "Generate Gap Content",
+	"title_i18n": {
+		"en_US": "Generate Gap Content"
+	}
+}

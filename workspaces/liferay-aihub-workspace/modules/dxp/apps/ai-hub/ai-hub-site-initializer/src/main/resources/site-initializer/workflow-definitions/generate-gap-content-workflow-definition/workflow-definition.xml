@@ -1,0 +1,417 @@
+<?xml version="1.0"?>
+
+<workflow-definition
+	xmlns="urn:liferay.com:liferay-workflow_7.4.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:liferay.com:liferay-workflow_7.4.0 http://www.liferay.com/dtd/liferay-workflow-definition_7_4_0.xsd"
+>
+	<name>Generate Gap Content</name>
+	<version>1</version>
+	<http-request>
+		<name>getObjectDefinition</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						276,
+						130
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Get Object Definition
+			</label>
+		</labels>
+		<http-method>GET</http-method>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "aiHubCellLiferayDXPURL",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "objectDefinitionResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<timeout>10000</timeout>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Request Space Selection
+					</label>
+				</labels>
+				<name>requestSpaceSelection</name>
+				<target>requestSpaceSelection</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/object-admin/v1.0/object-definitions/by-external-reference-code/L_CMS_BASIC_WEB_CONTENT?fields=className</url>
+	</http-request>
+	<service>
+		<name>requestSpaceSelection</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						276,
+						340
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "gaps",
+						"type": "string"
+					},
+					{
+						"name": "spacesJSONArray",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#requestSpaceSelection</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Request Space Selection
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "gap",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Generate Brief
+					</label>
+				</labels>
+				<name>generateBrief</name>
+				<target>generateBrief</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</service>
+	<llm>
+		<name>generateBrief</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						276,
+						445
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Generate Brief
+			</label>
+		</labels>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "funnelStage",
+						"type": "string"
+					},
+					{
+						"name": "persona",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "brief",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<prompt>
+			<![CDATA[# Role
+
+You are a content strategist for the Liferay Content Marketing Platform. You write a short, actionable brief for ONE piece of CMS web content that fills a specific content coverage gap.
+
+# Inputs
+
+- persona: the target audience persona the content must address.
+- funnelStage: the marketing funnel stage the content must serve.
+
+# Task
+
+Write a concise brief of 2 to 4 sentences describing a single web content asset tailored to the {{persona}} persona at the {{funnelStage}} funnel stage. Cover the angle, the reader's intent at this stage, and the desired takeaway. Describe what should be created; do NOT write the content itself.
+
+# Output policy
+
+- Output ONLY the brief text.
+- DO NOT add markdown headings, preamble, commentary, JSON, or surrounding quotes.]]>
+		</prompt>
+		<tools>
+			<![CDATA[[]]]>
+		</tools>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Generate Content
+					</label>
+				</labels>
+				<name>generateContent</name>
+				<target>generateContent</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<user-message>
+			<![CDATA[Persona: {{persona}}
+
+Funnel stage: {{funnelStage}}]]>
+		</user-message>
+	</llm>
+	<service>
+		<name>generateContent</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						276,
+						550
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "brief",
+						"type": "string"
+					},
+					{
+						"name": "count",
+						"type": "string"
+					},
+					{
+						"name": "funnelStageId",
+						"type": "string"
+					},
+					{
+						"name": "objectDefinitionResponse",
+						"type": "string"
+					},
+					{
+						"name": "objectFields",
+						"type": "string"
+					},
+					{
+						"name": "personaId",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					},
+					{
+						"name": "projectScopeKey",
+						"type": "string"
+					},
+					{
+						"name": "spaceExternalReferenceCode",
+						"type": "string"
+					},
+					{
+						"name": "spaceId",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#generateContent</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Generate Content
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "generatedContent",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Link Asset to Project
+					</label>
+				</labels>
+				<name>linkAssetToProject</name>
+				<target>linkAssetToProject</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</service>
+	<http-request>
+		<name>linkAssetToProject</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						276,
+						655
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Link Asset to Project
+			</label>
+		</labels>
+		<http-method>POST</http-method>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "aiHubCellLiferayDXPURL",
+						"type": "string"
+					},
+					{
+						"name": "classExternalReferenceCode",
+						"type": "string"
+					},
+					{
+						"name": "className",
+						"type": "string"
+					},
+					{
+						"name": "groupExternalReferenceCode",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					},
+					{
+						"name": "scopeKey",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "linkResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<request-body>
+			<![CDATA[{
+	"classExternalReferenceCode": "{{classExternalReferenceCode}}",
+	"className": "{{className}}",
+	"groupExternalReferenceCode": "{{groupExternalReferenceCode}}",
+	"r_cmpProjectToCMPProjectLinks_c_cmpProjectId": {{projectId}}
+}]]>
+		</request-body>
+		<timeout>10000</timeout>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						End
+					</label>
+				</labels>
+				<name>end</name>
+				<target>end</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/cmp/project-links/scopes/{{scopeKey}}</url>
+	</http-request>
+	<state>
+		<name>start</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						273,
+						25
+					]
+				}
+			]]>
+		</metadata>
+		<initial>true</initial>
+		<labels>
+			<label language-id="en_US">
+				Start
+			</label>
+		</labels>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Get Object Definition
+					</label>
+				</labels>
+				<name>getObjectDefinition</name>
+				<target>getObjectDefinition</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</state>
+	<state>
+		<name>end</name>
+		<metadata>
+			<![CDATA[
+				{
+					"terminal": true,
+					"xy": [
+						277,
+						760
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				End
+			</label>
+		</labels>
+	</state>
+</workflow-definition>
