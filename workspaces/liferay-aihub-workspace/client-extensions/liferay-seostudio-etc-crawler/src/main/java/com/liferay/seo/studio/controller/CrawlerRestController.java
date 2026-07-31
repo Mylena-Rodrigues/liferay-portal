@@ -188,7 +188,7 @@ public class CrawlerRestController extends BaseRestController {
 
 		Set<String> missingOrEmptyMetaDescriptionTagPageURLs =
 			new LinkedHashSet<>();
-		Set<String> missingTitleTagPageURLs = new LinkedHashSet<>();
+		Set<String> missingOrEmptyTitleTagPageURLs = new LinkedHashSet<>();
 
 		for (CrawlHit crawlHit : crawlHits) {
 			String canonicalURL = crawlHit.getCanonicalURL();
@@ -202,7 +202,7 @@ public class CrawlerRestController extends BaseRestController {
 			}
 
 			if (Validator.isNull(crawlHit.getTitle())) {
-				missingTitleTagPageURLs.add(canonicalURL);
+				missingOrEmptyTitleTagPageURLs.add(canonicalURL);
 			}
 		}
 
@@ -235,7 +235,7 @@ public class CrawlerRestController extends BaseRestController {
 				"severity", "2"
 			);
 
-		JSONObject missingTitleTagInsightJSONObject = new JSONObject(
+		JSONObject missingOrEmptyTitleTagInsightJSONObject = new JSONObject(
 		).put(
 			"category", "metadata"
 		).put(
@@ -256,14 +256,14 @@ public class CrawlerRestController extends BaseRestController {
 		).put(
 			"name", "missingOrEmptyTitleTag"
 		).put(
-			"pageURLs", missingTitleTagPageURLs
+			"pageURLs", missingOrEmptyTitleTagPageURLs
 		).put(
 			"severity", "3"
 		);
 
 		return Arrays.asList(
 			missingOrEmptyMetaDescriptionTagInsightJSONObject,
-			missingTitleTagInsightJSONObject);
+			missingOrEmptyTitleTagInsightJSONObject);
 	}
 
 	private List<JSONObject> _getOrphanPagesInsightJSONObjects(
