@@ -30,6 +30,8 @@ import com.liferay.petra.concurrent.NoticeableExecutorService;
 import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -102,6 +104,11 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 			KaleoNode currentKaleoNode, ExecutionContext executionContext,
 			List<PathElement> remainingPathElements)
 		throws PortalException {
+
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				"Executing LLM node \"" + currentKaleoNode.getName() + "\"");
+		}
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
@@ -288,6 +295,9 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 			throw new RuntimeException(portalException);
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LLMNodeExecutor.class);
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
