@@ -143,9 +143,10 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 		}
 
 		NestedFieldsContext nestedFieldsContext =
-			NestedFieldsContextThreadLocal.getAndSetNestedFieldsContext(
-				new NestedFieldsContext(
-					1, List.of("agentDefinitionsToChatbots")));
+			NestedFieldsContextThreadLocal.getNestedFieldsContext();
+
+		NestedFieldsContextThreadLocal.setNestedFieldsContext(
+			new NestedFieldsContext(1, List.of("agentDefinitionsToChatbots")));
 
 		try {
 			ObjectEntry chatbotObjectEntry = _objectEntryManager.getObjectEntry(

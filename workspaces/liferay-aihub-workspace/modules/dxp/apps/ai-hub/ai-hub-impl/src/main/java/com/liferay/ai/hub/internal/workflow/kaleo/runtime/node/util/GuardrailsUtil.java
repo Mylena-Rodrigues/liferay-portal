@@ -48,9 +48,11 @@ public class GuardrailsUtil {
 		Map<String, Serializable> workflowContext) {
 
 		NestedFieldsContext nestedFieldsContext =
-			NestedFieldsContextThreadLocal.getAndSetNestedFieldsContext(
-				new NestedFieldsContext(
-					1, List.of("aiHubAgentDefinitionsToAIHubGuardrails")));
+			NestedFieldsContextThreadLocal.getNestedFieldsContext();
+
+		NestedFieldsContextThreadLocal.setNestedFieldsContext(
+			new NestedFieldsContext(
+				1, List.of("aiHubAgentDefinitionsToAIHubGuardrails")));
 
 		try {
 			ObjectEntry agentDefinitionObjectEntry =
