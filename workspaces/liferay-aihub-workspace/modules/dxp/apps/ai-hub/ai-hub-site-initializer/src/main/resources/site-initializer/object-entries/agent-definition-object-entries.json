@@ -54,19 +54,6 @@
 		},
 		{
 			"active": true,
-			"description": "This agent fills a content coverage gap by generating a new CMS content entry for the gap's persona and funnel stage and linking it to the current CMP project. It is invoked directly by external reference code from the content gap matrix, so it never participates in supervisor routing.",
-			"externalReferenceCode": "L_GENERATE_GAP_CONTENT",
-			"inputVariables": "count,gaps,objectFields,projectId,projectScopeKey,spacesJSONArray",
-			"outputVariable": "output",
-			"r_accountToAIHubAgentDefinitions_accountEntryERC": "L_AI_HUB",
-			"system": true,
-			"title_i18n": {
-				"en_US": "Generate Gap Content"
-			},
-			"workflowDefinitionName": "Generate Gap Content"
-		},
-		{
-			"active": true,
 			"description": "This writing agent acts as an expert linguistic editor, correcting grammar and spelling errors while strictly preserving your original tone and style.",
 			"externalReferenceCode": "L_FIX_SPELLING_AND_GRAMMAR",
 			"inputVariables": "text",
@@ -77,6 +64,19 @@
 				"en_US": "Fix Spelling and Grammar"
 			},
 			"workflowDefinitionName": "Fix Spelling and Grammar"
+		},
+		{
+			"active": true,
+			"description": "This agent fills a content coverage gap by generating a new CMS content entry for the gap's persona and funnel stage and linking it to the current CMP project. It is invoked directly by external reference code from the content gap matrix, so it never participates in supervisor routing.",
+			"externalReferenceCode": "L_GENERATE_GAP_CONTENT",
+			"inputVariables": "count,gaps,objectFields,projectId,projectScopeKey,spacesJSONArray",
+			"outputVariable": "output",
+			"r_accountToAIHubAgentDefinitions_accountEntryERC": "L_AI_HUB",
+			"system": true,
+			"title_i18n": {
+				"en_US": "Generate Gap Content"
+			},
+			"workflowDefinitionName": "Generate Gap Content"
 		},
 		{
 			"active": true,

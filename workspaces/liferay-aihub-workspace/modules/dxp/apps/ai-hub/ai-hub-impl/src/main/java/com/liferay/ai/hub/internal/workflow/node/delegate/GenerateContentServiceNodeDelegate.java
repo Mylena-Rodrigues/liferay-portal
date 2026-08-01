@@ -54,10 +54,11 @@ public class GenerateContentServiceNodeDelegate implements ServiceNodeDelegate {
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
-		ServiceContext serviceContext = executionContext.getServiceContext();
 
 		Company company = _companyLocalService.getCompany(
 			kaleoInstanceToken.getCompanyId());
+
+		ServiceContext serviceContext = executionContext.getServiceContext();
 
 		String generatedContent = String.valueOf(
 			_defaultAgent.invoke(
