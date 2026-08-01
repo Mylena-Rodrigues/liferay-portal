@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
-import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
@@ -56,19 +55,6 @@ public class GenerateContentServiceNodeDelegate implements ServiceNodeDelegate {
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 		ServiceContext serviceContext = executionContext.getServiceContext();
-
-		_objectEntryManager.getObjectEntry(
-			kaleoInstanceToken.getCompanyId(),
-			new DefaultDTOConverterContext(
-				false, Map.of(), _dtoConverterRegistry, null,
-				serviceContext.getLocale(), null,
-				_userLocalService.getUserById(kaleoInstanceToken.getUserId())),
-			"L_GENERATE_CONTENT",
-			_objectDefinitionLocalService.
-				getObjectDefinitionByExternalReferenceCode(
-					"L_AI_HUB_AGENT_DEFINITION",
-					kaleoInstanceToken.getCompanyId()),
-			null);
 
 		Company company = _companyLocalService.getCompany(
 			kaleoInstanceToken.getCompanyId());
