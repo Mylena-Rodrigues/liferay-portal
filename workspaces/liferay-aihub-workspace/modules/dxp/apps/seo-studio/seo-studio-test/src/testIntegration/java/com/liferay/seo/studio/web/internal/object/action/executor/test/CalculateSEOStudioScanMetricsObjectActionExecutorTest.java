@@ -123,7 +123,7 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 			metadataLowInsightTypeObjectEntry, pageObjectEntry1,
 			completedScanObjectEntry);
 
-		_executeCalculateScanMetrics(completedScanObjectEntry);
+		_executeObjectAction(completedScanObjectEntry);
 
 		Map<String, Map<String, Serializable>> seoStudioScanMetricValuesMap =
 			_getSEOStudioScanMetricValuesMap(
@@ -133,16 +133,12 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 		Map<String, Serializable> onPageValues =
 			seoStudioScanMetricValuesMap.get("onPage");
 
-		Assert.assertEquals(
-			3, MapUtil.getInteger(onPageValues, "affectedPagesCount"));
+		_assertSEOStudioScanMetricValues(3, 3, 5, onPageValues);
+
 		Assert.assertEquals(
 			5.0 / 3.0,
 			MapUtil.getDouble(onPageValues, "averageInsightsPerAffectedPage"),
 			0.001);
-		Assert.assertEquals(
-			3, MapUtil.getInteger(onPageValues, "criticalInsights"));
-		Assert.assertEquals(
-			5, MapUtil.getInteger(onPageValues, "totalInsights"));
 
 		JSONObject onPageCategoryBreakdownJSONObject =
 			JSONFactoryUtil.createJSONObject(
@@ -179,17 +175,13 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 		Map<String, Serializable> technicalValues =
 			seoStudioScanMetricValuesMap.get("technical");
 
-		Assert.assertEquals(
-			1, MapUtil.getInteger(technicalValues, "affectedPagesCount"));
+		_assertSEOStudioScanMetricValues(1, 0, 1, technicalValues);
+
 		Assert.assertEquals(
 			1.0,
 			MapUtil.getDouble(
 				technicalValues, "averageInsightsPerAffectedPage"),
 			0.001);
-		Assert.assertEquals(
-			0, MapUtil.getInteger(technicalValues, "criticalInsights"));
-		Assert.assertEquals(
-			1, MapUtil.getInteger(technicalValues, "totalInsights"));
 
 		JSONObject technicalCategoryBreakdownJSONObject =
 			JSONFactoryUtil.createJSONObject(
@@ -217,8 +209,8 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 
 		_addSEOStudioScanObjectEntry("pageSpeed", "completed");
 
-		_executeCalculateScanMetrics(completedScanObjectEntry);
-		_executeCalculateScanMetrics(completedScanObjectEntry);
+		_executeObjectAction(completedScanObjectEntry);
+		_executeObjectAction(completedScanObjectEntry);
 
 		Assert.assertEquals(
 			"completed", _getState(_seoStudioScanRunObjectEntry));
@@ -233,8 +225,8 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 
 	@Test
 	public void testExecuteWithFailedScan() throws Exception {
-		_testExecuteWithoutMetrics("failed", "cancelled");
-		_testExecuteWithoutMetrics("failed", "failed");
+		_testExecute("failed", "cancelled");
+		_testExecute("failed", "failed");
 	}
 
 	@Test
@@ -246,7 +238,7 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 
 		_addSEOStudioScanObjectEntry("pageSpeed", "completed");
 
-		_executeCalculateScanMetrics(completedScanObjectEntry);
+		_executeObjectAction(completedScanObjectEntry);
 
 		Assert.assertEquals(
 			"completed", _getState(_seoStudioScanRunObjectEntry));
@@ -261,15 +253,15 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 		Map<String, Map<String, Serializable>> seoStudioScanMetricValuesMap =
 			_getSEOStudioScanMetricValuesMap(seoStudioScanMetricObjectEntries);
 
-		_assertEmptySEOStudioScanMetric(
-			seoStudioScanMetricValuesMap.get("onPage"));
-		_assertEmptySEOStudioScanMetric(
-			seoStudioScanMetricValuesMap.get("technical"));
+		_assertSEOStudioScanMetricValues(
+			0, 0, 0, seoStudioScanMetricValuesMap.get("onPage"));
+		_assertSEOStudioScanMetricValues(
+			0, 0, 0, seoStudioScanMetricValuesMap.get("technical"));
 	}
 
 	@Test
 	public void testExecuteWithRunningScan() throws Exception {
-		_testExecuteWithoutMetrics("running", "running");
+		_testExecute("running", "running");
 	}
 
 	private ObjectEntry _addSEOStudioInsightTypeObjectEntry(
@@ -394,17 +386,21 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 			).build());
 	}
 
-	private void _assertEmptySEOStudioScanMetric(
-		Map<String, Serializable> values) {
+	private void _assertSEOStudioScanMetricValues(
+		int expectedAffectedPagesCount, int expectedCriticalInsights,
+		int expectedTotalInsights, Map<String, Serializable> values) {
 
 		Assert.assertEquals(
-			0, MapUtil.getInteger(values, "affectedPagesCount"));
-		Assert.assertEquals(0, MapUtil.getInteger(values, "criticalInsights"));
-		Assert.assertEquals(0, MapUtil.getInteger(values, "totalInsights"));
+			expectedAffectedPagesCount,
+			MapUtil.getInteger(values, "affectedPagesCount"));
+		Assert.assertEquals(
+			expectedCriticalInsights,
+			MapUtil.getInteger(values, "criticalInsights"));
+		Assert.assertEquals(
+			expectedTotalInsights, MapUtil.getInteger(values, "totalInsights"));
 	}
 
-	private void _executeCalculateScanMetrics(
-			ObjectEntry seoStudioScanObjectEntry)
+	private void _executeObjectAction(ObjectEntry seoStudioScanObjectEntry)
 		throws Exception {
 
 		_objectActionEngine.executeObjectAction(
@@ -461,8 +457,8 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 			"state");
 	}
 
-	private void _testExecuteWithoutMetrics(
-			String expectedState, String scanState)
+	private void _testExecute(
+			String expectedSEOStudioScanRunState, String seoStudioScanState)
 		throws Exception {
 
 		_addSEOStudioScanRunObjectEntry();
@@ -470,12 +466,13 @@ public class CalculateSEOStudioScanMetricsObjectActionExecutorTest
 		ObjectEntry completedScanObjectEntry = _addSEOStudioScanObjectEntry(
 			"crawler", "completed");
 
-		_addSEOStudioScanObjectEntry("pageSpeed", scanState);
+		_addSEOStudioScanObjectEntry("pageSpeed", seoStudioScanState);
 
-		_executeCalculateScanMetrics(completedScanObjectEntry);
+		_executeObjectAction(completedScanObjectEntry);
 
 		Assert.assertEquals(
-			expectedState, _getState(_seoStudioScanRunObjectEntry));
+			expectedSEOStudioScanRunState,
+			_getState(_seoStudioScanRunObjectEntry));
 		Assert.assertTrue(
 			ListUtil.isEmpty(
 				_getSEOStudioScanMetricObjectEntries(
