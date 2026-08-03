@@ -46,10 +46,11 @@ public class GenerateGapContentServiceNodeDelegate
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
-		ServiceContext serviceContext = executionContext.getServiceContext();
 
 		Company company = _companyLocalService.getCompany(
 			kaleoInstanceToken.getCompanyId());
+
+		ServiceContext serviceContext = executionContext.getServiceContext();
 
 		String output = String.valueOf(
 			_defaultAgent.invoke(
