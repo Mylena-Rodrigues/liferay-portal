@@ -5,17 +5,20 @@
 
 package com.liferay.ai.hub.internal.workflow.node.delegate;
 
+import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
+import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
@@ -39,7 +42,8 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 			Map<String, Serializable> workflowContext)
 		throws Exception {
 
-		String output = _getOutput(inputVariables, workflowContext);
+		String output = _getOutput(
+			executionContext, inputVariables, workflowContext);
 
 		workflowContext.put("output", output);
 
@@ -54,23 +58,21 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 		return "javaDelegate#composeContentEntriesOutput";
 	}
 
-	private String _getOutput(Map<String, String> inputVariables) {
-		if (Validator.isNull(inputVariables.get("objectDefinitionName")) ||
-			Validator.isNull(inputVariables.get("spaceId"))) {
+	private String[] _getAgentDefinitionExternalReferenceCodes(
+		Map<String, Serializable> workflowContext) {
 
-			return StringBundler.concat(
-				"I can only generate content when a destination space and a ",
-				"content type are selected. Please open the AI Assistant from ",
-				"a content section.");
+		String agentDefinitionExternalReferenceCode = GetterUtil.getString(
+			workflowContext.get("agentDefinitionExternalReferenceCode"));
+
+		if (Validator.isNull(agentDefinitionExternalReferenceCode)) {
+			return null;
 		}
 
-		return StringBundler.concat(
-			"I can only generate ", inputVariables.get("objectDefinitionName"),
-			" content here. To generate a different content type, open the AI ",
-			"Assistant from that content type's section.");
+		return new String[] {agentDefinitionExternalReferenceCode};
 	}
 
 	private String _getOutput(
+			ExecutionContext executionContext,
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
@@ -81,6 +83,15 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 		if (Validator.isNull(contentEntriesPayload)) {
 			return "I could not generate any content. Please try again.";
 		}
+
+		KaleoInstanceToken kaleoInstanceToken =
+			executionContext.getKaleoInstanceToken();
+
+		SseUtil.send(
+			_getAgentDefinitionExternalReferenceCodes(workflowContext),
+			contentEntriesPayload, "Content Created",
+			kaleoInstanceToken.getCurrentKaleoNodeName(),
+			MapUtil.getString(workflowContext, "sseEventSinkKey"));
 
 		JSONArray jsonArray = _jsonFactory.createJSONArray(
 			contentEntriesPayload);
@@ -111,6 +122,22 @@ public class ComposeContentEntriesOutputServiceNodeDelegate
 						")");
 				}),
 			"\n");
+	}
+
+	private String _getOutput(Map<String, String> inputVariables) {
+		if (Validator.isNull(inputVariables.get("objectDefinitionName")) ||
+			Validator.isNull(inputVariables.get("spaceId"))) {
+
+			return StringBundler.concat(
+				"I can only generate content when a destination space and a ",
+				"content type are selected. Please open the AI Assistant from ",
+				"a content section.");
+		}
+
+		return StringBundler.concat(
+			"I can only generate ", inputVariables.get("objectDefinitionName"),
+			" content here. To generate a different content type, open the AI ",
+			"Assistant from that content type's section.");
 	}
 
 	@Reference

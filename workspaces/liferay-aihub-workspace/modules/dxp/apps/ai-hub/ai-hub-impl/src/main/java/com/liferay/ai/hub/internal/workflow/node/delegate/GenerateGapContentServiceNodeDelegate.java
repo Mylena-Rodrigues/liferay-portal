@@ -14,7 +14,6 @@ import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -50,8 +49,6 @@ public class GenerateGapContentServiceNodeDelegate
 		Company company = _companyLocalService.getCompany(
 			kaleoInstanceToken.getCompanyId());
 
-		ServiceContext serviceContext = executionContext.getServiceContext();
-
 		String output = String.valueOf(
 			_defaultAgent.invoke(
 				AgentContext.builder(
@@ -82,6 +79,9 @@ public class GenerateGapContentServiceNodeDelegate
 					).put(
 						"objectFields", inputVariables.get("objectFields")
 					).put(
+						"projectDescription",
+						inputVariables.get("projectDescription")
+					).put(
 						"projectId", inputVariables.get("projectId")
 					).put(
 						"projectScopeKey", inputVariables.get("projectScopeKey")
@@ -90,12 +90,12 @@ public class GenerateGapContentServiceNodeDelegate
 					).build()
 				).inputVariableNames(
 					Arrays.asList(
-						"count", "gaps", "objectFields", "projectId",
-						"projectScopeKey", "spacesJSONArray")
+						"count", "gaps", "objectFields", "projectDescription",
+						"projectId", "projectScopeKey", "spacesJSONArray")
 				).oAuth2ApplicationId(
 					MapUtil.getLong(workflowContext, "oAuth2ApplicationId")
 				).serviceContext(
-					serviceContext
+					executionContext.getServiceContext()
 				).sseEventSinkKey(
 					MapUtil.getString(workflowContext, "sseEventSinkKey")
 				).userId(

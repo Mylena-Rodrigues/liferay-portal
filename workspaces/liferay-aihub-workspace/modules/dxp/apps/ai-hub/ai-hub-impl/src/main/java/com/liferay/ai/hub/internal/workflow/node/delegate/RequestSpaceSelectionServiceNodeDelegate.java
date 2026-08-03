@@ -137,6 +137,16 @@ public class RequestSpaceSelectionServiceNodeDelegate
 			JSONObject gapJSONObject = gapsJSONArray.getJSONObject(0);
 
 			workflowContext.put(
+				"brief",
+				StringBundler.concat(
+					"Create one CMS web content asset tailored to the ",
+					gapJSONObject.getString("persona"), " persona at the ",
+					gapJSONObject.getString("funnelStage"),
+					" funnel stage, grounded in the subject matter, goals, ",
+					"and scope of the following project: ",
+					GetterUtil.getString(
+						inputVariables.get("projectDescription"))));
+			workflowContext.put(
 				"funnelStage", gapJSONObject.getString("funnelStage"));
 			workflowContext.put(
 				"funnelStageId", gapJSONObject.getString("funnelStageId"));
