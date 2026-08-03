@@ -110,7 +110,7 @@ public class SuggestProjectLinkServiceNodeDelegate
 				).put(
 					"title", "Would you like me to add all suggested assets?"
 				).put(
-					"type", "select"
+					"type", "quick-replies"
 				)),
 			GetterUtil.getString(workflowContext.get("sseEventSinkKey")),
 			"component");

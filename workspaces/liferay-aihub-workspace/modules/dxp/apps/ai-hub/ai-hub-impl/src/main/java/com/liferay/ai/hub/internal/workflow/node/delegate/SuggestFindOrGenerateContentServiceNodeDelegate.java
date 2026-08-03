@@ -72,7 +72,7 @@ public class SuggestFindOrGenerateContentServiceNodeDelegate
 				).put(
 					"title", "What would you like to do next?"
 				).put(
-					"type", "select"
+					"type", "quick-replies"
 				)),
 			GetterUtil.getString(workflowContext.get("sseEventSinkKey")),
 			"component");
