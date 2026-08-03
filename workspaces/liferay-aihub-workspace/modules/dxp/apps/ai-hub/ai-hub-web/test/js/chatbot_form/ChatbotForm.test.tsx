@@ -163,6 +163,7 @@ jest.mock('@liferay/frontend-data-set-web', () => ({
 	Icons: {spritemap: 'icons.svg'},
 	Language: {
 		available: {en_US: 'English'},
+		direction: {en_US: 'ltr'},
 		get: (key: string) => key,
 	},
 	ThemeDisplay: {
