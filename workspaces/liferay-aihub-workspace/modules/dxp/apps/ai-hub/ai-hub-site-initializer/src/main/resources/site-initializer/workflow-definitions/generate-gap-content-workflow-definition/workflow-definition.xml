@@ -281,6 +281,58 @@
 			<transition>
 				<labels>
 					<label language-id="en_US">
+						Send Content Updated Event
+					</label>
+				</labels>
+				<name>sendContentUpdatedEvent</name>
+				<target>sendContentUpdatedEvent</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/cmp/project-links/scopes/{{scopeKey}}</url>
+	</http-request>
+	<service>
+		<name>sendContentUpdatedEvent</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						275,
+						695
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "linkResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#sendContentUpdatedEvent</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Send Content Updated Event
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "contentUpdatedEventResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
 						End
 					</label>
 				</labels>
@@ -289,8 +341,7 @@
 				<default>true</default>
 			</transition>
 		</transitions>
-		<url>{{aiHubCellLiferayDXPURL}}/o/cmp/project-links/scopes/{{scopeKey}}</url>
-	</http-request>
+	</service>
 	<state>
 		<name>start</name>
 		<metadata>
@@ -330,7 +381,7 @@
 					"terminal": true,
 					"xy": [
 						273,
-						684
+						826
 					]
 				}
 			]]>
