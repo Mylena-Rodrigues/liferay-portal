@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
@@ -67,6 +68,29 @@ public class SuggestProjectLinkServiceNodeDelegate
 
 			return StringPool.BLANK;
 		}
+
+		SseUtil.send(
+			_getAgentDefinitionExternalReferenceCodes(workflowContext),
+			StringBundler.concat(
+				"**Suggested assets:**\n\n",
+				StringUtil.merge(
+					JSONUtil.toList(
+						jsonArray,
+						jsonObject -> {
+							String title = jsonObject.getString("title");
+
+							if (Validator.isNull(title)) {
+								return null;
+							}
+
+							return StringBundler.concat(
+								"- **", title, "** (",
+								jsonObject.getString("status"), "): ",
+								jsonObject.getString("reasoning"));
+						}),
+					"\n")),
+			"Chat Message Sent", kaleoInstanceToken.getCurrentKaleoNodeName(),
+			GetterUtil.getString(workflowContext.get("sseEventSinkKey")));
 
 		String resumeURL = StringBundler.concat(
 			MapUtil.getString(workflowContext, "aiHubCellLiferayDXPURL"),
