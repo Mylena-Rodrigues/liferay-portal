@@ -10,6 +10,18 @@ import {describe, expect, it} from 'vitest';
 import ChatbotIntro from '../../components/ChatbotIntro';
 
 describe('ChatbotIntro', () => {
+	it('does not render raw HTML in the intro message', () => {
+		const {container} = render(
+			<ChatbotIntro
+				introMessage="Welcome <img src=x onerror=alert(1)> to AskWA."
+				title="AskWA"
+			/>
+		);
+
+		expect(container.querySelector('img')).toBeNull();
+		expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
+	});
+
 	it('renders a Markdown link in the intro message as a link opening in a new tab', () => {
 		render(
 			<ChatbotIntro
@@ -49,17 +61,5 @@ describe('ChatbotIntro', () => {
 			container.querySelector('.aihub-intro-text')
 		).toBeEmptyDOMElement();
 		expect(screen.getByText('AskWA')).toBeInTheDocument();
-	});
-
-	it('does not render raw HTML in the intro message', () => {
-		const {container} = render(
-			<ChatbotIntro
-				introMessage="Welcome <img src=x onerror=alert(1)> to AskWA."
-				title="AskWA"
-			/>
-		);
-
-		expect(container.querySelector('img')).toBeNull();
-		expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
 	});
 });

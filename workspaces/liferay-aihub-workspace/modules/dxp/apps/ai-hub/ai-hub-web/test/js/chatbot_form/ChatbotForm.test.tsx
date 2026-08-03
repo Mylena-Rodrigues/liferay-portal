@@ -325,14 +325,16 @@ describe('ChatbotForm disclaimer message', () => {
 		cleanup();
 	});
 
-	it('submits with an empty disclaimer when the admin never fills it', async () => {
+	it('sends the paragraph breaks of the disclaimer to the API payload', async () => {
 		mockPostChatbotDefinition.mockResolvedValue({
 			externalReferenceCode: 'CHATBOT-ERC',
 		});
 
 		render(<ChatbotForm {...defaultProps} />);
 
-		await screen.findByLabelText('disclaimer-message');
+		fireEvent.change(await screen.findByLabelText('disclaimer-message'), {
+			target: {value: 'First paragraph.\n\nSecond paragraph.'},
+		});
 
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
@@ -342,7 +344,7 @@ describe('ChatbotForm disclaimer message', () => {
 
 		expect(
 			mockPostChatbotDefinition.mock.calls[0][0].disclaimerMessage_i18n
-		).toEqual({});
+		).toEqual({en_US: 'First paragraph.\n\nSecond paragraph.'});
 	});
 
 	it('sends the typed disclaimer through to the API payload', async () => {
@@ -367,16 +369,14 @@ describe('ChatbotForm disclaimer message', () => {
 		).toEqual({en_US: 'Custom disclaimer'});
 	});
 
-	it('sends the paragraph breaks of the disclaimer to the API payload', async () => {
+	it('submits with an empty disclaimer when the admin never fills it', async () => {
 		mockPostChatbotDefinition.mockResolvedValue({
 			externalReferenceCode: 'CHATBOT-ERC',
 		});
 
 		render(<ChatbotForm {...defaultProps} />);
 
-		fireEvent.change(await screen.findByLabelText('disclaimer-message'), {
-			target: {value: 'First paragraph.\n\nSecond paragraph.'},
-		});
+		await screen.findByLabelText('disclaimer-message');
 
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
@@ -386,7 +386,7 @@ describe('ChatbotForm disclaimer message', () => {
 
 		expect(
 			mockPostChatbotDefinition.mock.calls[0][0].disclaimerMessage_i18n
-		).toEqual({en_US: 'First paragraph.\n\nSecond paragraph.'});
+		).toEqual({});
 	});
 });
 
@@ -400,6 +400,22 @@ describe('ChatbotForm intro message', () => {
 
 	afterEach(() => {
 		cleanup();
+	});
+
+	it('keeps a separate selected locale for the intro and the disclaimer', async () => {
+		render(<ChatbotForm {...defaultProps} />);
+
+		const localeButtons = await screen.findAllByRole('button', {
+			name: 'select-a-language',
+		});
+
+		expect(localeButtons).toHaveLength(2);
+		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'false');
+
+		fireEvent.click(localeButtons[0]);
+
+		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'true');
+		expect(localeButtons[1]).toHaveAttribute('aria-expanded', 'false');
 	});
 
 	it('sends the paragraph breaks of the intro message to the API payload', async () => {
@@ -422,22 +438,6 @@ describe('ChatbotForm intro message', () => {
 		expect(
 			mockPostChatbotDefinition.mock.calls[0][0].introMessage_i18n
 		).toEqual({en_US: 'Welcome to AskWA.\n\nHow can I help?'});
-	});
-
-	it('keeps a separate selected locale for the intro and the disclaimer', async () => {
-		render(<ChatbotForm {...defaultProps} />);
-
-		const localeButtons = await screen.findAllByRole('button', {
-			name: 'select-a-language',
-		});
-
-		expect(localeButtons).toHaveLength(2);
-		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'false');
-
-		fireEvent.click(localeButtons[0]);
-
-		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'true');
-		expect(localeButtons[1]).toHaveAttribute('aria-expanded', 'false');
 	});
 });
 

@@ -10,6 +10,23 @@ import {describe, expect, it} from 'vitest';
 import ChatbotFooter from '../../components/ChatbotFooter';
 
 describe('ChatbotFooter', () => {
+	it('does not render a javascript URL in the disclaimer as a usable link', () => {
+		const {container} = render(
+			<ChatbotFooter disclaimerMessage="[Click here](javascript:alert(1))" />
+		);
+
+		expect(container.querySelector('a')).toHaveAttribute('href', '');
+	});
+
+	it('does not render raw HTML in the disclaimer', () => {
+		const {container} = render(
+			<ChatbotFooter disclaimerMessage="Read this <img src=x onerror=alert(1)> carefully." />
+		);
+
+		expect(container.querySelector('img')).toBeNull();
+		expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
+	});
+
 	it('renders a Markdown link in the disclaimer as a link opening in a new tab', () => {
 		render(
 			<ChatbotFooter disclaimerMessage="[Leave feedback on AskWA ChatBot](https://wa.gov/feedback)" />
@@ -30,23 +47,6 @@ describe('ChatbotFooter', () => {
 		);
 
 		expect(container.querySelector('strong')).toHaveTextContent('Notice:');
-	});
-
-	it('does not render a javascript URL in the disclaimer as a usable link', () => {
-		const {container} = render(
-			<ChatbotFooter disclaimerMessage="[Click here](javascript:alert(1))" />
-		);
-
-		expect(container.querySelector('a')).toHaveAttribute('href', '');
-	});
-
-	it('does not render raw HTML in the disclaimer', () => {
-		const {container} = render(
-			<ChatbotFooter disclaimerMessage="Read this <img src=x onerror=alert(1)> carefully." />
-		);
-
-		expect(container.querySelector('img')).toBeNull();
-		expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
 	});
 
 	it('renders the default disclaimer when none is configured', () => {
