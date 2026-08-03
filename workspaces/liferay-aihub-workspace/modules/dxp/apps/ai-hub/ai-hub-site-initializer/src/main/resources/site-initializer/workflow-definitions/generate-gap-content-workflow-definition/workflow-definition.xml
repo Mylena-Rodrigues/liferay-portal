@@ -177,6 +177,10 @@
 					{
 						"name": "spaceId",
 						"type": "string"
+					},
+					{
+						"name": "taxonomyCategoryIds",
+						"type": "string"
 					}
 				]
 			]]>

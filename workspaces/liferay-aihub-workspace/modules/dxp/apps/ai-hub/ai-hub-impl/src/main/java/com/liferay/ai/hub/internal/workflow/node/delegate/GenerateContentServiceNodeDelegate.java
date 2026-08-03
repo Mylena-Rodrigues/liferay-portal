@@ -83,6 +83,9 @@ public class GenerateContentServiceNodeDelegate implements ServiceNodeDelegate {
 						"projectId", inputVariables.get("projectId")
 					).put(
 						"spaceId", inputVariables.get("spaceId")
+					).put(
+						"taxonomyCategoryIds",
+						inputVariables.get("taxonomyCategoryIds")
 					).build()
 				).inputVariableNames(
 					Arrays.asList("brief", "count")

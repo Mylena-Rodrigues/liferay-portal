@@ -154,6 +154,12 @@ public class RequestSpaceSelectionServiceNodeDelegate
 			workflowContext.put("persona", gapJSONObject.getString("persona"));
 			workflowContext.put(
 				"personaId", gapJSONObject.getString("personaId"));
+			workflowContext.put(
+				"taxonomyCategoryIds",
+				String.valueOf(
+					JSONUtil.putAll(
+						gapJSONObject.getString("personaId"),
+						gapJSONObject.getString("funnelStageId"))));
 		}
 
 		_workflowInstanceManager.updateWorkflowContext(
