@@ -13,8 +13,8 @@
 			<![CDATA[
 				{
 					"xy": [
-						276,
-						242
+						284,
+						43
 					]
 				}
 			]]>
@@ -172,6 +172,16 @@ Space id: {{spaceId}}]]>
 	</llm>
 	<http-request>
 		<name>postContentEntries</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						284,
+						220
+					]
+				}
+			]]>
+		</metadata>
 		<labels>
 			<label language-id="en_US">
 				Post Content Entries
@@ -230,6 +240,16 @@ Space id: {{spaceId}}]]>
 	</http-request>
 	<service>
 		<name>composeContentEntriesOutput</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						286,
+						401
+					]
+				}
+			]]>
+		</metadata>
 		<input-variables>
 			<![CDATA[
 				[
@@ -283,8 +303,8 @@ Space id: {{spaceId}}]]>
 			<![CDATA[
 				{
 					"xy": [
-						273,
-						25
+						283,
+						-111
 					]
 				}
 			]]>
@@ -315,8 +335,8 @@ Space id: {{spaceId}}]]>
 				{
 					"terminal": true,
 					"xy": [
-						277,
-						459
+						287,
+						564
 					]
 				}
 			]]>
