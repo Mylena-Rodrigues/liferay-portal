@@ -162,8 +162,12 @@ jest.mock('@liferay/frontend-data-set-web', () => ({
 (global as any).Liferay = {
 	Icons: {spritemap: 'icons.svg'},
 	Language: {
-		available: {en_US: 'English'},
-		direction: {en_US: 'ltr'},
+		available: {
+			ca_ES: 'Català',
+			en_US: 'English',
+			pt_BR: 'português (Brasil)',
+		},
+		direction: {ca_ES: 'ltr', en_US: 'ltr', pt_BR: 'ltr'},
 		get: (key: string) => key,
 	},
 	ThemeDisplay: {
@@ -248,6 +252,42 @@ describe('ChatbotForm company logo upload', () => {
 		cleanup();
 	});
 
+	it('accepts files of any size when avatarMaximumFileSize is zero (unlimited)', async () => {
+		render(<ChatbotForm {...defaultProps} avatarMaximumFileSize={0} />);
+
+		const file = makeFile('huge-logo.png', 5_000_000);
+
+		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
+
+		await screen.findByText('huge-logo.png');
+
+		expect(mockOpenToast).not.toHaveBeenCalledWith(
+			expect.objectContaining({type: 'danger'})
+		);
+	});
+
+	it('disables the select button while reading the file', async () => {
+		render(<ChatbotForm {...defaultProps} />);
+
+		const file = makeFile('logo.png', 512);
+
+		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
+
+		const selectButton = screen.getByLabelText('select-x');
+
+		expect(selectButton).toBeDisabled();
+
+		await waitFor(() => expect(selectButton).not.toBeDisabled());
+	});
+
+	it('hides the Clear button when no company logo is set', () => {
+		render(<ChatbotForm {...defaultProps} />);
+
+		expect(
+			screen.queryByRole('button', {name: 'clear'})
+		).not.toBeInTheDocument();
+	});
+
 	it('rejects files larger than avatarMaximumFileSize when limit is greater than zero', async () => {
 		render(<ChatbotForm {...defaultProps} />);
 
@@ -264,28 +304,6 @@ describe('ChatbotForm company logo upload', () => {
 		expect(screen.queryByText('big-logo.png')).not.toBeInTheDocument();
 	});
 
-	it('accepts files of any size when avatarMaximumFileSize is zero (unlimited)', async () => {
-		render(<ChatbotForm {...defaultProps} avatarMaximumFileSize={0} />);
-
-		const file = makeFile('huge-logo.png', 5_000_000);
-
-		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
-
-		await screen.findByText('huge-logo.png');
-
-		expect(mockOpenToast).not.toHaveBeenCalledWith(
-			expect.objectContaining({type: 'danger'})
-		);
-	});
-
-	it('hides the Clear button when no company logo is set', () => {
-		render(<ChatbotForm {...defaultProps} />);
-
-		expect(
-			screen.queryByRole('button', {name: 'clear'})
-		).not.toBeInTheDocument();
-	});
-
 	it('renders the Clear button after a valid file is selected', async () => {
 		render(<ChatbotForm {...defaultProps} />);
 
@@ -296,20 +314,6 @@ describe('ChatbotForm company logo upload', () => {
 		expect(
 			await screen.findByRole('button', {name: 'clear'})
 		).toBeInTheDocument();
-	});
-
-	it('disables the select button while reading the file', async () => {
-		render(<ChatbotForm {...defaultProps} />);
-
-		const file = makeFile('logo.png', 512);
-
-		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
-
-		const selectButton = screen.getByLabelText('select-x');
-
-		expect(selectButton).toBeDisabled();
-
-		await waitFor(() => expect(selectButton).not.toBeDisabled());
 	});
 });
 
@@ -403,19 +407,52 @@ describe('ChatbotForm intro message', () => {
 	});
 
 	it('keeps a separate selected locale for the intro and the disclaimer', async () => {
-		render(<ChatbotForm {...defaultProps} />);
-
-		const localeButtons = await screen.findAllByRole('button', {
-			name: 'select-a-language',
+		mockPostChatbotDefinition.mockResolvedValue({
+			externalReferenceCode: 'CHATBOT-ERC',
 		});
 
-		expect(localeButtons).toHaveLength(2);
-		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'false');
+		render(<ChatbotForm {...defaultProps} />);
 
-		fireEvent.click(localeButtons[0]);
+		const introTextarea = await screen.findByLabelText('intro-message');
 
-		expect(localeButtons[0]).toHaveAttribute('aria-expanded', 'true');
-		expect(localeButtons[1]).toHaveAttribute('aria-expanded', 'false');
+		fireEvent.click(
+			within(
+				introTextarea.closest(
+					'.localized-textarea-container'
+				) as HTMLElement
+			).getByRole('button', {name: 'select-a-language'})
+		);
+
+		const openDropdownMenu = await waitFor(() => {
+			const menu = document.querySelector('.dropdown-menu.show');
+
+			expect(menu).not.toBeNull();
+
+			return menu as HTMLElement;
+		});
+
+		fireEvent.click(within(openDropdownMenu).getByText('pt_BR'));
+
+		fireEvent.change(introTextarea, {
+			target: {value: 'Bem-vindo ao AskWA.'},
+		});
+
+		fireEvent.change(screen.getByLabelText('disclaimer-message'), {
+			target: {value: 'Responses may be inaccurate.'},
+		});
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPostChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(
+			mockPostChatbotDefinition.mock.calls[0][0].introMessage_i18n
+		).toEqual({pt_BR: 'Bem-vindo ao AskWA.'});
+		expect(
+			mockPostChatbotDefinition.mock.calls[0][0].disclaimerMessage_i18n
+		).toEqual({en_US: 'Responses may be inaccurate.'});
 	});
 
 	it('sends the paragraph breaks of the intro message to the API payload', async () => {
@@ -453,37 +490,6 @@ describe('ChatbotForm suggested questions', () => {
 		cleanup();
 	});
 
-	it('loads the stored questions and round-trips them on save', async () => {
-		mockGetChatbotDefinition.mockResolvedValue({
-			active: true,
-			externalReferenceCode: 'CHATBOT-ERC',
-			suggestedQuestions_i18n: {en_US: 'Q1\nQ2', pt_BR: 'P1'},
-			title_i18n: {en_US: 'Bot'},
-		});
-		mockPutChatbotDefinition.mockResolvedValue({});
-
-		render(
-			<ChatbotForm
-				{...defaultProps}
-				externalReferenceCode="CHATBOT-ERC"
-			/>
-		);
-
-		await screen.findByText('Q1');
-
-		expect(screen.getByText('Q2')).toBeInTheDocument();
-
-		fireEvent.click(screen.getByRole('button', {name: 'save'}));
-
-		await waitFor(() =>
-			expect(mockPutChatbotDefinition).toHaveBeenCalled()
-		);
-
-		expect(
-			mockPutChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
-		).toEqual({en_US: 'Q1\nQ2', pt_BR: 'P1'});
-	});
-
 	it('adds a question through the modal and sends it on save', async () => {
 		mockPostChatbotDefinition.mockResolvedValue({
 			externalReferenceCode: 'CHATBOT-ERC',
@@ -516,6 +522,37 @@ describe('ChatbotForm suggested questions', () => {
 		expect(
 			mockPostChatbotDefinition.mock.calls[0][0].suggestedQuestions_i18n
 		).toEqual({en_US: 'How do I register to vote?'});
+	});
+
+	it('deletes a question and leaves it out of the payload', async () => {
+		mockGetChatbotDefinition.mockResolvedValue({
+			active: true,
+			externalReferenceCode: 'CHATBOT-ERC',
+			suggestedQuestions_i18n: {en_US: 'Q1\nQ2'},
+			title_i18n: {en_US: 'Bot'},
+		});
+		mockPutChatbotDefinition.mockResolvedValue({});
+
+		render(
+			<ChatbotForm
+				{...defaultProps}
+				externalReferenceCode="CHATBOT-ERC"
+			/>
+		);
+
+		fireEvent.click(
+			await screen.findByRole('button', {name: 'delete-Q1'})
+		);
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPutChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(
+			mockPutChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
+		).toEqual({en_US: 'Q2'});
 	});
 
 	it('edits a question through the modal and sends the new text on save', async () => {
@@ -557,11 +594,11 @@ describe('ChatbotForm suggested questions', () => {
 		).toEqual({en_US: 'Q1 edited\nQ2'});
 	});
 
-	it('deletes a question and leaves it out of the payload', async () => {
+	it('loads the stored questions and round-trips them on save', async () => {
 		mockGetChatbotDefinition.mockResolvedValue({
 			active: true,
 			externalReferenceCode: 'CHATBOT-ERC',
-			suggestedQuestions_i18n: {en_US: 'Q1\nQ2'},
+			suggestedQuestions_i18n: {en_US: 'Q1\nQ2', pt_BR: 'P1'},
 			title_i18n: {en_US: 'Bot'},
 		});
 		mockPutChatbotDefinition.mockResolvedValue({});
@@ -573,9 +610,9 @@ describe('ChatbotForm suggested questions', () => {
 			/>
 		);
 
-		fireEvent.click(
-			await screen.findByRole('button', {name: 'delete-Q1'})
-		);
+		await screen.findByText('Q1');
+
+		expect(screen.getByText('Q2')).toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
@@ -585,7 +622,7 @@ describe('ChatbotForm suggested questions', () => {
 
 		expect(
 			mockPutChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
-		).toEqual({en_US: 'Q2'});
+		).toEqual({en_US: 'Q1\nQ2', pt_BR: 'P1'});
 	});
 
 	it('reorders the questions with move down', async () => {
