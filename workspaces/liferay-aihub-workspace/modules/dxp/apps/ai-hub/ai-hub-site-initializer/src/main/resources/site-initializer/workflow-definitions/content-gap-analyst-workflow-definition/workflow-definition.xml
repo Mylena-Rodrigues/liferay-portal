@@ -406,11 +406,11 @@ CMS search results (JSON): {{findResults}}]]>
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Matches Linked
+						Compose Project Link Output
 					</label>
 				</labels>
-				<name>matchesLinked</name>
-				<target>matchesLinked</target>
+				<name>composeProjectLinkOutput</name>
+				<target>composeProjectLinkOutput</target>
 				<default>true</default>
 			</transition>
 		</transitions>
@@ -702,8 +702,49 @@ CMS search results (JSON): {{findResults}}]]>
 					</label>
 				</labels>
 				<name>no</name>
-				<target>matchesDiscarded</target>
+				<target>composeProjectLinkOutput</target>
 				<default>false</default>
+			</transition>
+		</transitions>
+	</service>
+	<service>
+		<name>composeProjectLinkOutput</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						576,
+						1381
+					]
+				}
+			]]>
+		</metadata>
+		<java-delegate>javaDelegate#composeProjectLinkOutput</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Compose Project Link Output
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "output",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						End
+					</label>
+				</labels>
+				<name>end</name>
+				<target>end</target>
+				<default>true</default>
 			</transition>
 		</transitions>
 	</service>
@@ -739,7 +780,7 @@ CMS search results (JSON): {{findResults}}]]>
 		</transitions>
 	</state>
 	<state>
-		<name>matchesLinked</name>
+		<name>end</name>
 		<metadata>
 			<![CDATA[
 				{
@@ -753,26 +794,7 @@ CMS search results (JSON): {{findResults}}]]>
 		</metadata>
 		<labels>
 			<label language-id="en_US">
-				Matches Linked
-			</label>
-		</labels>
-	</state>
-	<state>
-		<name>matchesDiscarded</name>
-		<metadata>
-			<![CDATA[
-				{
-					"terminal": true,
-					"xy": [
-						981.0463705137952,
-						949.164077625911
-					]
-				}
-			]]>
-		</metadata>
-		<labels>
-			<label language-id="en_US">
-				Matches Discarded
+				End
 			</label>
 		</labels>
 	</state>

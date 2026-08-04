@@ -56,13 +56,6 @@ public class SuggestProjectLinkServiceNodeDelegate
 		}
 
 		if ((jsonArray == null) || (jsonArray.length() == 0)) {
-			SseUtil.send(
-				_getAgentDefinitionExternalReferenceCodes(workflowContext),
-				"There are no assets to link to the project.",
-				"Chat Message Sent",
-				kaleoInstanceToken.getCurrentKaleoNodeName(),
-				GetterUtil.getString(workflowContext.get("sseEventSinkKey")));
-
 			WorkflowNodeUtil.completeWorkflowNode(
 				executionContext, "no", workflowContext, _workflowNodeManager);
 
