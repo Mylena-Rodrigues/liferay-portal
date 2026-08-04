@@ -48,8 +48,6 @@ public class ViewTechnicalFragmentRenderer
 				SEOStudioFDSNames.INSIGHT_TYPE_SECTION, httpServletRequest);
 			ObjectEntry seoStudioScanRunObjectEntry =
 				fetchSEOStudioScanRunObjectEntry(httpServletRequest);
-			JSONArray viewsJSONArray = fdsSerializer.serializeViews(
-				SEOStudioFDSNames.INSIGHT_TYPE_SECTION, httpServletRequest);
 
 			List<Long> seoStudioScanIds = Collections.emptyList();
 			JSONObject seoStudioScanMetricJSONObject = null;
@@ -62,6 +60,9 @@ public class ViewTechnicalFragmentRenderer
 						httpServletRequest, "technical",
 						seoStudioScanRunObjectEntry.getId());
 			}
+
+			JSONArray viewsJSONArray = fdsSerializer.serializeViews(
+				SEOStudioFDSNames.INSIGHT_TYPE_SECTION, httpServletRequest);
 
 			return new ViewTechnicalDisplayContext(
 				filtersJSONArray, httpServletRequest, language,
