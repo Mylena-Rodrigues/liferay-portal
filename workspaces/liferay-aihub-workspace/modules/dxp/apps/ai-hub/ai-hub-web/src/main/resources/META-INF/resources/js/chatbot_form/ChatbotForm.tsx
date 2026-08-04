@@ -149,9 +149,7 @@ export default function ChatbotForm({
 	>([]);
 	const avatarInputRef = useRef<HTMLInputElement>(null);
 
-	const availableLocales = useAvailableLocales();
-
-	const defaultLocale = availableLocales[0]?.localeId || 'en_US';
+	const {availableLocales, defaultLocale} = useAvailableLocales();
 
 	const [selectedDisclaimerLocale, setSelectedDisclaimerLocale] =
 		useState<Liferay.Language.Locale>(defaultLocale);

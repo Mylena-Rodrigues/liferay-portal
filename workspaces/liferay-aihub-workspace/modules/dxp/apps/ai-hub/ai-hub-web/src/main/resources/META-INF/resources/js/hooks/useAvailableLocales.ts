@@ -6,16 +6,39 @@
 import {AvailableLocale} from 'dynamic-data-mapping-form-field-type';
 import {useMemo} from 'react';
 
-export default function useAvailableLocales(): AvailableLocale[] {
+export default function useAvailableLocales(): {
+	availableLocales: AvailableLocale[];
+	defaultLocale: Liferay.Language.Locale;
+} {
 	return useMemo(() => {
 		const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
 
-		return Object.entries(Liferay.Language.available)
+		const availableLocales = Object.entries(Liferay.Language.available)
 			.map(([localeId, displayName]) => ({
 				displayName,
 				icon: localeId.replace(/_/g, '-').toLowerCase(),
 				localeId: localeId as Liferay.Language.Locale,
 			}))
-			.sort(({localeId}) => (localeId === defaultLanguageId ? -1 : 1));
+			.sort((a, b) => {
+				if (a.localeId === defaultLanguageId) {
+					return -1;
+				}
+
+				if (b.localeId === defaultLanguageId) {
+					return 1;
+				}
+
+				return 0;
+			});
+
+		return {
+			availableLocales,
+			defaultLocale:
+				availableLocales.find(
+					({localeId}) => localeId === defaultLanguageId
+				)?.localeId ||
+				availableLocales[0]?.localeId ||
+				'en_US',
+		};
 	}, []);
 }

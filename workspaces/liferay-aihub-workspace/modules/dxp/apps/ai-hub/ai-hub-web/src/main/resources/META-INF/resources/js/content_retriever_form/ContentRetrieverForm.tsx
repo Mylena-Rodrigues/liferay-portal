@@ -43,12 +43,10 @@ export default function ContentRetrieverForm({
 
 	const [shouldNavigate, setShouldNavigate] = useState(false);
 
-	const availableLocales = useAvailableLocales();
+	const {availableLocales, defaultLocale} = useAvailableLocales();
 
 	const [selectedLocale, setSelectedLocale] =
-		useState<Liferay.Language.Locale>(
-			availableLocales[0]?.localeId || 'en_US'
-		);
+		useState<Liferay.Language.Locale>(defaultLocale);
 
 	useEffect(() => {
 		if (shouldNavigate) {
