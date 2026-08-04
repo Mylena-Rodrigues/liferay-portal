@@ -55,7 +55,7 @@ export default function LocalizedTextarea({
 				<textarea
 					className={`ddm-field-text form-control${error ? ' is-invalid' : ''}`}
 					dir={
-						Liferay.Language.direction[
+						Liferay.Language.direction?.[
 							selectedLocale as Liferay.Language.Locale
 						]
 					}
