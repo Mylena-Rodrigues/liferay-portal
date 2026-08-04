@@ -18,6 +18,15 @@ describe('ChatbotFooter', () => {
 		expect(container.querySelector('a')).toHaveAttribute('href', '');
 	});
 
+	it('does not render an image in the disclaimer', () => {
+		const {container} = render(
+			<ChatbotFooter disclaimerMessage="![tracker](https://example.com/pixel.png) Read this carefully." />
+		);
+
+		expect(container.querySelector('img')).toBeNull();
+		expect(container.textContent).toContain('Read this carefully.');
+	});
+
 	it('does not render raw HTML in the disclaimer', () => {
 		const {container} = render(
 			<ChatbotFooter disclaimerMessage="Read this <img src=x onerror=alert(1)> carefully." />

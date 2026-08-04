@@ -11,6 +11,7 @@ const MARKDOWN_COMPONENTS: Components = {
 	a: ({node: _node, ...props}) => (
 		<a {...props} rel="noopener noreferrer" target="_blank" />
 	),
+	img: () => null,
 };
 
 const REMARK_PLUGINS = [remarkGfm];

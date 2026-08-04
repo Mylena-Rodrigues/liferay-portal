@@ -10,6 +10,18 @@ import {describe, expect, it} from 'vitest';
 import ChatbotIntro from '../../components/ChatbotIntro';
 
 describe('ChatbotIntro', () => {
+	it('does not render an image in the intro message', () => {
+		const {container} = render(
+			<ChatbotIntro
+				introMessage="![tracker](https://example.com/pixel.png) Welcome to AskWA."
+				title="AskWA"
+			/>
+		);
+
+		expect(container.querySelector('img')).toBeNull();
+		expect(container.textContent).toContain('Welcome to AskWA.');
+	});
+
 	it('does not render raw HTML in the intro message', () => {
 		const {container} = render(
 			<ChatbotIntro
