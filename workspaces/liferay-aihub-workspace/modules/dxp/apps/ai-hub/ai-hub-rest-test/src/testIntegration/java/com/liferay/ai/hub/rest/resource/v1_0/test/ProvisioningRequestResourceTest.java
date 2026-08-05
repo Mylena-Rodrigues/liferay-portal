@@ -19,6 +19,7 @@ import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Role;
@@ -36,6 +37,7 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.FeatureFlag;
@@ -240,16 +242,12 @@ public class ProvisioningRequestResourceTest
 
 		ProvisioningRequest.Tier tier = provisioningRequest.getTier();
 
+		Assert.assertEquals(tier.getValue(), MapUtil.getString(values, "tier"));
+
 		Assert.assertEquals(
-			tier.getValue(), String.valueOf(values.get("tier")));
-
-		String addOns = String.valueOf(values.get("addOns"));
-
-		for (String addOn : provisioningRequest.getAddOns()) {
-			Assert.assertTrue(
-				"Add-ons were not persisted: " + addOns,
-				addOns.contains(addOn));
-		}
+			StringUtil.merge(
+				provisioningRequest.getAddOns(), StringPool.COMMA_AND_SPACE),
+			MapUtil.getString(values, "addOns"));
 	}
 
 	private void _assertOAuth2Application(
