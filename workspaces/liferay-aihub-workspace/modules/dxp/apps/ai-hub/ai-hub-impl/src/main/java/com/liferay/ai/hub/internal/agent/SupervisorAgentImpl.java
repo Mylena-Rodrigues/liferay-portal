@@ -274,7 +274,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 				(Object[])internalAgents
 			).supervisorContext(
 				"When the language cannot be determined with certainty, " +
-					"write it in " + locale.getDisplayLanguage()
+					"write it in " + locale.getDisplayLanguage(Locale.ENGLISH)
 			).responseStrategy(
 				SupervisorResponseStrategy.SCORED
 			).build();
