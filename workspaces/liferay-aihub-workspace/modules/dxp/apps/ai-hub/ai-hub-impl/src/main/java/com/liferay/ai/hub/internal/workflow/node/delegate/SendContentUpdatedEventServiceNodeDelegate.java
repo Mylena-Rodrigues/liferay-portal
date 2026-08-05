@@ -11,9 +11,10 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
+import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
+import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
 
 import java.io.Serializable;
 
@@ -49,7 +50,8 @@ public class SendContentUpdatedEventServiceNodeDelegate
 			"output", "Content successfully created and linked to the project");
 
 		WorkflowNodeUtil.completeWorkflowNode(
-			executionContext, workflowContext, _workflowNodeManager);
+			executionContext, _kaleoSignaler, workflowContext,
+			_workflowInstanceManager);
 
 		return StringPool.BLANK;
 	}
@@ -73,6 +75,9 @@ public class SendContentUpdatedEventServiceNodeDelegate
 	}
 
 	@Reference
-	private WorkflowNodeManager _workflowNodeManager;
+	private KaleoSignaler _kaleoSignaler;
+
+	@Reference
+	private WorkflowInstanceManager _workflowInstanceManager;
 
 }

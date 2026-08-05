@@ -12,8 +12,9 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
+import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
+import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
 
 import java.io.Serializable;
 
@@ -79,7 +80,8 @@ public class ComposeProjectLinksServiceNodeDelegate
 			"projectLinksPayload", projectLinksJSONArray.toString());
 
 		WorkflowNodeUtil.completeWorkflowNode(
-			executionContext, workflowContext, _workflowNodeManager);
+			executionContext, _kaleoSignaler, workflowContext,
+			_workflowInstanceManager);
 
 		return projectLinksJSONArray.toString();
 	}
@@ -154,6 +156,9 @@ public class ComposeProjectLinksServiceNodeDelegate
 	private JSONFactory _jsonFactory;
 
 	@Reference
-	private WorkflowNodeManager _workflowNodeManager;
+	private KaleoSignaler _kaleoSignaler;
+
+	@Reference
+	private WorkflowInstanceManager _workflowInstanceManager;
 
 }

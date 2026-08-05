@@ -20,9 +20,10 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
+import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
+import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
 
 import java.io.Serializable;
 
@@ -135,7 +136,8 @@ public class GenerateContentServiceNodeDelegate implements ServiceNodeDelegate {
 			GetterUtil.getString(inputVariables.get("projectScopeKey")));
 
 		WorkflowNodeUtil.completeWorkflowNode(
-			executionContext, workflowContext, _workflowNodeManager);
+			executionContext, _kaleoSignaler, workflowContext,
+			_workflowInstanceManager);
 	}
 
 	private String _getClassExternalReferenceCode(String generatedContent) {
@@ -175,6 +177,9 @@ public class GenerateContentServiceNodeDelegate implements ServiceNodeDelegate {
 	private JSONFactory _jsonFactory;
 
 	@Reference
-	private WorkflowNodeManager _workflowNodeManager;
+	private KaleoSignaler _kaleoSignaler;
+
+	@Reference
+	private WorkflowInstanceManager _workflowInstanceManager;
 
 }
