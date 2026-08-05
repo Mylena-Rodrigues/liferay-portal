@@ -5,15 +5,17 @@
 
 package com.liferay.ai.hub.internal.workflow.node.delegate;
 
-import com.liferay.portal.kernel.workflow.WorkflowNodeManager;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.workflow.WorkflowException;
+import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.model.KaleoTransition;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
+import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
 
 import java.io.Serializable;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,9 +24,9 @@ import java.util.Map;
 public class WorkflowNodeUtil {
 
 	public static void completeWorkflowNode(
-			ExecutionContext executionContext,
+			ExecutionContext executionContext, KaleoSignaler kaleoSignaler,
 			Map<String, Serializable> workflowContext,
-			WorkflowNodeManager workflowNodeManager)
+			WorkflowInstanceManager workflowInstanceManager)
 		throws Exception {
 
 		KaleoInstanceToken kaleoInstanceToken =
@@ -32,29 +34,42 @@ public class WorkflowNodeUtil {
 
 		KaleoNode kaleoNode = kaleoInstanceToken.getCurrentKaleoNode();
 
-		List<KaleoTransition> kaleoTransitions =
-			kaleoNode.getKaleoTransitions();
-
-		KaleoTransition kaleoTransition = kaleoTransitions.get(0);
+		KaleoTransition kaleoTransition = kaleoNode.getDefaultKaleoTransition();
 
 		completeWorkflowNode(
-			executionContext, kaleoTransition.getName(), workflowContext,
-			workflowNodeManager);
+			executionContext, kaleoSignaler, kaleoTransition.getName(),
+			workflowContext, workflowInstanceManager);
 	}
 
 	public static void completeWorkflowNode(
-			ExecutionContext executionContext, String transitionName,
-			Map<String, Serializable> workflowContext,
-			WorkflowNodeManager workflowNodeManager)
+			ExecutionContext executionContext, KaleoSignaler kaleoSignaler,
+			String transitionName, Map<String, Serializable> workflowContext,
+			WorkflowInstanceManager workflowInstanceManager)
 		throws Exception {
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 
-		workflowNodeManager.completeWorkflowNode(
-			kaleoInstanceToken.getCompanyId(), kaleoInstanceToken.getUserId(),
-			kaleoInstanceToken.getKaleoInstanceTokenId(), transitionName,
-			workflowContext, false);
+		try {
+			workflowInstanceManager.updateWorkflowContext(
+				kaleoInstanceToken.getCompanyId(),
+				kaleoInstanceToken.getKaleoInstanceId(), workflowContext);
+
+			ServiceContext serviceContext = new ServiceContext();
+
+			serviceContext.setCompanyId(kaleoInstanceToken.getCompanyId());
+			serviceContext.setUserId(kaleoInstanceToken.getUserId());
+
+			kaleoSignaler.signalExit(
+				transitionName,
+				new ExecutionContext(
+					kaleoInstanceToken, workflowContext, serviceContext),
+				false);
+		}
+		catch (Exception exception) {
+			throw new WorkflowException(
+				"Unable to signal next transition", exception);
+		}
 	}
 
 }
