@@ -9,7 +9,10 @@ import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
@@ -25,7 +28,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alberto Sousa
  */
 @Component(service = ServiceNodeDelegate.class)
-public class ApplyTaxonomyCategoriesServiceNodeDelegate
+public class ComposeContentEntriesPayloadServiceNodeDelegate
 	implements ServiceNodeDelegate {
 
 	@Override
@@ -50,31 +53,68 @@ public class ApplyTaxonomyCategoriesServiceNodeDelegate
 
 	@Override
 	public String getKey() {
-		return "javaDelegate#applyTaxonomyCategories";
+		return "javaDelegate#composeContentEntriesPayload";
 	}
 
 	private JSONArray _getContentEntriesPayloadJSONArray(
 			Map<String, String> inputVariables)
 		throws Exception {
 
-		JSONArray contentEntriesPayloadJSONArray = _jsonFactory.createJSONArray(
-			GetterUtil.getString(inputVariables.get("contentEntriesPayload")));
+		JSONArray contentEntriesJSONArray = _jsonFactory.createJSONArray();
+
+		JSONArray contentEntriesPropertiesJSONArray =
+			_jsonFactory.createJSONArray(
+				GetterUtil.getString(
+					inputVariables.get("contentEntriesProperties")));
 		JSONArray taxonomyCategoryIdsJSONArray = _jsonFactory.createJSONArray(
 			GetterUtil.getString(inputVariables.get("taxonomyCategoryIds")));
 
-		if (taxonomyCategoryIdsJSONArray.length() == 0) {
-			return contentEntriesPayloadJSONArray;
+		for (int i = 0; i < contentEntriesPropertiesJSONArray.length(); i++) {
+			JSONObject propertiesJSONObject =
+				contentEntriesPropertiesJSONArray.getJSONObject(i);
+
+			contentEntriesJSONArray.put(
+				JSONUtil.put(
+					"externalReferenceCode",
+					_getExternalReferenceCode(i, propertiesJSONObject)
+				).put(
+					"keywords", JSONUtil.putAll("AI-generated")
+				).put(
+					"objectEntryFolderExternalReferenceCode", "L_CONTENTS"
+				).put(
+					"properties", propertiesJSONObject
+				).put(
+					"scopeKey",
+					GetterUtil.getString(inputVariables.get("spaceId"))
+				).put(
+					"status", JSONUtil.put("code", 2)
+				).put(
+					"taxonomyCategoryIds",
+					() -> {
+						if (taxonomyCategoryIdsJSONArray.length() > 0) {
+							return taxonomyCategoryIdsJSONArray;
+						}
+
+						return null;
+					}
+				));
 		}
 
-		for (int i = 0; i < contentEntriesPayloadJSONArray.length(); i++) {
-			JSONObject contentEntryPayloadJSONObject =
-				contentEntriesPayloadJSONArray.getJSONObject(i);
+		return contentEntriesJSONArray;
+	}
 
-			contentEntryPayloadJSONObject.put(
-				"taxonomyCategoryIds", taxonomyCategoryIdsJSONArray);
+	private String _getExternalReferenceCode(
+		int index, JSONObject propertiesJSONObject) {
+
+		String externalReferenceCode =
+			FriendlyURLNormalizerUtil.normalizeWithPeriodsAndSlashes(
+				propertiesJSONObject.getString("title"));
+
+		if (Validator.isNull(externalReferenceCode)) {
+			return "ai-generated-content-" + (index + 1);
 		}
 
-		return contentEntriesPayloadJSONArray;
+		return externalReferenceCode;
 	}
 
 	@Reference

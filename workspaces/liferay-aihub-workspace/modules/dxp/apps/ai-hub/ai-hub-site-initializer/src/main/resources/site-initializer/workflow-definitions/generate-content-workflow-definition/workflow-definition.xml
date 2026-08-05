@@ -54,7 +54,7 @@
 			<![CDATA[
 				[
 					{
-						"name": "contentEntriesPayload",
+						"name": "contentEntriesProperties",
 						"type": "string"
 					}
 				]
@@ -63,10 +63,11 @@
 		<prompt>
 			<![CDATA[# Role
 
-You are a content generation assistant. You generate one or more Liferay CMS
-content entries (object entries that follow a predefined Content Structure) from
-a brief. You decompose the brief into the requested number of DISTINCT angles
-and produce one object entry payload per angle.
+You are a content generation assistant. You generate the field values for one or
+more Liferay CMS content entries (object entries that follow a predefined Content
+Structure) from a brief. You decompose the brief into the requested number of
+DISTINCT angles and produce one set of field values per angle. The application
+assembles the rest of each entry.
 
 # Inputs
 
@@ -86,8 +87,8 @@ this JSON, taken from the structure definition:
 
 Fill ONLY the fields where `readOnly` is "false" AND `businessType` is one of
 `Text`, `LongText`, or `RichText` — except `externalReferenceCode`. Key each
-value by the exact field `name` under `properties`. `RichText` values are rich
-HTML bodies. Never fill any other field.
+value by the exact field `name`. `RichText` values are rich HTML bodies. Never
+fill any other field.
 
 # Required target
 
@@ -108,43 +109,30 @@ application then tells the user that only {{objectDefinitionName}} can be
 generated here.
 
 Output an empty JSON array `[]` ONLY to refuse — a missing target or a structure
-mismatch. In every other case you MUST produce at least one entry (default to 1
-when count is empty) — never return an empty array for a vague, short, or empty
-brief.
+mismatch. In every other case you MUST produce at least one set of field values
+(default to 1 when count is empty) — never return an empty array for a vague,
+short, or empty brief.
 
 # Hard rules
 
-- Produce exactly {{count}} entries (default 1 when count is empty). Each entry
-must have a DISTINCT angle and title — never duplicate titles across the batch.
-- Fill every eligible field of the {{objectDefinitionName}} structure under
-`properties`, keyed by the exact field `name`. Never invent field names.
-- Give each entry a deterministic `externalReferenceCode` (a slug of its title)
-so re-running the same brief updates the existing draft instead of duplicating.
-- Always include the `AI-generated` keyword and set
-`objectEntryFolderExternalReferenceCode` to `L_CONTENTS`.
-- Set `scopeKey` on every entry to the provided space id ({{spaceId}}).
-- `status.code` is `2` (draft).
+- Produce exactly {{count}} sets of field values (default 1 when count is empty).
+Each set must have a DISTINCT angle and title — never duplicate titles across the
+batch.
+- Fill every eligible field of the {{objectDefinitionName}} structure, keyed by
+the exact field `name`. Never invent field names.
+- Generate field values ONLY. The application adds the external reference code,
+the keywords, the folder, the destination space, and the draft status, so never
+emit any of them.
 
 # Output policy
 
-- Output a SINGLE raw JSON array of object entry payloads and nothing else.
+- Output a SINGLE raw JSON array of field value objects and nothing else.
 - DO NOT wrap the JSON in markdown fences (no ```json, no ```).
 - DO NOT add prose, commentary, or trailing text.
 - Each element has the shape:
 
 {
-	"externalReferenceCode": "<unique-slug>",
-	"keywords": [
-		"AI-generated"
-	],
-	"objectEntryFolderExternalReferenceCode": "L_CONTENTS",
-	"properties": {
-		"<fieldName>": "<value>"
-	},
-	"scopeKey": "<spaceId>",
-	"status": {
-		"code": 2
-	}
+	"<fieldName>": "<value>"
 }]]>
 		</prompt>
 		<tools>
@@ -154,11 +142,11 @@ so re-running the same brief updates the existing draft instead of duplicating.
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Apply Taxonomy Categories
+						Compose Content Entries Payload
 					</label>
 				</labels>
-				<name>applyTaxonomyCategories</name>
-				<target>applyTaxonomyCategories</target>
+				<name>composeContentEntriesPayload</name>
+				<target>composeContentEntriesPayload</target>
 				<default>true</default>
 			</transition>
 		</transitions>
@@ -171,12 +159,26 @@ Space id: {{spaceId}}]]>
 		</user-message>
 	</llm>
 	<service>
-		<name>applyTaxonomyCategories</name>
+		<name>composeContentEntriesPayload</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						284,
+						132
+					]
+				}
+			]]>
+		</metadata>
 		<input-variables>
 			<![CDATA[
 				[
 					{
-						"name": "contentEntriesPayload",
+						"name": "contentEntriesProperties",
+						"type": "string"
+					},
+					{
+						"name": "spaceId",
 						"type": "string"
 					},
 					{
@@ -186,10 +188,10 @@ Space id: {{spaceId}}]]>
 				]
 			]]>
 		</input-variables>
-		<java-delegate>javaDelegate#applyTaxonomyCategories</java-delegate>
+		<java-delegate>javaDelegate#composeContentEntriesPayload</java-delegate>
 		<labels>
 			<label language-id="en_US">
-				Apply Taxonomy Categories
+				Compose Content Entries Payload
 			</label>
 		</labels>
 		<output-variables>
