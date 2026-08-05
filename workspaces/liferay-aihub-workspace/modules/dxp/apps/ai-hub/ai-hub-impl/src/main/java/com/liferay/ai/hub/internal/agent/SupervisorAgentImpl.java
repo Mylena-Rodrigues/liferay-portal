@@ -50,6 +50,7 @@ import dev.langchain4j.model.chat.ChatModel;
 import java.lang.reflect.InvocationTargetException;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -253,6 +254,11 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 
 		String[] agentDefinitionExternalReferenceCodes = null;
 
+		DTOConverterContext dtoConverterContext =
+			agentContext.getDTOConverterContext();
+
+		Locale locale = dtoConverterContext.getLocale();
+
 		dev.langchain4j.agentic.supervisor.SupervisorAgent supervisorAgent =
 			AgenticServices.supervisorBuilder(
 			).chatMemoryProvider(
@@ -266,6 +272,9 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 				5
 			).subAgents(
 				(Object[])internalAgents
+			).supervisorContext(
+				"When the language cannot be determined with certainty, " +
+					"write it in " + locale.getDisplayLanguage()
 			).responseStrategy(
 				SupervisorResponseStrategy.SCORED
 			).build();
@@ -288,12 +297,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 		String data = resultWithAgenticScope.result();
 
 		if (Validator.isBlank(data)) {
-			DTOConverterContext dtoConverterContext =
-				agentContext.getDTOConverterContext();
-
-			data = _language.get(
-				dtoConverterContext.getLocale(),
-				"i-cannot-fulfill-this-request");
+			data = _language.get(locale, "i-cannot-fulfill-this-request");
 		}
 
 		SseUtil.send(
