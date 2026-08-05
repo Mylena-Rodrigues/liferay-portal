@@ -67,19 +67,6 @@
 		},
 		{
 			"active": true,
-			"description": "This agent generates one or more new CMS content entries for a specific persona and funnel stage pair and links them to the current CMP project; always use this agent whenever a user asks to generate, write, draft, or create content for a persona and a funnel stage, and always prefer it over every other content generation or content gap agent when the request names both a persona and a funnel stage, extracting the parameter 'count' (the exact integer number of content entries to generate, defaulting to 1 if unspecified or for singular phrasing like 'a', 'an', or 'one').",
-			"externalReferenceCode": "L_GENERATE_GAP_CONTENT",
-			"inputVariables": "count",
-			"outputVariable": "output",
-			"r_accountToAIHubAgentDefinitions_accountEntryERC": "L_AI_HUB",
-			"system": true,
-			"title_i18n": {
-				"en_US": "Generate Gap Content"
-			},
-			"workflowDefinitionName": "Generate Gap Content"
-		},
-		{
-			"active": true,
 			"description": "This agent generates one or more images from a description; use this agent whenever a user asks to generate, create, draw, or produce an image, picture, illustration, or photo, extracting the parameter 'description' (a clear description of the image's subject and expected appearance, such as 'a golden retriever running on a beach at sunset', including the number of images requested when the user gives one), with the strict requirement that if the provided description is unclear or not well-described, you must always ask the user for clarification before proceeding, although you may proceed with their subsequent response even if it remains vague.",
 			"externalReferenceCode": "L_GENERATE_IMAGE",
 			"inputVariables": "description",
@@ -93,7 +80,7 @@
 		},
 		{
 			"active": true,
-			"description": "This agent generates one or more CMS content entries (assets backed by a Content Structure) as drafts by decomposing the requested topic into distinct angles; use this agent whenever a user asks to generate, write, draft, or create CMS content, blog posts, web content, or similar materials, extracting the parameters 'count' (the exact integer number of contents to generate, defaulting to 1 if unspecified or for singular phrasing like 'a', 'an', or 'one') and 'brief' (a clear description of the content's topic and expected appearance, such as 'dogs that are too big'), with the strict requirement that if the provided brief is unclear or not well-described, you must always ask the user for clarification before proceeding, although you may proceed with their subsequent response even if it remains vague.",
+			"description": "This agent generates one or more CMS content entries (assets backed by a Content Structure) as drafts by decomposing the requested topic into distinct angles, and in a CMP project context it also categorizes every entry by the requested persona and funnel stage and links it to the project; use this agent whenever a user asks to generate, write, draft, or create CMS content, blog posts, web content, or similar materials, and always prefer it over every other content generation or content gap agent when the request names both a persona and a funnel stage, extracting the parameters 'count' (the exact integer number of contents to generate, defaulting to 1 if unspecified or for singular phrasing like 'a', 'an', or 'one') and 'brief' (a clear description of the content's topic and expected appearance, such as 'dogs that are too big'), with the strict requirement that if the provided brief is unclear or not well-described, you must always ask the user for clarification before proceeding, although you may proceed with their subsequent response even if it remains vague, except when the request names a persona and a funnel stage, in which case the brief comes from the project and the gap, so proceed without asking.",
 			"externalReferenceCode": "L_GENERATE_CONTENT",
 			"inputVariables": "brief,count",
 			"outputVariable": "output",

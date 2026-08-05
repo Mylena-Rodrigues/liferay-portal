@@ -513,10 +513,10 @@ CMS search results (JSON): {{findResults}}]]>
 				]
 			]]>
 		</input-variables>
-		<java-delegate>javaDelegate#generateGapContent</java-delegate>
+		<java-delegate>javaDelegate#generateContent</java-delegate>
 		<labels>
 			<label language-id="en_US">
-				Generate Gap Content
+				Generate Content
 			</label>
 		</labels>
 		<output-variables>

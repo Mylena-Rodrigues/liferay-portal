@@ -7,14 +7,144 @@
 >
 	<name>Generate Content</name>
 	<version>1</version>
+	<service>
+		<name>requestSpaceSelection</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						283,
+						20
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "gaps",
+						"type": "string"
+					},
+					{
+						"name": "projectDescription",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					},
+					{
+						"name": "spacesJSONArray",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#requestSpaceSelection</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Request Space Selection
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "brief",
+						"type": "string"
+					},
+					{
+						"name": "gap",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Content Entries Generator
+					</label>
+				</labels>
+				<name>contentEntriesGenerator</name>
+				<target>contentEntriesGenerator</target>
+				<default>true</default>
+			</transition>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Get Object Definition
+					</label>
+				</labels>
+				<name>getObjectDefinition</name>
+				<target>getObjectDefinition</target>
+				<default>false</default>
+			</transition>
+		</transitions>
+	</service>
+	<http-request>
+		<name>getObjectDefinition</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						283,
+						150
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Get Object Definition
+			</label>
+		</labels>
+		<http-method>GET</http-method>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "aiHubCellLiferayDXPURL",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "objectDefinitionResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<timeout>10000</timeout>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Content Entries Generator
+					</label>
+				</labels>
+				<name>contentEntriesGenerator</name>
+				<target>contentEntriesGenerator</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/object-admin/v1.0/object-definitions/by-external-reference-code/L_CMS_BASIC_WEB_CONTENT?fields=className</url>
+	</http-request>
 	<llm>
 		<name>contentEntriesGenerator</name>
 		<metadata>
 			<![CDATA[
 				{
 					"xy": [
-						284,
-						43
+						283,
+						280
 					]
 				}
 			]]>
@@ -164,8 +294,8 @@ Space id: {{spaceId}}]]>
 			<![CDATA[
 				{
 					"xy": [
-						284,
-						132
+						283,
+						410
 					]
 				}
 			]]>
@@ -223,8 +353,8 @@ Space id: {{spaceId}}]]>
 			<![CDATA[
 				{
 					"xy": [
-						284,
-						220
+						283,
+						540
 					]
 				}
 			]]>
@@ -291,8 +421,8 @@ Space id: {{spaceId}}]]>
 			<![CDATA[
 				{
 					"xy": [
-						286,
-						401
+						283,
+						670
 					]
 				}
 			]]>
@@ -335,6 +465,215 @@ Space id: {{spaceId}}]]>
 			<transition>
 				<labels>
 					<label language-id="en_US">
+						Prepare Project Link
+					</label>
+				</labels>
+				<name>prepareProjectLink</name>
+				<target>prepareProjectLink</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</service>
+	<service>
+		<name>prepareProjectLink</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						283,
+						800
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "contentEntriesPayload",
+						"type": "string"
+					},
+					{
+						"name": "objectDefinitionResponse",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					},
+					{
+						"name": "projectScopeKey",
+						"type": "string"
+					},
+					{
+						"name": "spaceExternalReferenceCode",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#prepareProjectLink</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Prepare Project Link
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "classExternalReferenceCode",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						End
+					</label>
+				</labels>
+				<name>end</name>
+				<target>end</target>
+				<default>true</default>
+			</transition>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Link Asset to Project
+					</label>
+				</labels>
+				<name>linkAssetToProject</name>
+				<target>linkAssetToProject</target>
+				<default>false</default>
+			</transition>
+		</transitions>
+	</service>
+	<http-request>
+		<name>linkAssetToProject</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						283,
+						930
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Link Asset to Project
+			</label>
+		</labels>
+		<http-method>POST</http-method>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "aiHubCellLiferayDXPURL",
+						"type": "string"
+					},
+					{
+						"name": "classExternalReferenceCode",
+						"type": "string"
+					},
+					{
+						"name": "className",
+						"type": "string"
+					},
+					{
+						"name": "groupExternalReferenceCode",
+						"type": "string"
+					},
+					{
+						"name": "projectId",
+						"type": "string"
+					},
+					{
+						"name": "scopeKey",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "linkResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<request-body>
+			<![CDATA[{
+	"classExternalReferenceCode": "{{classExternalReferenceCode}}",
+	"className": "{{className}}",
+	"groupExternalReferenceCode": "{{groupExternalReferenceCode}}",
+	"r_cmpProjectToCMPProjectLinks_c_cmpProjectId": {{projectId}}
+}]]>
+		</request-body>
+		<timeout>10000</timeout>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Send Content Updated Event
+					</label>
+				</labels>
+				<name>sendContentUpdatedEvent</name>
+				<target>sendContentUpdatedEvent</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+		<url>{{aiHubCellLiferayDXPURL}}/o/cmp/project-links/scopes/{{scopeKey}}</url>
+	</http-request>
+	<service>
+		<name>sendContentUpdatedEvent</name>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						283,
+						1060
+					]
+				}
+			]]>
+		</metadata>
+		<input-variables>
+			<![CDATA[
+				[
+					{
+						"name": "linkResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</input-variables>
+		<java-delegate>javaDelegate#sendContentUpdatedEvent</java-delegate>
+		<labels>
+			<label language-id="en_US">
+				Send Content Updated Event
+			</label>
+		</labels>
+		<output-variables>
+			<![CDATA[
+				[
+					{
+						"name": "contentUpdatedEventResponse",
+						"type": "string"
+					}
+				]
+			]]>
+		</output-variables>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
 						End
 					</label>
 				</labels>
@@ -366,11 +705,11 @@ Space id: {{spaceId}}]]>
 			<transition>
 				<labels>
 					<label language-id="en_US">
-						Content Entries Generator
+						Request Space Selection
 					</label>
 				</labels>
-				<name>contentEntriesGenerator</name>
-				<target>contentEntriesGenerator</target>
+				<name>requestSpaceSelection</name>
+				<target>requestSpaceSelection</target>
 				<default>true</default>
 			</transition>
 		</transitions>
@@ -382,8 +721,8 @@ Space id: {{spaceId}}]]>
 				{
 					"terminal": true,
 					"xy": [
-						287,
-						564
+						283,
+						1190
 					]
 				}
 			]]>

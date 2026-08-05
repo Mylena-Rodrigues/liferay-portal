@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
+import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
 
 import java.io.Serializable;
 
@@ -42,6 +43,14 @@ public class RequestSpaceSelectionServiceNodeDelegate
 			Map<String, String> inputVariables,
 			Map<String, Serializable> workflowContext)
 		throws Exception {
+
+		if (Validator.isNull(inputVariables.get("projectId"))) {
+			WorkflowNodeUtil.completeWorkflowNode(
+				executionContext, _kaleoSignaler, "contentEntriesGenerator",
+				workflowContext, _workflowInstanceManager);
+
+			return StringPool.BLANK;
+		}
 
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
@@ -72,6 +81,8 @@ public class RequestSpaceSelectionServiceNodeDelegate
 										"externalReferenceCode")
 								).put(
 									"spaceId", spaceJSONObject.getLong("id")
+								).put(
+									"transitionName", "getObjectDefinition"
 								))
 						).put(
 							"href",
@@ -168,6 +179,9 @@ public class RequestSpaceSelectionServiceNodeDelegate
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private KaleoSignaler _kaleoSignaler;
 
 	@Reference
 	private Language _language;
