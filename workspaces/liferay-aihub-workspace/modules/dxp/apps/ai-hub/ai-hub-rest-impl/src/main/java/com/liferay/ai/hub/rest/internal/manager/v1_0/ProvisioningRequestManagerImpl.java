@@ -49,7 +49,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -82,11 +81,10 @@ public class ProvisioningRequestManagerImpl
 			provisioningRequest.getAccountEntryExternalReferenceCode(),
 			provisioningRequest.getAccountEntryName(), serviceContext);
 
-		_addOrUpdateAccountEntryProvisioningFields(
-			customerAccountEntry, provisioningRequest, serviceContext);
-
 		_addConfiguration(
 			customerAccountEntry, company.getCompanyId(), dtoConverterContext);
+		_addOrUpdateAccountEntryProvisioningFields(
+			customerAccountEntry, provisioningRequest, serviceContext);
 
 		_quotaManager.addQuotas(
 			customerAccountEntry.getAccountEntryId(), company.getCompanyId(),
@@ -238,28 +236,23 @@ public class ProvisioningRequestManagerImpl
 			return;
 		}
 
-		Map<String, Object> values = HashMapBuilder.<String, Object>put(
-			"description", customerAccountEntry.getDescription()
-		).put(
-			"externalReferenceCode",
-			customerAccountEntry.getExternalReferenceCode()
-		).put(
-			"name", customerAccountEntry.getName()
-		).put(
-			"tier", provisioningRequest.getTierAsString()
-		).put(
-			"type", customerAccountEntry.getType()
-		).build();
-
-		String[] addOns = provisioningRequest.getAddOns();
-
-		if (addOns != null) {
-			values.put("addOns", addOns);
-		}
-
 		systemObjectDefinitionManager.updateBaseModel(
 			customerAccountEntry.getAccountEntryId(),
-			_userLocalService.getUser(serviceContext.getUserId()), values);
+			_userLocalService.getUser(serviceContext.getUserId()),
+			HashMapBuilder.<String, Object>put(
+				"addOns", provisioningRequest::getAddOns
+			).put(
+				"description", customerAccountEntry.getDescription()
+			).put(
+				"externalReferenceCode",
+				customerAccountEntry.getExternalReferenceCode()
+			).put(
+				"name", customerAccountEntry.getName()
+			).put(
+				"tier", provisioningRequest.getTierAsString()
+			).put(
+				"type", customerAccountEntry.getType()
+			).build());
 	}
 
 	private List<User> _addRegularUsers(
