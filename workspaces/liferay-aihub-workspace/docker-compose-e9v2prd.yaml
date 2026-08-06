@@ -36,7 +36,7 @@ services:
             LIFERAY_THEME_PERIOD_CSS_PERIOD_FAST_PERIOD_LOAD: "false"
             LIFERAY_THEME_PERIOD_IMAGES_PERIOD_FAST_PERIOD_LOAD: "false"
             LIFERAY_WORKSPACE_ENVIRONMENT: !reset null
-        image: liferay/release-candidates:7.4.13-u152-ai-hub-1785956678-d10.0.74-20260805123652
+        image: liferay/release-candidates:7.4.13-u152-ai-hub-1786022194-d10.0.75-20260806065050
         ports: !override
             -   8000:8000
             -   8080:8080
