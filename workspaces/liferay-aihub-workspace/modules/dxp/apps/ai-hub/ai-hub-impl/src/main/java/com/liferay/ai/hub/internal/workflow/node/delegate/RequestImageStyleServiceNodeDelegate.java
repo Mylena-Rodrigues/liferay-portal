@@ -7,7 +7,6 @@ package com.liferay.ai.hub.internal.workflow.node.delegate;
 
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -40,10 +39,7 @@ public class RequestImageStyleServiceNodeDelegate
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 
-		String resumeURL = StringBundler.concat(
-			MapUtil.getString(workflowContext, "aiHubCellLiferayDXPURL"),
-			"/o/ai-hub/v1.0/agent-instances/",
-			String.valueOf(kaleoInstanceToken.getKaleoInstanceId()), "/resume");
+		String resumeURL = MapUtil.getString(workflowContext, "resumeURL");
 
 		SseUtil.send(
 			_getAgentDefinitionExternalReferenceCodes(workflowContext), null,

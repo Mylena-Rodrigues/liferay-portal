@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
@@ -72,14 +73,7 @@ public class RequestSpaceSelectionServiceNodeDelegate
 								))
 						).put(
 							"href",
-							StringBundler.concat(
-								GetterUtil.getString(
-									workflowContext.get(
-										"aiHubCellLiferayDXPURL")),
-								"/o/ai-hub/v1.0/agent-instances/",
-								String.valueOf(
-									kaleoInstanceToken.getKaleoInstanceId()),
-								"/resume")
+							MapUtil.getString(workflowContext, "resumeURL")
 						).put(
 							"method", "PUT"
 						))

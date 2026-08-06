@@ -87,10 +87,7 @@ public class SuggestProjectLinkServiceNodeDelegate
 			"Chat Message Sent", kaleoInstanceToken.getCurrentKaleoNodeName(),
 			GetterUtil.getString(workflowContext.get("sseEventSinkKey")));
 
-		String resumeURL = StringBundler.concat(
-			MapUtil.getString(workflowContext, "aiHubCellLiferayDXPURL"),
-			"/o/ai-hub/v1.0/agent-instances/",
-			String.valueOf(kaleoInstanceToken.getKaleoInstanceId()), "/resume");
+		String resumeURL = MapUtil.getString(workflowContext, "resumeURL");
 
 		SseUtil.send(
 			_getAgentDefinitionExternalReferenceCodes(workflowContext), null,

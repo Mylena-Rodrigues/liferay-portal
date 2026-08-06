@@ -19,9 +19,11 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.workflow.kaleo.definition.NodeType;
@@ -114,9 +116,18 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 			OAuth2ApplicationHomePageURLResolverUtil.resolve(
 				MapUtil.getLong(workflowContext, "oAuth2ApplicationId")));
 
+		Company company = _companyLocalService.getCompany(
+			currentKaleoNode.getCompanyId());
+
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 
+		workflowContext.put(
+			"resumeURL",
+			StringBundler.concat(
+				company.getPortalURL(0), "/o/ai-hub/v1.0/agent-instances/",
+				String.valueOf(kaleoInstanceToken.getKaleoInstanceId()),
+				"/resume"));
 		workflowContext.put(
 			"workflowInstanceId", kaleoInstanceToken.getKaleoInstanceId());
 
@@ -203,6 +214,9 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ServiceNodeExecutor.class);
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
 
 	private NoticeableExecutorService _noticeableExecutorService;
 
