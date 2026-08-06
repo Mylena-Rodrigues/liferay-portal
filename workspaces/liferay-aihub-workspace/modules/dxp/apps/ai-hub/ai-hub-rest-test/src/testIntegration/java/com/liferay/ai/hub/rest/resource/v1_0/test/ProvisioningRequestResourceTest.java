@@ -135,7 +135,6 @@ public class ProvisioningRequestResourceTest
 				postProvisioningRequest.getAccountEntryId());
 
 		_assertAccountEntry(customerAccountEntry, provisioningRequest1);
-
 		_assertAccountEntryProvisioningFields(
 			customerAccountEntry, provisioningRequest1);
 
