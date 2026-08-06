@@ -46,9 +46,6 @@ public class SendContentUpdatedEventServiceNodeDelegate
 			kaleoInstanceToken.getCurrentKaleoNodeName(),
 			MapUtil.getString(workflowContext, "sseEventSinkKey"));
 
-		workflowContext.put(
-			"output", "Content successfully created and linked to the project");
-
 		WorkflowNodeUtil.completeWorkflowNode(
 			executionContext, _kaleoSignaler, workflowContext,
 			_workflowInstanceManager);
