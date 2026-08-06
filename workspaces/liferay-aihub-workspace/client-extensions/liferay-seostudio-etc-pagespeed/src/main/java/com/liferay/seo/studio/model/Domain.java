@@ -13,6 +13,8 @@ import org.json.JSONObject;
 public class Domain {
 
 	public Domain(JSONObject jsonObject) {
+		_accountEntryId = jsonObject.optLong(
+			"r_accountToSEOStudioDomains_accountEntryId");
 		_hostname = jsonObject.optString("hostname", null);
 
 		JSONObject seoStudioInstanceJSONObject = jsonObject.optJSONObject(
@@ -29,6 +31,10 @@ public class Domain {
 		}
 	}
 
+	public long getAccountEntryId() {
+		return _accountEntryId;
+	}
+
 	public String getGooglePageSpeedAPIKey() {
 		return _googlePageSpeedAPIKey;
 	}
@@ -41,6 +47,7 @@ public class Domain {
 		return _seoStudioInstanceId;
 	}
 
+	private final long _accountEntryId;
 	private final String _googlePageSpeedAPIKey;
 	private final String _hostname;
 	private final long _seoStudioInstanceId;

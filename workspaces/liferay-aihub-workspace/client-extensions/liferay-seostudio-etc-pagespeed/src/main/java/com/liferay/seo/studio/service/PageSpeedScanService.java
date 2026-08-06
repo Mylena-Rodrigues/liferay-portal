@@ -243,11 +243,13 @@ public class PageSpeedScanService {
 			domain.getHostname(), maxPagesPerScan);
 
 		_liferayService.postSEOStudioPageSpeedResult(
+			domain.getAccountEntryId(),
 			_getPageSpeedResult(
 				googlePageSpeedAPIKey, PageSpeedConstants.STRATEGY_DESKTOP,
 				urls),
 			seoStudioScanId);
 		_liferayService.postSEOStudioPageSpeedResult(
+			domain.getAccountEntryId(),
 			_getPageSpeedResult(
 				googlePageSpeedAPIKey, PageSpeedConstants.STRATEGY_MOBILE,
 				urls),

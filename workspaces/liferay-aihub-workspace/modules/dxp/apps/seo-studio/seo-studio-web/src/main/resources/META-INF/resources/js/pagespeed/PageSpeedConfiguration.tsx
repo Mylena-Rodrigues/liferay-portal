@@ -21,6 +21,11 @@ const INSTANCE_FIELD =
 
 const TYPE_PAGESPEED = 'pageSpeed';
 
+interface Instance {
+	accountEntryId: number;
+	id: number;
+}
+
 interface Props {
 	backURL: string;
 	domainsURL: string;
@@ -36,7 +41,7 @@ export default function PageSpeedConfiguration({
 }: Props) {
 	const [apiKey, setAPIKey] = useState('');
 	const [domainExists, setDomainExists] = useState(false);
-	const [instanceIds, setInstanceIds] = useState<number[]>([]);
+	const [instances, setInstances] = useState<Instance[]>([]);
 	const [integrationIdsMap, setIntegrationIdsMap] = useState<
 		Map<number, number>
 	>(new Map());
@@ -81,13 +86,21 @@ export default function PageSpeedConfiguration({
 			.then(([domainsData, instancesData, integrationsData]) => {
 				setDomainExists(!!(domainsData.items || []).length);
 
-				const instances = instancesData.items || [];
+				const instanceItems = instancesData.items || [];
 
-				setInstanceIds(
-					instances.map((instance: {id: number}) => instance.id)
+				setInstances(
+					instanceItems.map(
+						(instance: {id: number; [key: string]: number}) => ({
+							accountEntryId:
+								instance[
+									'r_accountToSEOStudioInstances_accountEntryId'
+								],
+							id: instance.id,
+						})
+					)
 				);
 
-				const firstInstance = instances.find(
+				const firstInstance = instanceItems.find(
 					(instance: {googlePageSpeedAPIKey?: string}) =>
 						instance.googlePageSpeedAPIKey
 				);
@@ -119,9 +132,9 @@ export default function PageSpeedConfiguration({
 	}, [domainsURL, instancesURL, integrationsURL]);
 
 	const saveAPIKey = (): Promise<boolean> => {
-		const requests = instanceIds.flatMap((instanceId) => {
+		const requests = instances.flatMap((instance) => {
 			const instanceRequest = Liferay.Util.fetch(
-				`${instancesURL}/${instanceId}`,
+				`${instancesURL}/${instance.id}`,
 				{
 					body: JSON.stringify({googlePageSpeedAPIKey: apiKey}),
 					headers: {
@@ -132,7 +145,7 @@ export default function PageSpeedConfiguration({
 				}
 			).then((response) => response.ok);
 
-			const integrationId = integrationIdsMap.get(instanceId);
+			const integrationId = integrationIdsMap.get(instance.id);
 
 			if (integrationId) {
 				const integrationRequest = Liferay.Util.fetch(
@@ -152,7 +165,9 @@ export default function PageSpeedConfiguration({
 
 			const integrationRequest = Liferay.Util.fetch(integrationsURL, {
 				body: JSON.stringify({
-					[INSTANCE_FIELD]: instanceId,
+					['r_accountToSEOStudioIntegrations_accountEntryId']:
+						instance.accountEntryId,
+					[INSTANCE_FIELD]: instance.id,
 					scope: 'instance',
 					state: 'active',
 					type: TYPE_PAGESPEED,

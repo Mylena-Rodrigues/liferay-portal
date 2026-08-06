@@ -179,7 +179,8 @@ public class LiferayService extends BaseService {
 	}
 
 	public String postSEOStudioPageSpeedResult(
-		PageSpeedResult pageSpeedResult, long seoStudioScanId) {
+		long accountEntryId, PageSpeedResult pageSpeedResult,
+		long seoStudioScanId) {
 
 		PageSpeedReport averagePageSpeedReport =
 			pageSpeedResult.getAveragePageSpeedReport();
@@ -205,6 +206,9 @@ public class LiferayService extends BaseService {
 			"pagesTotal", pageSpeedResult.getPagesTotal()
 		).put(
 			"performanceScore", averagePageSpeedReport.getPerformance()
+		).put(
+			"r_accountToSEOStudioPageSpeedResults_accountEntryId",
+			accountEntryId
 		).put(
 			"r_seoStudioScanToSEOStudioPageSpeedResults_seoStudioScanId",
 			seoStudioScanId

@@ -1,5 +1,6 @@
 {
-	"accountEntryRestricted": false,
+	"accountEntryRestricted": true,
+	"accountEntryRestrictedObjectFieldName": "r_accountToSEOStudioPageSpeedResults_accountEntryId",
 	"className": "com.liferay.object.model.ObjectDefinition#S8P1",
 	"enableFormContainer": false,
 	"enableIndexSearch": true,
