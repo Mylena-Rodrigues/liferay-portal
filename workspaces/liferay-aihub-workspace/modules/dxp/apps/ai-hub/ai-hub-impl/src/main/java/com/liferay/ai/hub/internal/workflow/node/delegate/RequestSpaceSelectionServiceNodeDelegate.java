@@ -13,6 +13,8 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -82,6 +84,8 @@ public class RequestSpaceSelectionServiceNodeDelegate
 				));
 		}
 
+		ServiceContext serviceContext = executionContext.getServiceContext();
+
 		SseUtil.send(
 			_getAgentDefinitionExternalReferenceCodes(workflowContext), null,
 			"Chat Message Sent", kaleoInstanceToken.getCurrentKaleoNodeName(),
@@ -90,7 +94,8 @@ public class RequestSpaceSelectionServiceNodeDelegate
 				JSONUtil.put(
 					"options", optionsJSONArray
 				).put(
-					"title", "Which space?"
+					"title",
+					_language.get(serviceContext.getLocale(), "which-space")
 				).put(
 					"type", "select"
 				)),
@@ -163,6 +168,9 @@ public class RequestSpaceSelectionServiceNodeDelegate
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private WorkflowInstanceManager _workflowInstanceManager;

@@ -10,6 +10,8 @@ import com.liferay.ai.hub.workflow.node.ServiceNodeDelegate;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -18,9 +20,11 @@ import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
 
+import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Carolina Barbosa
@@ -41,6 +45,10 @@ public class RequestImageStyleServiceNodeDelegate
 
 		String resumeURL = MapUtil.getString(workflowContext, "resumeURL");
 
+		ServiceContext serviceContext = executionContext.getServiceContext();
+
+		Locale locale = serviceContext.getLocale();
+
 		SseUtil.send(
 			_getAgentDefinitionExternalReferenceCodes(workflowContext), null,
 			"Chat Message Sent", kaleoInstanceToken.getCurrentKaleoNodeName(),
@@ -49,12 +57,20 @@ public class RequestImageStyleServiceNodeDelegate
 				JSONUtil.put(
 					"options",
 					JSONUtil.putAll(
-						_getOptionJSONObject(resumeURL, "Digital Art"),
-						_getOptionJSONObject(resumeURL, "Illustration"),
-						_getOptionJSONObject(resumeURL, "Photorealistic"),
-						_getOptionJSONObject(resumeURL, "Watercolor"))
+						_getOptionJSONObject(
+							_language.get(locale, "digital-art"), resumeURL,
+							"Digital Art"),
+						_getOptionJSONObject(
+							_language.get(locale, "illustration"), resumeURL,
+							"Illustration"),
+						_getOptionJSONObject(
+							_language.get(locale, "photorealistic"), resumeURL,
+							"Photorealistic"),
+						_getOptionJSONObject(
+							_language.get(locale, "watercolor"), resumeURL,
+							"Watercolor"))
 				).put(
-					"title", "Which style?"
+					"title", _language.get(locale, "which-style")
 				).put(
 					"type", "select"
 				)),
@@ -82,7 +98,9 @@ public class RequestImageStyleServiceNodeDelegate
 		return new String[] {agentDefinitionExternalReferenceCode};
 	}
 
-	private JSONObject _getOptionJSONObject(String resumeURL, String style) {
+	private JSONObject _getOptionJSONObject(
+		String label, String resumeURL, String style) {
+
 		return JSONUtil.put(
 			"action",
 			JSONUtil.put(
@@ -96,8 +114,11 @@ public class RequestImageStyleServiceNodeDelegate
 					"method", "PUT"
 				))
 		).put(
-			"label", style
+			"label", label
 		);
 	}
+
+	@Reference
+	private Language _language;
 
 }

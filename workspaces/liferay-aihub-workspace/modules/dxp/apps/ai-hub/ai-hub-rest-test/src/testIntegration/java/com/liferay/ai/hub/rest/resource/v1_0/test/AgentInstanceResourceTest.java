@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
@@ -1191,7 +1192,11 @@ public class AgentInstanceResourceTest
 			String line = lines.get(3);
 
 			Assert.assertTrue(
-				line, line.contains("User prompt violates security policy"));
+				line,
+				line.contains(
+					_language.get(
+						LocaleUtil.getDefault(),
+						"the-user-prompt-violates-the-security-policy")));
 
 			Assert.assertTrue(
 				auditMessageCountDownLatch.await(20, TimeUnit.SECONDS));
@@ -1591,7 +1596,11 @@ public class AgentInstanceResourceTest
 			String line = lines.get(3);
 
 			Assert.assertTrue(
-				line, line.contains("User prompt violates security policy"));
+				line,
+				line.contains(
+					_language.get(
+						LocaleUtil.getDefault(),
+						"the-user-prompt-violates-the-security-policy")));
 		}
 		finally {
 			SseUtil.closeAll();
@@ -1713,6 +1722,9 @@ public class AgentInstanceResourceTest
 
 	@Inject
 	private JSONFactory _jsonFactory;
+
+	@Inject
+	private Language _language;
 
 	@Inject
 	private ObjectRelationshipLocalService _objectRelationshipLocalService;

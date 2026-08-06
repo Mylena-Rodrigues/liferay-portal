@@ -13,6 +13,7 @@ import com.liferay.object.rest.dto.v1_0.ListEntry;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -40,7 +41,7 @@ public class GuardrailsUtil {
 
 	public static void populate(
 		DTOConverterRegistry dtoConverterRegistry,
-		List<InputGuardrail> inputGuardrails,
+		List<InputGuardrail> inputGuardrails, Language language,
 		ModelArmorHandler modelArmorHandler,
 		ObjectEntryManager objectEntryManager,
 		List<OutputGuardrail> outputGuardrails, QuotaManager quotaManager,
@@ -96,6 +97,7 @@ public class GuardrailsUtil {
 						new InputGuardrailImpl(
 							serviceContext.getCompanyId(),
 							guardrailObjectEntry.getExternalReferenceCode(),
+							language, serviceContext.getLocale(),
 							GetterUtil.getString(
 								guardrailObjectEntry.getPropertyValue(
 									"location")),
@@ -107,6 +109,7 @@ public class GuardrailsUtil {
 						new OutputGuardrailImpl(
 							serviceContext.getCompanyId(),
 							guardrailObjectEntry.getExternalReferenceCode(),
+							language, serviceContext.getLocale(),
 							GetterUtil.getString(
 								guardrailObjectEntry.getPropertyValue(
 									"location")),

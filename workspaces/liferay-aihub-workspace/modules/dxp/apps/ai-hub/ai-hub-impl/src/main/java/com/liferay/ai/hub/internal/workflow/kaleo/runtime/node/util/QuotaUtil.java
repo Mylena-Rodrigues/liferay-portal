@@ -8,6 +8,7 @@ package com.liferay.ai.hub.internal.workflow.kaleo.runtime.node.util;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -16,6 +17,7 @@ import com.liferay.portal.workflow.kaleo.runtime.constants.WorkflowInstanceDesti
 import java.io.Serializable;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -24,9 +26,9 @@ import java.util.Map;
 public class QuotaUtil {
 
 	public static boolean hasExceededQuota(
-			long companyId, String nodeName, QuotaManager quotaManager,
-			long userId, Map<String, Serializable> workflowContext,
-			long workflowInstanceId)
+			long companyId, Language language, Locale locale, String nodeName,
+			QuotaManager quotaManager, long userId,
+			Map<String, Serializable> workflowContext, long workflowInstanceId)
 		throws PortalException {
 
 		try {
@@ -47,7 +49,7 @@ public class QuotaUtil {
 				WorkflowInstanceDestinationNames.WORKFLOW_INSTANCE, message);
 
 			SseUtil.send(
-				unsupportedOperationException.getMessage(),
+				language.get(locale, "you-have-exceeded-your-quota"),
 				GetterUtil.getString(workflowContext.get("outBoundEventName")),
 				nodeName,
 				GetterUtil.getString(workflowContext.get("sseEventSinkKey")));

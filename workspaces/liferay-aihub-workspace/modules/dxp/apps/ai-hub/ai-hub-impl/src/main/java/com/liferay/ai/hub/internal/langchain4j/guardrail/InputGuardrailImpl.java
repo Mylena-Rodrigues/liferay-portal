@@ -11,6 +11,7 @@ import com.liferay.ai.hub.quota.Source;
 import com.liferay.ai.hub.quota.Usage;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -22,6 +23,7 @@ import dev.langchain4j.guardrail.InputGuardrailResult;
 
 import java.io.Serializable;
 
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -31,12 +33,15 @@ import java.util.Map;
 public class InputGuardrailImpl implements InputGuardrail {
 
 	public InputGuardrailImpl(
-		long companyId, String externalReferenceCode, String location,
-		ModelArmorHandler modelArmorHandler, QuotaManager quotaManager,
-		long userId, Map<String, Serializable> workflowContext) {
+		long companyId, String externalReferenceCode, Language language,
+		Locale locale, String location, ModelArmorHandler modelArmorHandler,
+		QuotaManager quotaManager, long userId,
+		Map<String, Serializable> workflowContext) {
 
 		_companyId = companyId;
 		_externalReferenceCode = externalReferenceCode;
+		_language = language;
+		_locale = locale;
 		_location = location;
 		_modelArmorHandler = modelArmorHandler;
 		_quotaManager = quotaManager;
@@ -47,7 +52,8 @@ public class InputGuardrailImpl implements InputGuardrail {
 	@Override
 	public InputGuardrailResult fatal(String message) {
 		SseUtil.send(
-			"User prompt violates security policy",
+			_language.get(
+				_locale, "the-user-prompt-violates-the-security-policy"),
 			GetterUtil.getString(
 				_workflowContext.get("outBoundEventName"), "Chat Message Sent"),
 			null,
@@ -103,6 +109,8 @@ public class InputGuardrailImpl implements InputGuardrail {
 
 	private final long _companyId;
 	private final String _externalReferenceCode;
+	private final Language _language;
+	private final Locale _locale;
 	private final String _location;
 	private final ModelArmorHandler _modelArmorHandler;
 	private final QuotaManager _quotaManager;

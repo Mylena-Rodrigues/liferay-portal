@@ -30,6 +30,7 @@ import com.liferay.petra.concurrent.NoticeableExecutorService;
 import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
@@ -119,7 +120,8 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 			executionContext.getWorkflowContext();
 
 		if (QuotaUtil.hasExceededQuota(
-				serviceContext.getCompanyId(), currentKaleoNode.getName(),
+				serviceContext.getCompanyId(), _language,
+				serviceContext.getLocale(), currentKaleoNode.getName(),
 				_quotaManager, serviceContext.getUserId(), workflowContext,
 				kaleoInstanceToken.getKaleoInstanceId())) {
 
@@ -157,9 +159,9 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 		List<OutputGuardrail> outputGuardrails = new ArrayList<>();
 
 		GuardrailsUtil.populate(
-			_dtoConverterRegistry, inputGuardrails, _modelArmorHandler,
-			_objectEntryManager, outputGuardrails, _quotaManager,
-			serviceContext, workflowContext);
+			_dtoConverterRegistry, inputGuardrails, _language,
+			_modelArmorHandler, _objectEntryManager, outputGuardrails,
+			_quotaManager, serviceContext, workflowContext);
 
 		Consumer<Throwable> onErrorConsumer = OnErrorConsumerUtil.create(
 			sseEventSinkKey);
@@ -310,6 +312,9 @@ public class LLMNodeExecutor extends BaseNodeExecutor {
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private ModelArmorHandler _modelArmorHandler;

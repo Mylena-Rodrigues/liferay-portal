@@ -13,6 +13,8 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -24,6 +26,7 @@ import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
 
 import java.io.Serializable;
 
+import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -64,10 +67,14 @@ public class SuggestProjectLinkServiceNodeDelegate
 			return StringPool.BLANK;
 		}
 
+		ServiceContext serviceContext = executionContext.getServiceContext();
+
+		Locale locale = serviceContext.getLocale();
+
 		SseUtil.send(
 			_getAgentDefinitionExternalReferenceCodes(workflowContext),
 			StringBundler.concat(
-				"**Suggested assets:**\n\n",
+				"**", _language.get(locale, "suggested-assets"), ":**\n\n",
 				StringUtil.merge(
 					JSONUtil.toList(
 						jsonArray,
@@ -97,10 +104,14 @@ public class SuggestProjectLinkServiceNodeDelegate
 				JSONUtil.put(
 					"options",
 					JSONUtil.putAll(
-						_getOptionJSONObject("Yes", resumeURL, "yes"),
-						_getOptionJSONObject("No", resumeURL, "no"))
+						_getOptionJSONObject(
+							_language.get(locale, "yes"), resumeURL, "yes"),
+						_getOptionJSONObject(
+							_language.get(locale, "no"), resumeURL, "no"))
 				).put(
-					"title", "Would you like me to add all suggested assets?"
+					"title",
+					_language.get(
+						locale, "would-you-like-me-to-add-all-suggested-assets")
 				).put(
 					"type", "quick-replies"
 				)),
@@ -155,6 +166,9 @@ public class SuggestProjectLinkServiceNodeDelegate
 
 	@Reference
 	private KaleoSignaler _kaleoSignaler;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private WorkflowInstanceManager _workflowInstanceManager;

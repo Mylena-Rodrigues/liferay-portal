@@ -11,6 +11,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -19,6 +21,7 @@ import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 
 import java.io.Serializable;
 
+import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -51,6 +54,10 @@ public class SuggestFindOrGenerateContentServiceNodeDelegate
 
 		String resumeURL = MapUtil.getString(workflowContext, "resumeURL");
 
+		ServiceContext serviceContext = executionContext.getServiceContext();
+
+		Locale locale = serviceContext.getLocale();
+
 		SseUtil.send(
 			_getAgentDefinitionExternalReferenceCodes(workflowContext), null,
 			"Chat Message Sent", kaleoInstanceToken.getCurrentKaleoNodeName(),
@@ -60,13 +67,15 @@ public class SuggestFindOrGenerateContentServiceNodeDelegate
 					"options",
 					JSONUtil.putAll(
 						_getOptionJSONObject(
-							"Find Matching Assets in CMS", resumeURL,
-							"findMatchingAssets"),
+							_language.get(
+								locale, "find-matching-assets-in-cms"),
+							resumeURL, "findMatchingAssets"),
 						_getOptionJSONObject(
-							"Generate Content for Gaps", resumeURL,
-							"generateContent"))
+							_language.get(locale, "generate-content-for-gaps"),
+							resumeURL, "generateContent"))
 				).put(
-					"title", "What would you like to do next?"
+					"title",
+					_language.get(locale, "what-would-you-like-to-do-next")
 				).put(
 					"type", "quick-replies"
 				)),
@@ -118,5 +127,8 @@ public class SuggestFindOrGenerateContentServiceNodeDelegate
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Language _language;
 
 }
