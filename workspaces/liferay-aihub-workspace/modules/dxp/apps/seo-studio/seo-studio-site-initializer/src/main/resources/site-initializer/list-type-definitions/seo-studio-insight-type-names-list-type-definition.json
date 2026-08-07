@@ -2,6 +2,12 @@
 	"externalReferenceCode": "L_SEO_STUDIO_INSIGHT_TYPE_NAMES",
 	"listTypeEntries": [
 		{
+			"externalReferenceCode": "BROKEN_INTERNAL_LINKS",
+			"key": "brokenInternalLinks",
+			"name": "Broken Internal Links",
+			"system": true
+		},
+		{
 			"externalReferenceCode": "MISSING_OR_EMPTY_META_DESCRIPTION_TAG",
 			"key": "missingOrEmptyMetaDescriptionTag",
 			"name": "Missing or Empty Meta Description Tag",
@@ -17,6 +23,24 @@
 			"externalReferenceCode": "ORPHAN_PAGES",
 			"key": "orphanPages",
 			"name": "Orphan Pages",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "REDIRECT_CHAINS",
+			"key": "redirectChains",
+			"name": "Redirect Chains",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "REDIRECT_LOOPS",
+			"key": "redirectLoops",
+			"name": "Redirect Loops",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "UNFRIENDLY_URLS",
+			"key": "unfriendlyURLs",
+			"name": "Unfriendly URLs",
 			"system": true
 		}
 	],
