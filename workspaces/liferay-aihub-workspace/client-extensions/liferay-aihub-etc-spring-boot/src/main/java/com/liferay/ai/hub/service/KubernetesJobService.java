@@ -169,8 +169,8 @@ public class KubernetesJobService {
 
 		Map<String, Object> domain = domains.get(0);
 
-		domain.put("url", uri.getScheme() + "://" + uri.getAuthority());
 		domain.put("seed_urls", Collections.singletonList(uri.toString()));
+		domain.put("url", uri.getScheme() + "://" + uri.getAuthority());
 
 		configuration.put("log_level", _crawlerLogLevel);
 		configuration.put("output_index", indexName);
