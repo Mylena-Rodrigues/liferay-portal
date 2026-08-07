@@ -118,7 +118,6 @@ public class ServiceNodeExecutor extends BaseNodeExecutor {
 
 		Company company = _companyLocalService.getCompany(
 			currentKaleoNode.getCompanyId());
-
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 
