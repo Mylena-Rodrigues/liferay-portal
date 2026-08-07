@@ -55,6 +55,32 @@
 			"type": "String"
 		},
 		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "MAX_DOCUMENTS_COUNT",
+			"indexed": true,
+			"label": {
+				"en_US": "Max Documents Count"
+			},
+			"name": "maxDocumentsCount",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "MAX_FRAGMENTS_COUNT_PER_DOCUMENT",
+			"indexed": true,
+			"label": {
+				"en_US": "Max Fragments Count per Document"
+			},
+			"name": "maxFragmentsCountPerDocument",
+			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
 			"DBType": "String",
 			"businessType": "Text",
 			"defaultValue": "null",

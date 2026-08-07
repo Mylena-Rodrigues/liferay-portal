@@ -141,6 +141,11 @@ public class RetrievalAugmentorUtil {
 					contentRetriever -> GetterUtil.getString(
 						contentRetriever.getPropertyValue("indexName")),
 					String.class),
+				_getMinPositiveInteger(
+					5, contentRetrieversObjectEntries, "maxDocumentsCount"),
+				_getMinPositiveInteger(
+					2, contentRetrieversObjectEntries,
+					"maxFragmentsCountPerDocument"),
 				searchEngineAdapter, userId, workflowInstanceId);
 		}
 		catch (Exception exception) {
@@ -193,6 +198,31 @@ public class RetrievalAugmentorUtil {
 		}
 
 		return null;
+	}
+
+	private static int _getMinPositiveInteger(
+		int defaultValue, ObjectEntry[] objectEntries, String propertyName) {
+
+		int minValue = 0;
+
+		for (ObjectEntry objectEntry : objectEntries) {
+			int propertyValue = GetterUtil.getInteger(
+				objectEntry.getPropertyValue(propertyName));
+
+			if (propertyValue <= 0) {
+				continue;
+			}
+
+			if ((minValue == 0) || (propertyValue < minValue)) {
+				minValue = propertyValue;
+			}
+		}
+
+		if (minValue == 0) {
+			return defaultValue;
+		}
+
+		return minValue;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

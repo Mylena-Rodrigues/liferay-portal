@@ -9,6 +9,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.search.SearchSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.SearchSearchResponse;
+import com.liferay.portal.search.highlight.FieldConfigBuilder;
 import com.liferay.portal.search.highlight.FieldConfigBuilderFactory;
 import com.liferay.portal.search.highlight.HighlightBuilderFactory;
 import com.liferay.portal.search.highlight.HighlightField;
@@ -70,7 +71,7 @@ public class ElasticsearchContentRetrieverTest {
 		Mockito.when(
 			highScoreSearchHit.getHighlightFieldsMap()
 		).thenReturn(
-			Map.of("text_embedding", highlightField)
+			Map.of(_FIELD_TEXT_EMBEDDING, highlightField)
 		);
 
 		Mockito.when(
@@ -84,7 +85,7 @@ public class ElasticsearchContentRetrieverTest {
 		Mockito.when(
 			highScoreSearchHit.getSourcesMap()
 		).thenReturn(
-			Map.of(_URL, url)
+			Map.of(_FIELD_URL, url)
 		);
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
@@ -110,16 +111,29 @@ public class ElasticsearchContentRetrieverTest {
 			searchSearchResponse
 		);
 
+		FieldConfigBuilderFactory fieldConfigBuilderFactory = Mockito.mock(
+			FieldConfigBuilderFactory.class);
+
+		FieldConfigBuilder fieldConfigBuilder = Mockito.mock(
+			FieldConfigBuilder.class, Mockito.RETURNS_SELF);
+
+		Mockito.when(
+			fieldConfigBuilderFactory.builder(_FIELD_TEXT_EMBEDDING)
+		).thenReturn(
+			fieldConfigBuilder
+		);
+
+		int maxDocumentsCount = RandomTestUtil.randomInt();
+		int maxFragmentsCountPerDocument = RandomTestUtil.randomInt();
+
 		ElasticsearchContentRetriever elasticsearchContentRetriever =
 			new ElasticsearchContentRetriever(
-				Mockito.mock(
-					FieldConfigBuilderFactory.class,
-					Mockito.RETURNS_DEEP_STUBS),
+				fieldConfigBuilderFactory,
 				Mockito.mock(
 					HighlightBuilderFactory.class, Mockito.RETURNS_DEEP_STUBS),
-				new String[] {RandomTestUtil.randomString()},
-				searchEngineAdapter, RandomTestUtil.randomLong(),
-				RandomTestUtil.randomLong());
+				new String[] {RandomTestUtil.randomString()}, maxDocumentsCount,
+				maxFragmentsCountPerDocument, searchEngineAdapter,
+				RandomTestUtil.randomLong(), RandomTestUtil.randomLong());
 
 		Query query = Mockito.mock(Query.class);
 
@@ -141,7 +155,7 @@ public class ElasticsearchContentRetrieverTest {
 
 		Metadata metadata = textSegment.metadata();
 
-		Assert.assertEquals(url, metadata.getString(_URL));
+		Assert.assertEquals(url, metadata.getString(_FIELD_URL));
 
 		ArgumentCaptor<SearchSearchRequest> argumentCaptor =
 			ArgumentCaptor.forClass(SearchSearchRequest.class);
@@ -156,9 +170,20 @@ public class ElasticsearchContentRetrieverTest {
 
 		Assert.assertTrue(searchSearchRequest.getFetchSource());
 		Assert.assertArrayEquals(
-			new String[] {_URL}, searchSearchRequest.getFetchSourceIncludes());
+			new String[] {_FIELD_URL},
+			searchSearchRequest.getFetchSourceIncludes());
+		Assert.assertEquals(
+			maxDocumentsCount, (int)searchSearchRequest.getSize());
+
+		Mockito.verify(
+			fieldConfigBuilder
+		).numFragments(
+			maxFragmentsCountPerDocument
+		);
 	}
 
-	private static final String _URL = "url";
+	private static final String _FIELD_TEXT_EMBEDDING = "text_embedding";
+
+	private static final String _FIELD_URL = "url";
 
 }

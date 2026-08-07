@@ -35,6 +35,7 @@ public class ElasticsearchContentRetriever extends BaseContentRetriever {
 	public ElasticsearchContentRetriever(
 		FieldConfigBuilderFactory fieldConfigBuilderFactory,
 		HighlightBuilderFactory highlightBuilderFactory, String[] indexNames,
+		int maxDocumentsCount, int maxFragmentsCountPerDocument,
 		SearchEngineAdapter searchEngineAdapter, long userId,
 		long workflowInstanceId) {
 
@@ -43,6 +44,8 @@ public class ElasticsearchContentRetriever extends BaseContentRetriever {
 		_fieldConfigBuilderFactory = fieldConfigBuilderFactory;
 		_highlightBuilderFactory = highlightBuilderFactory;
 		_indexNames = indexNames;
+		_maxDocumentsCount = maxDocumentsCount;
+		_maxFragmentsCountPerDocument = maxFragmentsCountPerDocument;
 		_searchEngineAdapter = searchEngineAdapter;
 	}
 
@@ -64,6 +67,8 @@ public class ElasticsearchContentRetriever extends BaseContentRetriever {
 			).addFieldConfig(
 				_fieldConfigBuilderFactory.builder(
 					"text_embedding"
+				).numFragments(
+					_maxFragmentsCountPerDocument
 				).build()
 			).build());
 		searchSearchRequest.setIndexNames(_indexNames);
@@ -77,6 +82,7 @@ public class ElasticsearchContentRetriever extends BaseContentRetriever {
 						"query", query.text()
 					)
 				).toString()));
+		searchSearchRequest.setSize(_maxDocumentsCount);
 		searchSearchRequest.setStoredFields("text_embedding");
 
 		SearchSearchResponse searchSearchResponse =
@@ -112,6 +118,8 @@ public class ElasticsearchContentRetriever extends BaseContentRetriever {
 	private final FieldConfigBuilderFactory _fieldConfigBuilderFactory;
 	private final HighlightBuilderFactory _highlightBuilderFactory;
 	private final String[] _indexNames;
+	private final int _maxDocumentsCount;
+	private final int _maxFragmentsCountPerDocument;
 	private final SearchEngineAdapter _searchEngineAdapter;
 
 }
