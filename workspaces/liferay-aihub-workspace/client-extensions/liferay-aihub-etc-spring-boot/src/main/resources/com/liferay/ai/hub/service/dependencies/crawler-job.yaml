@@ -12,7 +12,11 @@ spec:
                 app: aihub-crawler
         spec:
             containers:
-                -   image: placeholder
+                -   command:
+                        -   /bin/bash
+                        -   "-c"
+                        -   printf '%s' "${CRAWLER_CONFIG_YAML}" > /tmp/crawl.yml && exec bundle exec bin/crawler crawl /tmp/crawl.yml
+                    image: placeholder
                     name: crawler
                     resources:
                         limits:

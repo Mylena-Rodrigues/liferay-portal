@@ -24,11 +24,20 @@ import java.io.InputStream;
 
 import java.net.URI;
 
+import java.nio.charset.StandardCharsets;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * @author José Abelenda
@@ -72,16 +81,8 @@ public class KubernetesJobService {
 				_imageName
 			).withEnv(
 				_createEnvVar(
-					"ACCOUNT_ENTRY_ID", String.valueOf(accountEntryId)),
-				_createEnvVar(
-					"CRAWLER_DOMAIN_URL",
-					uri.getScheme() + "://" + uri.getAuthority()),
-				_createEnvVar("CRAWLER_LOG_LEVEL", _crawlerLogLevel),
-				_createEnvVar("CRAWLER_OUTPUT_INDEX", indexName),
-				_createEnvVar("CRAWLER_SEED_URL", url),
-				_createEnvVar("ELASTICSEARCH_HOST", _elasticsearchHost),
-				_createEnvVar(
-					"ELASTICSEARCH_PORT", String.valueOf(_elasticsearchPort))
+					"CRAWLER_CONFIG_YAML",
+					_getCrawlerConfigurationYAML(indexName, uri))
 			).endContainer(
 			).endSpec(
 			).endTemplate(
@@ -118,6 +119,17 @@ public class KubernetesJobService {
 		Class<?> clazz = getClass();
 
 		try (InputStream inputStream = clazz.getResourceAsStream(
+				"dependencies/crawler-configuration.yaml")) {
+
+			_crawlerConfigurationTemplate = new String(
+				inputStream.readAllBytes(), StandardCharsets.UTF_8);
+		}
+		catch (IOException ioException) {
+			throw new IllegalStateException(
+				"Unable to load \"crawler-configuration.yaml\"", ioException);
+		}
+
+		try (InputStream inputStream = clazz.getResourceAsStream(
 				"dependencies/crawler-job.yaml")) {
 
 			_job = Serialization.unmarshal(inputStream, Job.class);
@@ -142,6 +154,36 @@ public class KubernetesJobService {
 		).build();
 	}
 
+	private String _getCrawlerConfigurationYAML(String indexName, URI uri) {
+		DumperOptions dumperOptions = new DumperOptions();
+
+		dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+		Yaml yaml = new Yaml(dumperOptions);
+
+		Map<String, Object> configuration = yaml.load(
+			_crawlerConfigurationTemplate);
+
+		List<Map<String, Object>> domains =
+			(List<Map<String, Object>>)configuration.get("domains");
+
+		Map<String, Object> domain = domains.get(0);
+
+		domain.put("url", uri.getScheme() + "://" + uri.getAuthority());
+		domain.put("seed_urls", Collections.singletonList(uri.toString()));
+
+		configuration.put("log_level", _crawlerLogLevel);
+		configuration.put("output_index", indexName);
+
+		Map<String, Object> elasticsearch =
+			(Map<String, Object>)configuration.get("elasticsearch");
+
+		elasticsearch.put("host", _elasticsearchHost);
+		elasticsearch.put("port", _elasticsearchPort);
+
+		return yaml.dump(configuration);
+	}
+
 	private ScalableResource<Job> _getJobScalableResource(String name) {
 		return _kubernetesClient.batch(
 		).v1(
@@ -155,6 +197,8 @@ public class KubernetesJobService {
 
 	private static final Log _log = LogFactory.getLog(
 		KubernetesJobService.class);
+
+	private String _crawlerConfigurationTemplate;
 
 	@Value("${liferay.ai.hub.crawler.log.level}")
 	private String _crawlerLogLevel;

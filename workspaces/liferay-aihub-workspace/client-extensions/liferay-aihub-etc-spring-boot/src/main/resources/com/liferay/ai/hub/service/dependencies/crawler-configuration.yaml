@@ -1,0 +1,23 @@
+domains:
+    -   crawl_rules:
+            -   pattern: .*[?&](p_l_back_url|p_p_id|p_p_state|p_p_mode|p_p_lifecycle|p_auth|refererPlid|doAsUserId|redirect)=
+                policy: deny
+                type: regex
+            -   pattern: .*[?&](cur|delta|start)=
+                policy: deny
+                type: regex
+            -   pattern: /c/
+                policy: deny
+                type: begins
+        seed_urls: []
+        url: placeholder
+elasticsearch:
+    bulk_api:
+        max_items: 100
+        max_size_bytes: 1048576
+    host: placeholder
+    pipeline_enabled: false
+    port: 9200
+log_level: info
+output_index: placeholder
+output_sink: elasticsearch

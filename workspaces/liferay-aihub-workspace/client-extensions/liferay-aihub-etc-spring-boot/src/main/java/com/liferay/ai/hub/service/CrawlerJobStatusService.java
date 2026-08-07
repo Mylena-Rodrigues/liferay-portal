@@ -24,6 +24,8 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -234,43 +236,23 @@ public class CrawlerJobStatusService extends BaseService {
 
 	private void _putIndexedDocumentStats(JSONObject jsonObject, String name) {
 		try {
-			String jobLog = _kubernetesJobService.getJobLog(name, 50);
+			String jobLog = _kubernetesJobService.getJobLog(name, 200);
 
 			if (jobLog == null) {
 				return;
 			}
 
-			for (String line : jobLog.split("\n")) {
-				if (!line.contains("crawler_final_report")) {
-					continue;
-				}
+			Matcher matcher = _pattern.matcher(jobLog);
 
-				JSONObject lineJSONObject = new JSONObject(line);
-
-				JSONObject jsonPayloadJSONObject = lineJSONObject.optJSONObject(
-					"jsonPayload");
-
-				if (jsonPayloadJSONObject == null) {
-					jsonPayloadJSONObject = lineJSONObject;
-				}
-
-				JSONObject crawlerJSONObject =
-					jsonPayloadJSONObject.optJSONObject("crawler");
-
-				if (crawlerJSONObject == null) {
-					return;
-				}
-
-				jsonObject.put(
-					"indexedDocumentBytes",
-					crawlerJSONObject.getLong("docs_upserted_bytes")
-				).put(
-					"indexedDocumentCount",
-					crawlerJSONObject.getLong("docs_upserted")
-				);
-
+			if (!matcher.find()) {
 				return;
 			}
+
+			jsonObject.put(
+				"indexedDocumentBytes", Long.parseLong(matcher.group(2))
+			).put(
+				"indexedDocumentCount", Long.parseLong(matcher.group(1))
+			);
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -283,6 +265,10 @@ public class CrawlerJobStatusService extends BaseService {
 
 	private static final Log _log = LogFactory.getLog(
 		CrawlerJobStatusService.class);
+
+	private static final Pattern _pattern = Pattern.compile(
+		"Documents upserted:\\s+(\\d+).*?Volume \\(bytes\\):\\s+(\\d+)",
+		Pattern.DOTALL);
 
 	private final KubernetesJobService _kubernetesJobService;
 
