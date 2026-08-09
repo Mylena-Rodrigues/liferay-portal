@@ -141,9 +141,9 @@ public class RetrievalAugmentorUtil {
 					contentRetriever -> GetterUtil.getString(
 						contentRetriever.getPropertyValue("indexName")),
 					String.class),
-				_getMinPositiveInteger(
+				_getMinValue(
 					5, contentRetrieversObjectEntries, "maxDocumentsCount"),
-				_getMinPositiveInteger(
+				_getMinValue(
 					2, contentRetrieversObjectEntries,
 					"maxFragmentsCountPerDocument"),
 				searchEngineAdapter, userId, workflowInstanceId);
@@ -200,7 +200,7 @@ public class RetrievalAugmentorUtil {
 		return null;
 	}
 
-	private static int _getMinPositiveInteger(
+	private static int _getMinValue(
 		int defaultValue, ObjectEntry[] objectEntries, String propertyName) {
 
 		int minValue = 0;
