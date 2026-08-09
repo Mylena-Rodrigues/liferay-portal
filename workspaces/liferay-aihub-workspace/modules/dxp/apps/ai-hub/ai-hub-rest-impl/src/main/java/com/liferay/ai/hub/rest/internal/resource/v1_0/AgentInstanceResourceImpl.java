@@ -15,8 +15,12 @@ import com.liferay.ai.hub.rest.manager.v1_0.AgentDefinitionManager;
 import com.liferay.ai.hub.rest.resource.v1_0.AgentInstanceResource;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.ai.hub.util.AccountEntryUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.transaction.Propagation;
+import com.liferay.portal.kernel.transaction.TransactionConfig;
+import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
@@ -100,7 +104,7 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 			agentDefinition.getWorkflowDefinitionName()
 		).build();
 
-		Object result = _defaultAgent.invoke(agentContext);
+		Object result = _invokeAgent(agentContext);
 
 		return new AgentInstance() {
 			{
@@ -153,6 +157,30 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 			).build(),
 			agentInstanceId);
 	}
+
+	private Object _invokeAgent(AgentContext agentContext) throws Exception {
+
+		// The agent starts a workflow instance and then blocks until that
+		// workflow completes. Kaleo defers the signal that starts a workflow
+		// to the commit of the outermost transaction, so an ambient
+		// transaction would withhold that signal until this method returns,
+		// and this method only returns once the workflow it is waiting for has
+		// completed. Suspending the ambient transaction lets the workflow
+		// start, and leaves each service call the agent makes to commit on its
+		// own boundary
+
+		try {
+			return TransactionInvokerUtil.invoke(
+				_transactionConfig, () -> _defaultAgent.invoke(agentContext));
+		}
+		catch (Throwable throwable) {
+			return ReflectionUtil.throwException(throwable);
+		}
+	}
+
+	private static final TransactionConfig _transactionConfig =
+		TransactionConfig.Factory.create(
+			Propagation.NOT_SUPPORTED, new Class<?>[] {Exception.class});
 
 	@Reference
 	private AgentDefinitionManager _agentDefinitionManager;

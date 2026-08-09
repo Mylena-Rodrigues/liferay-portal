@@ -5,6 +5,7 @@ dependencies {
 	compileOnly group: "com.liferay", name: "com.liferay.object.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.object.rest.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.petra.function", version: "default"
+	compileOnly group: "com.liferay", name: "com.liferay.petra.reflect", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.petra.string", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.portal.configuration.module.configuration.api", version: "default"
 	compileOnly group: "com.liferay", name: "com.liferay.portal.odata.api", version: "default"
