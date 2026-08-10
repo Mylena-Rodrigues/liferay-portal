@@ -7,7 +7,9 @@ package com.liferay.seo.studio.controller;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -49,6 +51,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -670,6 +674,98 @@ public class CrawlerRestController extends BaseRestController {
 			));
 	}
 
+	private List<JSONObject> _getUnfriendlyURLsInsightJSONObjects(
+		List<CrawlHit> crawlHits) {
+
+		Set<String> unfriendlyPageURLs = new LinkedHashSet<>();
+
+		for (CrawlHit crawlHit : crawlHits) {
+			String canonicalURL = crawlHit.getCanonicalURL();
+
+			if (Validator.isNull(canonicalURL)) {
+				continue;
+			}
+
+			try {
+				URI uri = URI.create(canonicalURL);
+
+				String path = uri.getPath();
+
+				if (Validator.isNull(path)) {
+					continue;
+				}
+
+				Matcher friendlyPathMatcher = _friendlyPathPattern.matcher(
+					path);
+
+				String[] pathSegments = ArrayUtil.filter(
+					StringUtil.split(path, CharPool.SLASH),
+					Validator::isNotNull);
+
+				Matcher uppercaseMatcher = _uppercasePattern.matcher(path);
+
+				if (Validator.isNotNull(uri.getQuery()) ||
+					(path.length() > 100) || (pathSegments.length > 4) ||
+					!friendlyPathMatcher.matches() || uppercaseMatcher.find()) {
+
+					unfriendlyPageURLs.add(canonicalURL);
+
+					continue;
+				}
+
+				for (String pathSegment : pathSegments) {
+					Matcher numericMatcher = _numericPattern.matcher(
+						pathSegment);
+					Matcher uuidMatcher = _uuidPattern.matcher(pathSegment);
+
+					if (numericMatcher.matches() || uuidMatcher.matches()) {
+						unfriendlyPageURLs.add(canonicalURL);
+
+						break;
+					}
+				}
+			}
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Unable to parse URL " + canonicalURL, exception);
+				}
+
+				unfriendlyPageURLs.add(canonicalURL);
+			}
+		}
+
+		return Arrays.asList(
+			new JSONObject(
+			).put(
+				"category", "linksAndURLs"
+			).put(
+				"classification", "opportunity"
+			).put(
+				"description",
+				StringBundler.concat(
+					"This page has a URL that is long, contains numeric IDs ",
+					"or query parameters, or uses nondescriptive slugs. SEO ",
+					"friendly URLs reinforce topical relevance for both users ",
+					"scanning SERP results and search engines parsing link ",
+					"signals.")
+			).put(
+				"fixHint",
+				StringBundler.concat(
+					"Rewrite the URL to a short, lowercase, hyphen separated ",
+					"slug that reflects the page topic, for example ",
+					"/enterprise-search instead of /web/guest/article?id=",
+					"12345. Set up a 301 redirect from the old URL to ",
+					"preserve link equity and avoid breaking inbound links.")
+			).put(
+				"name", "unfriendlyURLs"
+			).put(
+				"pageURLs", unfriendlyPageURLs
+			).put(
+				"severity", "2"
+			));
+	}
+
 	private boolean _isBrokenLinkException(Throwable throwable) {
 		if (throwable == null) {
 			return false;
@@ -842,6 +938,8 @@ public class CrawlerRestController extends BaseRestController {
 			insightJSONObjects.addAll(
 				_getRedirectLoopsInsightJSONObjects(
 					issueURLsMap, linkedURLPageURLsMap));
+			insightJSONObjects.addAll(
+				_getUnfriendlyURLsInsightJSONObjects(crawlHits));
 
 			long accountEntryId = seoStudioScanJSONObject.getLong(
 				"r_accountToSEOStudioScans_accountEntryId");
@@ -897,6 +995,14 @@ public class CrawlerRestController extends BaseRestController {
 
 	private static final Log _log = LogFactory.getLog(
 		CrawlerRestController.class);
+
+	private static final Pattern _friendlyPathPattern = Pattern.compile(
+		"[\\p{L}\\p{N}\\-/.]*");
+	private static final Pattern _numericPattern = Pattern.compile("[0-9]+");
+	private static final Pattern _uppercasePattern = Pattern.compile("\\p{Lu}");
+	private static final Pattern _uuidPattern = Pattern.compile(
+		".*[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-" +
+			"[0-9a-fA-F]{12}.*");
 
 	private final ExecutorService _executorService =
 		Executors.newFixedThreadPool(8);
