@@ -512,6 +512,44 @@ public class CrawlerRestController extends BaseRestController {
 		return pageURLs;
 	}
 
+	private List<JSONObject> _getRedirectChainsInsightJSONObjects(
+		Map<String, Set<String>> issueURLsMap,
+		Map<String, Set<String>> linkedURLPageURLsMap) {
+
+		Set<String> redirectChainURLs = issueURLsMap.getOrDefault(
+			_ISSUE_REDIRECT_CHAIN, Collections.emptySet());
+
+		return Arrays.asList(
+			new JSONObject(
+			).put(
+				"category", "linksAndURLs"
+			).put(
+				"classification", "warning"
+			).put(
+				"description",
+				StringBundler.concat(
+					"This page has one or more internal links passing through ",
+					"more than one redirect before reaching the final URL. ",
+					"Each extra hop adds latency, dilutes link equity ",
+					"slightly, and risks the chain breaking if any ",
+					"intermediate redirect is later removed.")
+			).put(
+				"fixHint",
+				StringBundler.concat(
+					"Update the source link or redirect rule so it points ",
+					"directly to the terminal URL in one hop. Flattening ",
+					"chains is a one time hygiene fix that pays off in faster ",
+					"navigation and more durable links.")
+			).put(
+				"name", "redirectChains"
+			).put(
+				"pageURLs",
+				_getPageURLs(linkedURLPageURLsMap, redirectChainURLs)
+			).put(
+				"severity", "2"
+			));
+	}
+
 	private String _getRedirectIssue(URI domainURI, String url) {
 		try {
 			String redirectURL = url;
@@ -551,6 +589,10 @@ public class CrawlerRestController extends BaseRestController {
 						return _ISSUE_BROKEN_INTERNAL_LINK;
 					}
 
+					if (hopCount > 1) {
+						return _ISSUE_REDIRECT_CHAIN;
+					}
+
 					return null;
 				}
 
@@ -565,7 +607,7 @@ public class CrawlerRestController extends BaseRestController {
 				redirectURL = resolvedURL;
 			}
 
-			return null;
+			return _ISSUE_REDIRECT_CHAIN;
 		}
 		catch (Exception exception) {
 			if (_isBrokenLinkException(exception)) {
@@ -750,6 +792,9 @@ public class CrawlerRestController extends BaseRestController {
 				_getMetadataInsightJSONObjects(crawlHits));
 			insightJSONObjects.addAll(
 				_getOrphanPagesInsightJSONObjects(crawlHits, domainURL));
+			insightJSONObjects.addAll(
+				_getRedirectChainsInsightJSONObjects(
+					issueURLsMap, linkedURLPageURLsMap));
 
 			long accountEntryId = seoStudioScanJSONObject.getLong(
 				"r_accountToSEOStudioScans_accountEntryId");
@@ -798,6 +843,8 @@ public class CrawlerRestController extends BaseRestController {
 
 	private static final String _ISSUE_BROKEN_INTERNAL_LINK =
 		"brokenInternalLink";
+
+	private static final String _ISSUE_REDIRECT_CHAIN = "redirectChain";
 
 	private static final Log _log = LogFactory.getLog(
 		CrawlerRestController.class);
