@@ -160,14 +160,11 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 
 	private Object _invokeAgent(AgentContext agentContext) throws Exception {
 
-		// The agent starts a workflow instance and then blocks until that
-		// workflow completes. Kaleo defers the signal that starts a workflow
-		// to the commit of the outermost transaction, so an ambient
-		// transaction would withhold that signal until this method returns,
-		// and this method only returns once the workflow it is waiting for has
-		// completed. Suspending the ambient transaction lets the workflow
-		// start, and leaves each service call the agent makes to commit on its
-		// own boundary
+		// Kaleo defers the signal that starts a workflow to the commit of the
+		// outermost transaction. Under an ambient transaction that signal
+		// waits for this method to return, while this method waits for the
+		// workflow the agent started, so the request deadlocks until it times
+		// out.
 
 		try {
 			return TransactionInvokerUtil.invoke(
