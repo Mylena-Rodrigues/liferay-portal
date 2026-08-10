@@ -554,7 +554,13 @@ public class CrawlerRestController extends BaseRestController {
 		try {
 			String redirectURL = url;
 
+			Set<String> visitedURLs = new LinkedHashSet<>();
+
 			for (int hopCount = 0; hopCount <= 10; hopCount++) {
+				if (!visitedURLs.add(redirectURL)) {
+					return _ISSUE_REDIRECT_LOOP;
+				}
+
 				HttpResponse<Void> httpResponse = _getHttpResponse(redirectURL);
 
 				int statusCode = httpResponse.statusCode();
@@ -624,6 +630,44 @@ public class CrawlerRestController extends BaseRestController {
 
 			return null;
 		}
+	}
+
+	private List<JSONObject> _getRedirectLoopsInsightJSONObjects(
+		Map<String, Set<String>> issueURLsMap,
+		Map<String, Set<String>> linkedURLPageURLsMap) {
+
+		Set<String> redirectLoopURLs = issueURLsMap.getOrDefault(
+			_ISSUE_REDIRECT_LOOP, Collections.emptySet());
+
+		return Arrays.asList(
+			new JSONObject(
+			).put(
+				"category", "linksAndURLs"
+			).put(
+				"classification", "problem"
+			).put(
+				"description",
+				StringBundler.concat(
+					"This page has one or more internal links entering a ",
+					"redirect cycle that points back to itself. Loops produce ",
+					"an immediate browser error (\"too many redirects\") and ",
+					"block both users and crawlers from reaching any page in ",
+					"the cycle.")
+			).put(
+				"fixHint",
+				StringBundler.concat(
+					"Trace the cycle, identify which redirect rule should be ",
+					"removed or rewritten to break it, and confirm the final ",
+					"destination resolves to a real 200 page. Redirect loops ",
+					"are always editorial choices, so there is no safe ",
+					"automated fix.")
+			).put(
+				"name", "redirectLoops"
+			).put(
+				"pageURLs", _getPageURLs(linkedURLPageURLsMap, redirectLoopURLs)
+			).put(
+				"severity", "2"
+			));
 	}
 
 	private boolean _isBrokenLinkException(Throwable throwable) {
@@ -795,6 +839,9 @@ public class CrawlerRestController extends BaseRestController {
 			insightJSONObjects.addAll(
 				_getRedirectChainsInsightJSONObjects(
 					issueURLsMap, linkedURLPageURLsMap));
+			insightJSONObjects.addAll(
+				_getRedirectLoopsInsightJSONObjects(
+					issueURLsMap, linkedURLPageURLsMap));
 
 			long accountEntryId = seoStudioScanJSONObject.getLong(
 				"r_accountToSEOStudioScans_accountEntryId");
@@ -845,6 +892,8 @@ public class CrawlerRestController extends BaseRestController {
 		"brokenInternalLink";
 
 	private static final String _ISSUE_REDIRECT_CHAIN = "redirectChain";
+
+	private static final String _ISSUE_REDIRECT_LOOP = "redirectLoop";
 
 	private static final Log _log = LogFactory.getLog(
 		CrawlerRestController.class);
