@@ -10,6 +10,7 @@ import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.seo.studio.constants.SEOStudioScanConstants;
 import com.liferay.seo.studio.model.CrawlHit;
@@ -21,9 +22,14 @@ import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobCondition;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 
+import jakarta.annotation.PreDestroy;
+
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
@@ -31,11 +37,18 @@ import java.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -164,8 +177,13 @@ public class CrawlerRestController extends BaseRestController {
 		}
 	}
 
+	@PreDestroy
+	public void preDestroy() {
+		_executorService.shutdown();
+	}
+
 	@Scheduled(fixedDelay = 60000)
-	public void scheduledPatchSEOStudioScans() throws Exception {
+	public void scheduledPatchSEOStudioScans() {
 		JSONArray itemsJSONArray = new JSONObject(
 			_seoStudioService.getActiveSEOStudioScans()
 		).optJSONArray(
@@ -179,8 +197,160 @@ public class CrawlerRestController extends BaseRestController {
 		for (Object object : itemsJSONArray) {
 			JSONObject seoStudioScanJSONObject = (JSONObject)object;
 
-			_patchSEOStudioScan(seoStudioScanJSONObject);
+			try {
+				_patchSEOStudioScan(seoStudioScanJSONObject);
+			}
+			catch (Exception exception) {
+				long seoStudioScanId = seoStudioScanJSONObject.getLong("id");
+
+				_log.error(
+					"Unable to patch SEO Studio scan ID " + seoStudioScanId,
+					exception);
+
+				_seoStudioService.patchSEOStudioScan(
+					"Unable to patch scan: " + exception.getMessage(),
+					seoStudioScanId, SEOStudioScanConstants.STATE_FAILED);
+			}
 		}
+	}
+
+	private List<JSONObject> _getBrokenInternalLinksInsightJSONObjects(
+		Map<String, Set<String>> issueURLsMap,
+		Map<String, Set<String>> linkedURLPageURLsMap) {
+
+		Set<String> brokenInternalLinkURLs = issueURLsMap.getOrDefault(
+			_ISSUE_BROKEN_INTERNAL_LINK, Collections.emptySet());
+
+		return Arrays.asList(
+			new JSONObject(
+			).put(
+				"category", "linksAndURLs"
+			).put(
+				"classification", "problem"
+			).put(
+				"description",
+				StringBundler.concat(
+					"This page has one or more internal links pointing to ",
+					"URLs that cannot be retrieved because they are ",
+					"unreachable, return 400, 404, 405, or 410, or redirect ",
+					"without a destination. Broken internal links waste link ",
+					"equity, frustrate users, and produce dead end paths ",
+					"through your content.")
+			).put(
+				"fixHint",
+				StringBundler.concat(
+					"For each broken link, either update the href to point to ",
+					"the correct destination, or remove the link if no ",
+					"equivalent destination exists. If many links point to ",
+					"one missing URL, restoring or redirecting that URL once ",
+					"fixes them all.")
+			).put(
+				"name", "brokenInternalLinks"
+			).put(
+				"pageURLs",
+				_getPageURLs(linkedURLPageURLsMap, brokenInternalLinkURLs)
+			).put(
+				"severity", "3"
+			));
+	}
+
+	private HttpResponse<Void> _getHttpResponse(String url) throws Exception {
+		HttpRequest httpRequest = HttpRequest.newBuilder(
+			URI.create(url)
+		).method(
+			"HEAD", HttpRequest.BodyPublishers.noBody()
+		).timeout(
+			Duration.ofSeconds(10)
+		).build();
+
+		HttpResponse<Void> httpResponse = _noRedirectHttpClient.send(
+			httpRequest, HttpResponse.BodyHandlers.discarding());
+
+		int statusCode = httpResponse.statusCode();
+
+		if ((statusCode != HttpURLConnection.HTTP_BAD_METHOD) &&
+			(statusCode != HttpURLConnection.HTTP_NOT_IMPLEMENTED)) {
+
+			return httpResponse;
+		}
+
+		httpRequest = HttpRequest.newBuilder(
+			URI.create(url)
+		).header(
+			"Range", "bytes=0-0"
+		).timeout(
+			Duration.ofSeconds(10)
+		).GET(
+		).build();
+
+		return _noRedirectHttpClient.send(
+			httpRequest, HttpResponse.BodyHandlers.discarding());
+	}
+
+	private Map<String, Set<String>> _getIssueURLsMap(
+			URI domainURI, Set<String> urls)
+		throws Exception {
+
+		Map<String, Set<String>> issueURLsMap = new ConcurrentHashMap<>();
+
+		List<Future<?>> futures = TransformUtil.transform(
+			urls,
+			url -> _executorService.submit(
+				() -> {
+					String issue = _getRedirectIssue(domainURI, url);
+
+					if (Validator.isNull(issue)) {
+						return;
+					}
+
+					Set<String> issueURLs = issueURLsMap.computeIfAbsent(
+						issue, key -> ConcurrentHashMap.newKeySet());
+
+					issueURLs.add(url);
+				}));
+
+		for (Future<?> future : futures) {
+			future.get();
+		}
+
+		return issueURLsMap;
+	}
+
+	private Map<String, Set<String>> _getLinkedURLPageURLsMap(
+		List<CrawlHit> crawlHits, URI domainURI) {
+
+		Map<String, Set<String>> linkedURLPageURLsMap = new HashMap<>();
+		Set<String> canonicalURLs = new LinkedHashSet<>();
+
+		for (CrawlHit crawlHit : crawlHits) {
+			String canonicalURL = crawlHit.getCanonicalURL();
+
+			if (Validator.isNull(canonicalURL)) {
+				continue;
+			}
+
+			canonicalURLs.add(canonicalURL);
+
+			for (String linkedURL : crawlHit.getLinks()) {
+				if (!_isInternalURL(domainURI, linkedURL) ||
+					linkedURL.equals(canonicalURL)) {
+
+					continue;
+				}
+
+				Set<String> linkedURLPageURLs =
+					linkedURLPageURLsMap.computeIfAbsent(
+						linkedURL, key -> new LinkedHashSet<>());
+
+				linkedURLPageURLs.add(canonicalURL);
+			}
+		}
+
+		Set<String> linkedURLs = linkedURLPageURLsMap.keySet();
+
+		linkedURLs.removeAll(canonicalURLs);
+
+		return linkedURLPageURLsMap;
 	}
 
 	private List<JSONObject> _getMetadataInsightJSONObjects(
@@ -328,6 +498,139 @@ public class CrawlerRestController extends BaseRestController {
 			));
 	}
 
+	private Set<String> _getPageURLs(
+		Map<String, Set<String>> linkedURLPageURLsMap, Set<String> linkedURLs) {
+
+		Set<String> pageURLs = new LinkedHashSet<>();
+
+		for (String linkedURL : linkedURLs) {
+			pageURLs.addAll(
+				linkedURLPageURLsMap.getOrDefault(
+					linkedURL, Collections.emptySet()));
+		}
+
+		return pageURLs;
+	}
+
+	private String _getRedirectIssue(URI domainURI, String url) {
+		try {
+			String redirectURL = url;
+
+			for (int hopCount = 0; hopCount <= 10; hopCount++) {
+				HttpResponse<Void> httpResponse = _getHttpResponse(redirectURL);
+
+				int statusCode = httpResponse.statusCode();
+
+				boolean redirect = false;
+
+				if ((statusCode >= HttpURLConnection.HTTP_MULT_CHOICE) &&
+					(statusCode < HttpURLConnection.HTTP_BAD_REQUEST)) {
+
+					redirect = true;
+				}
+
+				String locationURL = null;
+
+				if (redirect) {
+					HttpHeaders httpHeaders = httpResponse.headers();
+
+					locationURL = httpHeaders.firstValue(
+						"Location"
+					).orElse(
+						null
+					);
+				}
+
+				if (Validator.isNull(locationURL)) {
+					if (redirect ||
+						(statusCode == HttpURLConnection.HTTP_BAD_METHOD) ||
+						(statusCode == HttpURLConnection.HTTP_BAD_REQUEST) ||
+						(statusCode == HttpURLConnection.HTTP_GONE) ||
+						(statusCode == HttpURLConnection.HTTP_NOT_FOUND)) {
+
+						return _ISSUE_BROKEN_INTERNAL_LINK;
+					}
+
+					return null;
+				}
+
+				URI uri = URI.create(redirectURL);
+
+				String resolvedURL = String.valueOf(uri.resolve(locationURL));
+
+				if (!_isInternalURL(domainURI, resolvedURL)) {
+					return null;
+				}
+
+				redirectURL = resolvedURL;
+			}
+
+			return null;
+		}
+		catch (Exception exception) {
+			if (_isBrokenLinkException(exception)) {
+				if (_log.isWarnEnabled()) {
+					_log.warn("Unable to reach URL " + url, exception);
+				}
+
+				return _ISSUE_BROKEN_INTERNAL_LINK;
+			}
+
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to check URL " + url, exception);
+			}
+
+			return null;
+		}
+	}
+
+	private boolean _isBrokenLinkException(Throwable throwable) {
+		if (throwable == null) {
+			return false;
+		}
+
+		if (throwable instanceof ConnectException ||
+			throwable instanceof IllegalArgumentException ||
+			throwable instanceof UnknownHostException) {
+
+			return true;
+		}
+
+		return _isBrokenLinkException(throwable.getCause());
+	}
+
+	private boolean _isInternalURL(URI domainURI, String url) {
+		if (Validator.isNull(url)) {
+			return false;
+		}
+
+		try {
+			URI uri = URI.create(url);
+
+			String domainHost = domainURI.getHost();
+			String host = uri.getHost();
+
+			if (Validator.isNull(domainHost) || Validator.isNull(host)) {
+				return false;
+			}
+
+			if (StringUtil.equalsIgnoreCase(host, domainHost) &&
+				(uri.getPort() == domainURI.getPort())) {
+
+				return true;
+			}
+
+			return false;
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unable to parse URL " + url, exception);
+			}
+
+			return false;
+		}
+	}
+
 	private boolean _isSitemapReachable(String sitemapURL) {
 		try {
 			HttpResponse<String> httpResponse = _httpClient.send(
@@ -430,8 +733,19 @@ public class CrawlerRestController extends BaseRestController {
 				_seoStudioService.toCrawlURI(
 					seoStudioDomainJSONObject.getString("hostname")));
 
+			URI domainURI = URI.create(domainURL);
+
+			Map<String, Set<String>> linkedURLPageURLsMap =
+				_getLinkedURLPageURLsMap(crawlHits, domainURI);
+
+			Map<String, Set<String>> issueURLsMap = _getIssueURLsMap(
+				domainURI, linkedURLPageURLsMap.keySet());
+
 			List<JSONObject> insightJSONObjects = new ArrayList<>();
 
+			insightJSONObjects.addAll(
+				_getBrokenInternalLinksInsightJSONObjects(
+					issueURLsMap, linkedURLPageURLsMap));
 			insightJSONObjects.addAll(
 				_getMetadataInsightJSONObjects(crawlHits));
 			insightJSONObjects.addAll(
@@ -482,9 +796,14 @@ public class CrawlerRestController extends BaseRestController {
 		}
 	}
 
+	private static final String _ISSUE_BROKEN_INTERNAL_LINK =
+		"brokenInternalLink";
+
 	private static final Log _log = LogFactory.getLog(
 		CrawlerRestController.class);
 
+	private final ExecutorService _executorService =
+		Executors.newFixedThreadPool(8);
 	private final HttpClient _httpClient = HttpClient.newBuilder(
 	).connectTimeout(
 		Duration.ofSeconds(5)
@@ -494,6 +813,13 @@ public class CrawlerRestController extends BaseRestController {
 
 	@Autowired
 	private KubernetesJobService _kubernetesJobService;
+
+	private final HttpClient _noRedirectHttpClient = HttpClient.newBuilder(
+	).connectTimeout(
+		Duration.ofSeconds(5)
+	).followRedirects(
+		HttpClient.Redirect.NEVER
+	).build();
 
 	@Autowired
 	private SEOStudioService _seoStudioService;
