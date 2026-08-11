@@ -19,12 +19,13 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.MapUtil;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Guilherme Camacho
  */
-public class CMPLinkedObjectEntryUtil {
+public class CMPObjectEntryUtil {
 
 	public static long[] getLinkedObjectEntryIds(
 			FilterFactory<Predicate> filterFactory,
@@ -36,10 +37,30 @@ public class CMPLinkedObjectEntryUtil {
 			String relationshipObjectFieldName)
 		throws PortalException {
 
+		return TransformUtil.transformToLongArray(
+			getObjectEntryIds(
+				filterFactory, groupLocalService,
+				objectDefinitionExternalReferenceCode,
+				objectDefinitionLocalService, objectEntry,
+				objectEntryLocalService),
+			objectEntryId -> MapUtil.getLong(
+				objectEntryLocalService.getValues(objectEntryId),
+				relationshipObjectFieldName));
+	}
+
+	public static List<Long> getObjectEntryIds(
+			FilterFactory<Predicate> filterFactory,
+			GroupLocalService groupLocalService,
+			String objectDefinitionExternalReferenceCode,
+			ObjectDefinitionLocalService objectDefinitionLocalService,
+			ObjectEntry objectEntry,
+			ObjectEntryLocalService objectEntryLocalService)
+		throws PortalException {
+
 		Group group = groupLocalService.fetchGroup(objectEntry.getGroupId());
 
 		if (group == null) {
-			return new long[0];
+			return Collections.emptyList();
 		}
 
 		ObjectDefinition objectDefinition =
@@ -49,10 +70,10 @@ public class CMPLinkedObjectEntryUtil {
 					objectEntry.getCompanyId());
 
 		if (objectDefinition == null) {
-			return new long[0];
+			return Collections.emptyList();
 		}
 
-		List<Long> objectEntryIds = objectEntryLocalService.getPrimaryKeys(
+		return objectEntryLocalService.getPrimaryKeys(
 			new Long[0], objectEntry.getCompanyId(), 0,
 			objectDefinition.getObjectDefinitionId(),
 			filterFactory.create(
@@ -64,12 +85,6 @@ public class CMPLinkedObjectEntryUtil {
 					group.getExternalReferenceCode(), "'"),
 				objectDefinition),
 			false, null, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-
-		return TransformUtil.transformToLongArray(
-			objectEntryIds,
-			objectEntryId -> MapUtil.getLong(
-				objectEntryLocalService.getValues(objectEntryId),
-				relationshipObjectFieldName));
 	}
 
 }

@@ -3,5 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-export const COLLECTION_APPLIED_FILTERS_FRAGMENT_ENTRY_KEY =
-	'com.liferay.fragment.renderer.collection.filter.internal.CollectionAppliedFiltersFragmentRenderer';
+export const FRAGMENTS_DISPLAY_STYLES = {
+	CARDS: 'cards',
+	LIST: 'list',
+} as const;
