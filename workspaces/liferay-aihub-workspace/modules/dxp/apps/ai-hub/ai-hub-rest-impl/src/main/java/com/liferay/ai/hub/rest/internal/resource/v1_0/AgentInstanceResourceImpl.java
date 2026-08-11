@@ -104,28 +104,15 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 			agentDefinition.getWorkflowDefinitionName()
 		).build();
 
-		Object result = _invokeAgent(agentContext);
+		String result = String.valueOf(_invokeAgent(agentContext));
 
 		return new AgentInstance() {
 			{
 				setAgentDefinitionExternalReferenceCode(
 					agentDefinition::getExternalReferenceCode);
 				setExternalReferenceCode(
-					() -> {
-						if (agentContext.isAsynchronous()) {
-							return String.valueOf(result);
-						}
-
-						return null;
-					});
-				setOutput(
-					() -> {
-						if (agentContext.isAsynchronous()) {
-							return null;
-						}
-
-						return String.valueOf(result);
-					});
+					() -> agentContext.isAsynchronous() ? result : null);
+				setOutput(() -> agentContext.isAsynchronous() ? null : result);
 			}
 		};
 	}
@@ -158,14 +145,7 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 			agentInstanceId);
 	}
 
-	private Object _invokeAgent(AgentContext agentContext) throws Exception {
-
-		// Kaleo defers the signal that starts a workflow to the commit of the
-		// outermost transaction. Under an ambient transaction that signal
-		// waits for this method to return, while this method waits for the
-		// workflow the agent started, so the request deadlocks until it times
-		// out.
-
+	private Object _invokeAgent(AgentContext agentContext) {
 		try {
 			return TransactionInvokerUtil.invoke(
 				_transactionConfig, () -> _defaultAgent.invoke(agentContext));
