@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import React, {useEffect, useId, useSyncExternalStore} from 'react';
+import React, {useEffect, useId, useState, useSyncExternalStore} from 'react';
 
 import {
 	AIAssistantOpenCommand,
@@ -13,12 +13,14 @@ import {
 	open,
 	subscribe,
 } from './AIAssistant';
+import {BUSY_EVENT, BusyEventPayload} from './busyEvents';
 import AIAssistantTrigger from './components/AIAssistantTrigger';
 
 type AIAssistantTriggerButtonProps = Omit<
 	AIAssistantOpenCommand,
 	'anchorId' | 'triggerId'
 > & {
+	agentERC?: string;
 	anchorId?: string;
 	className?: string;
 	hideLabel?: boolean;
@@ -29,6 +31,7 @@ type AIAssistantTriggerButtonProps = Omit<
 };
 
 const AIAssistantTriggerButton: React.FC<AIAssistantTriggerButtonProps> = ({
+	agentERC,
 	anchorId,
 	className,
 	hideLabel,
@@ -44,9 +47,27 @@ const AIAssistantTriggerButton: React.FC<AIAssistantTriggerButtonProps> = ({
 	const {command: activeCommand} = useSyncExternalStore(subscribe, getState);
 	const active = activeCommand?.triggerId === id;
 
+	const [busy, setBusy] = useState(false);
+
 	useEffect(() => {
 		ensureHost();
 	}, []);
+
+	useEffect(() => {
+		const handleBusy = (payload: BusyEventPayload) => {
+			if (agentERC && payload.agentERC !== agentERC) {
+				return;
+			}
+
+			setBusy(payload.busy);
+		};
+
+		Liferay.on(BUSY_EVENT, handleBusy);
+
+		return () => {
+			Liferay.detach(BUSY_EVENT, handleBusy);
+		};
+	}, [agentERC]);
 
 	const handleClick = () => {
 		if (active) {
@@ -54,6 +75,8 @@ const AIAssistantTriggerButton: React.FC<AIAssistantTriggerButtonProps> = ({
 
 			return;
 		}
+
+		setBusy(false);
 
 		open({
 			presentation: 'sidebar',
@@ -71,6 +94,7 @@ const AIAssistantTriggerButton: React.FC<AIAssistantTriggerButtonProps> = ({
 			aria-controls="ai-assistant-host-root"
 			aria-expanded={active}
 			className={className}
+			disabled={active && busy}
 			hideLabel={hideLabel}
 			id={id}
 			label={label}

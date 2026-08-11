@@ -17,6 +17,7 @@ import {getCandidateCategories} from '../../Categorization/services/getCandidate
 import {getExistingTags} from '../../Categorization/services/getExistingTags';
 import {ECategorizationAgent, Suggestion} from '../../Categorization/types';
 import useCategorizationAgent from '../../Categorization/useCategorizationAgent';
+import {fireBusyEvent} from '../busyEvents';
 
 function getKey(suggestion: Suggestion): string {
 	return `${suggestion.id ?? suggestion.name}`;
@@ -138,6 +139,18 @@ export default function CategorizationMessageBalloon({
 	);
 
 	const isLoading = status === 'idle' || status === 'loading';
+
+	useEffect(() => {
+		if (!isLoading) {
+			return;
+		}
+
+		fireBusyEvent(agent, true);
+
+		return () => {
+			fireBusyEvent(agent, false);
+		};
+	}, [agent, isLoading]);
 
 	return (
 		<>

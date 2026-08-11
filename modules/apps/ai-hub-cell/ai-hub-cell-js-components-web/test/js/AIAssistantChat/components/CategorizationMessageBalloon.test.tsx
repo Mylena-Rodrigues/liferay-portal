@@ -283,6 +283,57 @@ describe('CategorizationMessageBalloon', () => {
 		);
 	});
 
+	it('broadcasts the busy state for the length of the run', async () => {
+		const fakeEventSource = createFakeEventSource();
+
+		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+		mockGetCandidateCategories.mockResolvedValue([
+			{id: 39001, name: 'International', vocabulary: 'Travel'},
+		]);
+
+		await act(async () => {
+			render(
+				<CategorizationMessageBalloon
+					agent={ECategorizationAgent.AUTO_CATEGORIZE}
+					cmsGroupId={20124}
+					content="Japan"
+					scopeId={555}
+				/>
+			);
+		});
+
+		expect(mockFire).toHaveBeenCalledWith('cms:aiAssistant:busy', {
+			agentERC: 'L_AUTO_CATEGORIZE',
+			busy: true,
+		});
+
+		mockFire.mockClear();
+
+		await act(async () => {
+			fakeEventSource.emit('Subscribe', 'sink-7');
+		});
+
+		expect(mockFire).not.toHaveBeenCalledWith('cms:aiAssistant:busy', {
+			agentERC: 'L_AUTO_CATEGORIZE',
+			busy: false,
+		});
+
+		await act(async () => {
+			fakeEventSource.emit(
+				'L_AUTO_CATEGORIZE',
+				JSON.stringify({
+					data: '{"suggestions":[{"id":39001,"confidence":0.9}]}',
+					nodeName: 'llm',
+				})
+			);
+		});
+
+		expect(mockFire).toHaveBeenCalledWith('cms:aiAssistant:busy', {
+			agentERC: 'L_AUTO_CATEGORIZE',
+			busy: false,
+		});
+	});
+
 	it('ignores case when counting new tags in the confirmation', async () => {
 		(Liferay.Language.get as jest.Mock).mockImplementation((key: string) =>
 			key === 'great-i-have-added-x-tags-to-your-content'
