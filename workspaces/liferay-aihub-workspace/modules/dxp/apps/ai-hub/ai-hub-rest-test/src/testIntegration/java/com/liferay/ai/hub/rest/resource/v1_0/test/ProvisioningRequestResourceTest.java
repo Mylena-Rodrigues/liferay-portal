@@ -191,6 +191,44 @@ public class ProvisioningRequestResourceTest
 
 		_assertAccountEntryProvisioningFields(
 			customerAccountEntry, provisioningRequest1);
+
+		ProvisioningRequest provisioningRequest4 = randomProvisioningRequest(
+			userAccounts);
+
+		provisioningRequest4.setAccountEntryExternalReferenceCode(
+			provisioningRequest1.getAccountEntryExternalReferenceCode());
+		provisioningRequest4.setAccountEntryName(
+			provisioningRequest1.getAccountEntryName());
+		provisioningRequest4.setAddOns(new String[0]);
+		provisioningRequest4.setTier(ProvisioningRequest.Tier.ENTERPRISE);
+
+		OAuth2Application oAuth2Application = _getOAuth2Application(
+			customerAccountEntry);
+
+		String clientId = oAuth2Application.getClientId();
+		String clientSecret = oAuth2Application.getClientSecret();
+
+		ProvisioningRequest provisioningRequest5 =
+			provisioningRequestResource.postProvisioning(provisioningRequest4);
+
+		Assert.assertEquals(
+			Long.valueOf(customerAccountEntry.getAccountEntryId()),
+			provisioningRequest5.getAccountEntryId());
+		Assert.assertEquals(0, provisioningRequest5.getAddOns().length);
+		Assert.assertEquals(
+			ProvisioningRequest.Tier.ENTERPRISE,
+			provisioningRequest5.getTier());
+
+		_assertAccountEntryProvisioningFields(
+			customerAccountEntry, provisioningRequest4);
+		_assertOAuth2Application(customerAccountEntry, provisioningRequest4);
+
+		OAuth2Application updatedOAuth2Application = _getOAuth2Application(
+			customerAccountEntry);
+
+		Assert.assertEquals(clientId, updatedOAuth2Application.getClientId());
+		Assert.assertEquals(
+			clientSecret, updatedOAuth2Application.getClientSecret());
 	}
 
 	@Override
@@ -253,12 +291,8 @@ public class ProvisioningRequestResourceTest
 			AccountEntry accountEntry, ProvisioningRequest provisioningRequest)
 		throws Exception {
 
-		OAuth2Application oAuth2Application =
-			_oAuth2ApplicationLocalService.
-				fetchOAuth2ApplicationByExternalReferenceCode(
-					accountEntry.getAccountEntryId() +
-						"-ai-hub-oauth2-application",
-					TestPropsValues.getCompanyId());
+		OAuth2Application oAuth2Application = _getOAuth2Application(
+			accountEntry);
 
 		Assert.assertEquals(
 			Collections.singletonList(GrantType.CLIENT_CREDENTIALS),
@@ -367,6 +401,15 @@ public class ProvisioningRequestResourceTest
 				_userLocalService.hasGroupUser(
 					_group.getGroupId(), user.getUserId()));
 		}
+	}
+
+	private OAuth2Application _getOAuth2Application(AccountEntry accountEntry)
+		throws Exception {
+
+		return _oAuth2ApplicationLocalService.
+			fetchOAuth2ApplicationByExternalReferenceCode(
+				accountEntry.getAccountEntryId() + "-ai-hub-oauth2-application",
+				TestPropsValues.getCompanyId());
 	}
 
 	private static Group _group;
