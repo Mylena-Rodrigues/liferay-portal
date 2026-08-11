@@ -16,8 +16,13 @@ import com.liferay.ai.hub.rest.dto.v1_0.ProvisioningRequest;
 import com.liferay.ai.hub.rest.dto.v1_0.UserAccount;
 import com.liferay.ai.hub.rest.manager.v1_0.ProvisioningRequestManager;
 import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
+import com.liferay.list.type.model.ListTypeDefinition;
+import com.liferay.list.type.model.ListTypeEntry;
+import com.liferay.list.type.service.ListTypeDefinitionLocalService;
+import com.liferay.list.type.service.ListTypeEntryLocalService;
 import com.liferay.oauth2.provider.constants.ClientProfile;
 import com.liferay.oauth2.provider.constants.GrantType;
+import com.liferay.oauth2.provider.model.OAuth2Application;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
 import com.liferay.oauth2.provider.util.OAuth2SecureRandomGenerator;
 import com.liferay.object.model.ObjectDefinition;
@@ -28,7 +33,9 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManager;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
@@ -44,11 +51,15 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
+import jakarta.ws.rs.BadRequestException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -186,16 +197,30 @@ public class ProvisioningRequestManagerImpl
 			ServiceContext serviceContext)
 		throws Exception {
 
-		_oAuth2ApplicationLocalService.addOrUpdateOAuth2Application(
+		String externalReferenceCode =
 			customerAccountEntry.getAccountEntryId() +
-				"-ai-hub-oauth2-application",
-			user.getUserId(), user.getFullName(),
+				"-ai-hub-oauth2-application";
+
+		OAuth2Application oAuth2Application =
+			_oAuth2ApplicationLocalService.
+				fetchOAuth2ApplicationByExternalReferenceCode(
+					externalReferenceCode, customerAccountEntry.getCompanyId());
+
+		String clientId = OAuth2SecureRandomGenerator.generateClientId();
+		String clientSecret =
+			OAuth2SecureRandomGenerator.generateClientSecret();
+
+		if (oAuth2Application != null) {
+			clientId = oAuth2Application.getClientId();
+			clientSecret = oAuth2Application.getClientSecret();
+		}
+
+		_oAuth2ApplicationLocalService.addOrUpdateOAuth2Application(
+			externalReferenceCode, user.getUserId(), user.getFullName(),
 			List.of(GrantType.CLIENT_CREDENTIALS), "client_secret_post",
-			user.getUserId(), OAuth2SecureRandomGenerator.generateClientId(),
-			ClientProfile.HEADLESS_SERVER.id(),
-			OAuth2SecureRandomGenerator.generateClientSecret(), null, List.of(),
-			null, 0, null, provisioningRequest.getAccountEntryName(), null,
-			null, false,
+			user.getUserId(), clientId, ClientProfile.HEADLESS_SERVER.id(),
+			clientSecret, null, List.of(), null, 0, null,
+			provisioningRequest.getAccountEntryName(), null, null, false,
 			Arrays.asList(
 				"Liferay.AI.Hub.REST.everything",
 				"Liferay.AI.Hub.REST.everything.read",
@@ -233,8 +258,17 @@ public class ProvisioningRequestManagerImpl
 				getSystemObjectDefinitionManager("AccountEntry");
 
 		if (systemObjectDefinitionManager == null) {
-			return;
+			throw new IllegalStateException(
+				StringBundler.concat(
+					"Unable to persist the provisioning fields of account ",
+					"entry ", customerAccountEntry.getExternalReferenceCode(),
+					" because the account entry system object definition ",
+					"manager does not exist"));
 		}
+
+		_validateAddOns(
+			provisioningRequest.getAddOns(),
+			customerAccountEntry.getCompanyId());
 
 		systemObjectDefinitionManager.updateBaseModel(
 			customerAccountEntry.getAccountEntryId(),
@@ -412,6 +446,38 @@ public class ProvisioningRequestManagerImpl
 		};
 	}
 
+	private void _validateAddOns(String[] addOns, long companyId) {
+		if ((addOns == null) || (addOns.length == 0)) {
+			return;
+		}
+
+		ListTypeDefinition listTypeDefinition =
+			_listTypeDefinitionLocalService.
+				fetchListTypeDefinitionByExternalReferenceCode(
+					"L_AI_HUB_ADD_ONS", companyId);
+
+		if (listTypeDefinition == null) {
+			throw new BadRequestException(
+				"No add-ons are available on this instance");
+		}
+
+		Set<String> keys = new HashSet<>();
+
+		for (ListTypeEntry listTypeEntry :
+				_listTypeEntryLocalService.getListTypeEntries(
+					listTypeDefinition.getListTypeDefinitionId(),
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS)) {
+
+			keys.add(listTypeEntry.getKey());
+		}
+
+		for (String addOn : addOns) {
+			if (!keys.contains(addOn)) {
+				throw new BadRequestException("Invalid add-on: " + addOn);
+			}
+		}
+	}
+
 	@Reference
 	private AccountEntryService _accountEntryService;
 
@@ -423,6 +489,12 @@ public class ProvisioningRequestManagerImpl
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private ListTypeDefinitionLocalService _listTypeDefinitionLocalService;
+
+	@Reference
+	private ListTypeEntryLocalService _listTypeEntryLocalService;
 
 	@Reference
 	private OAuth2ApplicationLocalService _oAuth2ApplicationLocalService;
