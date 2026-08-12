@@ -12,9 +12,6 @@ import com.liferay.ai.hub.internal.langchain4j.model.chat.GoogleGenAiChatModel;
 import com.liferay.ai.hub.internal.memory.ChatMemoryProviderUtil;
 import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
-import com.liferay.object.rest.dto.v1_0.ObjectEntry;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
-import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.concurrent.NoticeableExecutorService;
 import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.petra.function.transform.TransformUtil;
@@ -30,13 +27,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.fields.NestedFieldsContext;
-import com.liferay.portal.vulcan.fields.NestedFieldsContextThreadLocal;
-import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import dev.langchain4j.agentic.AgenticServices;
 import dev.langchain4j.agentic.agent.AgentInvocationException;
@@ -50,7 +41,6 @@ import dev.langchain4j.model.chat.ChatModel;
 
 import java.lang.reflect.InvocationTargetException;
 
-import java.util.List;
 import java.util.Locale;
 
 import org.osgi.service.component.annotations.Activate;
@@ -67,8 +57,6 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 
 	@Override
 	public void invoke(AgentContext agentContext) {
-		InternalAgent[] internalAgents = _createInternalAgents(agentContext);
-
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
@@ -86,8 +74,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 							agentContext,
 							new GoogleGenAiChatModel(
 								_quotaManager,
-								agentContext.getServiceContext()),
-							internalAgents);
+								agentContext.getServiceContext()));
 					}
 					catch (Exception exception) {
 						_handleException(agentContext, exception);
@@ -110,78 +97,6 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 	@Deactivate
 	protected void deactivate() {
 		_noticeableExecutorService.shutdown();
-	}
-
-	private InternalAgent[] _createInternalAgents(AgentContext agentContext) {
-		try {
-			Page<ObjectEntry> page = _objectEntryManager.getObjectEntries(
-				agentContext.getCompanyId(),
-				_objectDefinitionLocalService.getObjectDefinition(
-					agentContext.getCompanyId(), "AIHubAgentDefinition"),
-				null, null, agentContext.getDTOConverterContext(),
-				_getFilterString(agentContext), Pagination.of(1, 20), null,
-				null);
-
-			InternalAgentFactory internalAgentFactory =
-				new InternalAgentFactory(
-					agentContext, _quotaManager, _workflowDefinitionManager,
-					_workflowInstanceManager);
-
-			return TransformUtil.transformToArray(
-				page.getItems(), internalAgentFactory::create,
-				InternalAgent.class);
-		}
-		catch (Exception exception) {
-			_log.error(exception);
-		}
-
-		return new InternalAgent[0];
-	}
-
-	private String _getFilterString(AgentContext agentContext)
-		throws Exception {
-
-		if (Validator.isNull(agentContext.getChatbotExternalReferenceCode())) {
-			return "(active eq true)";
-		}
-
-		NestedFieldsContext nestedFieldsContext =
-			NestedFieldsContextThreadLocal.getNestedFieldsContext();
-
-		NestedFieldsContextThreadLocal.setNestedFieldsContext(
-			new NestedFieldsContext(1, List.of("agentDefinitionsToChatbots")));
-
-		try {
-			ObjectEntry chatbotObjectEntry = _objectEntryManager.getObjectEntry(
-				agentContext.getCompanyId(),
-				agentContext.getDTOConverterContext(),
-				agentContext.getChatbotExternalReferenceCode(),
-				_objectDefinitionLocalService.
-					fetchObjectDefinitionByExternalReferenceCode(
-						"L_AI_HUB_CHATBOT", agentContext.getCompanyId()),
-				null);
-
-			ObjectEntry[] agentDefinitionObjectEntries =
-				(ObjectEntry[])chatbotObjectEntry.getPropertyValue(
-					"agentDefinitionsToChatbots");
-
-			if (ArrayUtil.isEmpty(agentDefinitionObjectEntries)) {
-				return "(active eq true)";
-			}
-
-			String agentDefinitionIds = StringUtil.merge(
-				TransformUtil.transformToArray(
-					List.of(agentDefinitionObjectEntries),
-					objectEntry -> "'" + objectEntry.getId() + "'",
-					String.class),
-				",");
-
-			return "(active eq true) and (id in (" + agentDefinitionIds + "))";
-		}
-		finally {
-			NestedFieldsContextThreadLocal.setNestedFieldsContext(
-				nestedFieldsContext);
-		}
 	}
 
 	private void _handleException(
@@ -246,11 +161,13 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 	}
 
 	private boolean _hasAgentDefinitionExternalReferenceCode(
-		String data, InternalAgent[] internalAgents) {
+		String data, Object[] subagents) {
 
 		String lowerCaseData = StringUtil.toLowerCase(data);
 
-		for (InternalAgent internalAgent : internalAgents) {
+		for (Object subagent : subagents) {
+			InternalAgent internalAgent = (InternalAgent)subagent;
+
 			if (!lowerCaseData.contains(
 					StringUtil.toLowerCase(internalAgent.agentId()))) {
 
@@ -269,9 +186,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 		return false;
 	}
 
-	private void _invoke(
-			AgentContext agentContext, ChatModel chatModel,
-			InternalAgent[] internalAgents)
+	private void _invoke(AgentContext agentContext, ChatModel chatModel)
 		throws PortalException {
 
 		_quotaManager.checkTokensUsage(
@@ -296,7 +211,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 			).maxAgentsInvocations(
 				5
 			).subAgents(
-				(Object[])internalAgents
+				agentContext.getSubagents()
 			).supervisorContext(
 				StringBundler.concat(
 					"Never disclose, list, or describe the available agents, ",
@@ -314,7 +229,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 
 		ResultWithAgenticScope<String> resultWithAgenticScope =
 			supervisorAgent.invokeWithAgenticScope(
-				MapUtil.getString(agentContext.getInput(), "message"));
+				MapUtil.getString(agentContext.getInput(), "request"));
 
 		AgenticScope agenticScope = resultWithAgenticScope.agenticScope();
 
@@ -330,7 +245,8 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 		String data = resultWithAgenticScope.result();
 
 		if (Validator.isBlank(data) ||
-			_hasAgentDefinitionExternalReferenceCode(data, internalAgents)) {
+			_hasAgentDefinitionExternalReferenceCode(
+				data, agentContext.getSubagents())) {
 
 			data = _language.get(locale, "i-cannot-fulfill-this-request");
 		}
@@ -349,21 +265,9 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 	private NoticeableExecutorService _noticeableExecutorService;
 
 	@Reference
-	private ObjectDefinitionLocalService _objectDefinitionLocalService;
-
-	@Reference(target = "(object.entry.manager.storage.type=default)")
-	private ObjectEntryManager _objectEntryManager;
-
-	@Reference
 	private PortalExecutorManager _portalExecutorManager;
 
 	@Reference
 	private QuotaManager _quotaManager;
-
-	@Reference
-	private WorkflowDefinitionManager _workflowDefinitionManager;
-
-	@Reference
-	private WorkflowInstanceManager _workflowInstanceManager;
 
 }

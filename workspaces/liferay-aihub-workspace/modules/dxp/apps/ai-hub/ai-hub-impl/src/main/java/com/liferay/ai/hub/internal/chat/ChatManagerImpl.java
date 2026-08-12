@@ -1,0 +1,135 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.ai.hub.internal.chat;
+
+import com.liferay.ai.hub.agent.AgentContext;
+import com.liferay.ai.hub.chat.ChatManager;
+import com.liferay.ai.hub.internal.agent.InternalAgentFactory;
+import com.liferay.ai.hub.quota.QuotaManager;
+import com.liferay.object.rest.dto.v1_0.ObjectEntry;
+import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
+import com.liferay.portal.vulcan.fields.NestedFieldsContext;
+import com.liferay.portal.vulcan.fields.NestedFieldsContextThreadLocal;
+import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
+
+import dev.langchain4j.agentic.internal.InternalAgent;
+
+import java.util.List;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+/**
+ * @author Feliphe Marinho
+ */
+@Component(service = ChatManager.class)
+public class ChatManagerImpl implements ChatManager {
+
+	@Override
+	public Object[] getSubagents(
+		AgentContext agentContext, String chatbotExternalReferenceCode) {
+
+		try {
+			Page<ObjectEntry> page = _objectEntryManager.getObjectEntries(
+				agentContext.getCompanyId(),
+				_objectDefinitionLocalService.getObjectDefinition(
+					agentContext.getCompanyId(), "AIHubAgentDefinition"),
+				null, null, agentContext.getDTOConverterContext(),
+				_getFilterString(agentContext, chatbotExternalReferenceCode),
+				Pagination.of(1, 20), null, null);
+
+			InternalAgentFactory internalAgentFactory =
+				new InternalAgentFactory(
+					agentContext, _quotaManager, _workflowDefinitionManager,
+					_workflowInstanceManager);
+
+			return TransformUtil.transformToArray(
+				page.getItems(), internalAgentFactory::create,
+				InternalAgent.class);
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
+		return new Object[0];
+	}
+
+	private String _getFilterString(
+			AgentContext agentContext, String chatbotExternalReferenceCode)
+		throws Exception {
+
+		if (Validator.isNull(chatbotExternalReferenceCode)) {
+			return "(active eq true)";
+		}
+
+		NestedFieldsContext nestedFieldsContext =
+			NestedFieldsContextThreadLocal.getNestedFieldsContext();
+
+		NestedFieldsContextThreadLocal.setNestedFieldsContext(
+			new NestedFieldsContext(1, List.of("agentDefinitionsToChatbots")));
+
+		try {
+			ObjectEntry chatbotObjectEntry = _objectEntryManager.getObjectEntry(
+				agentContext.getCompanyId(),
+				agentContext.getDTOConverterContext(),
+				chatbotExternalReferenceCode,
+				_objectDefinitionLocalService.
+					fetchObjectDefinitionByExternalReferenceCode(
+						"L_AI_HUB_CHATBOT", agentContext.getCompanyId()),
+				null);
+
+			ObjectEntry[] agentDefinitionObjectEntries =
+				(ObjectEntry[])chatbotObjectEntry.getPropertyValue(
+					"agentDefinitionsToChatbots");
+
+			if (ArrayUtil.isEmpty(agentDefinitionObjectEntries)) {
+				return "(active eq true)";
+			}
+
+			String agentDefinitionIds = StringUtil.merge(
+				TransformUtil.transformToArray(
+					List.of(agentDefinitionObjectEntries),
+					objectEntry -> "'" + objectEntry.getId() + "'",
+					String.class),
+				",");
+
+			return "(active eq true) and (id in (" + agentDefinitionIds + "))";
+		}
+		finally {
+			NestedFieldsContextThreadLocal.setNestedFieldsContext(
+				nestedFieldsContext);
+		}
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ChatManagerImpl.class);
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	@Reference(target = "(object.entry.manager.storage.type=default)")
+	private ObjectEntryManager _objectEntryManager;
+
+	@Reference
+	private QuotaManager _quotaManager;
+
+	@Reference
+	private WorkflowDefinitionManager _workflowDefinitionManager;
+
+	@Reference
+	private WorkflowInstanceManager _workflowInstanceManager;
+
+}

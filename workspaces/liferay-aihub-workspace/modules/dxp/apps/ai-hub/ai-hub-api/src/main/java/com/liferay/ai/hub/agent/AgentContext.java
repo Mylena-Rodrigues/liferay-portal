@@ -10,6 +10,7 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author João Victor Alves
@@ -24,7 +25,6 @@ public class AgentContext {
 		_agentDefinitionExternalReferenceCode =
 			builder._agentDefinitionExternalReferenceCode;
 		_asynchronous = builder._asynchronous;
-		_chatbotExternalReferenceCode = builder._chatbotExternalReferenceCode;
 		_companyId = builder._companyId;
 		_dtoConverterContext = builder._dtoConverterContext;
 		_groupId = builder._groupId;
@@ -37,14 +37,17 @@ public class AgentContext {
 		_userId = builder._userId;
 		_userToken = builder._userToken;
 		_workflowDefinitionName = builder._workflowDefinitionName;
+
+		if (builder._subagentsFunction != null) {
+			_subagents = builder._subagentsFunction.apply(this);
+		}
+		else {
+			_subagents = new Object[0];
+		}
 	}
 
 	public String getAgentDefinitionExternalReferenceCode() {
 		return _agentDefinitionExternalReferenceCode;
-	}
-
-	public String getChatbotExternalReferenceCode() {
-		return _chatbotExternalReferenceCode;
 	}
 
 	public long getCompanyId() {
@@ -83,6 +86,10 @@ public class AgentContext {
 		return _sseEventSinkKey;
 	}
 
+	public Object[] getSubagents() {
+		return _subagents;
+	}
+
 	public long getUserId() {
 		return _userId;
 	}
@@ -118,14 +125,6 @@ public class AgentContext {
 
 		public AgentContext build() {
 			return new AgentContext(this);
-		}
-
-		public Builder chatbotExternalReferenceCode(
-			String chatbotExternalReferenceCode) {
-
-			_chatbotExternalReferenceCode = chatbotExternalReferenceCode;
-
-			return this;
 		}
 
 		public Builder companyId(long companyId) {
@@ -186,6 +185,14 @@ public class AgentContext {
 			return this;
 		}
 
+		public Builder subagents(
+			Function<AgentContext, Object[]> subagentsFunction) {
+
+			_subagentsFunction = subagentsFunction;
+
+			return this;
+		}
+
 		public Builder userId(long userId) {
 			_userId = userId;
 
@@ -206,7 +213,6 @@ public class AgentContext {
 
 		private String _agentDefinitionExternalReferenceCode;
 		private boolean _asynchronous;
-		private String _chatbotExternalReferenceCode;
 		private long _companyId;
 		private DTOConverterContext _dtoConverterContext;
 		private long _groupId;
@@ -216,6 +222,7 @@ public class AgentContext {
 		private long _oAuth2ApplicationId;
 		private ServiceContext _serviceContext;
 		private String _sseEventSinkKey;
+		private Function<AgentContext, Object[]> _subagentsFunction;
 		private long _userId;
 		private String _userToken;
 		private String _workflowDefinitionName;
@@ -224,7 +231,6 @@ public class AgentContext {
 
 	private final String _agentDefinitionExternalReferenceCode;
 	private final boolean _asynchronous;
-	private final String _chatbotExternalReferenceCode;
 	private final long _companyId;
 	private final DTOConverterContext _dtoConverterContext;
 	private final long _groupId;
@@ -234,6 +240,7 @@ public class AgentContext {
 	private final long _oAuth2ApplicationId;
 	private final ServiceContext _serviceContext;
 	private final String _sseEventSinkKey;
+	private final Object[] _subagents;
 	private final long _userId;
 	private final String _userToken;
 	private final String _workflowDefinitionName;
