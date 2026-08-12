@@ -3,13 +3,6 @@
 		"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION",
 		"menuItems": [
 			{
-				"displayIcon": "warehouse",
-				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION1",
-				"friendlyURL": "/overview",
-				"privateLayout": false,
-				"type": "layout"
-			},
-			{
 				"displayIcon": "web-content",
 				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION2",
 				"friendlyURL": "/content-seo",
@@ -20,20 +13,6 @@
 				"displayIcon": "sites",
 				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION3",
 				"friendlyURL": "/technical",
-				"privateLayout": false,
-				"type": "layout"
-			},
-			{
-				"displayIcon": "chatbot",
-				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION4",
-				"friendlyURL": "/aeo-geo",
-				"privateLayout": false,
-				"type": "layout"
-			},
-			{
-				"displayIcon": "cog",
-				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION5",
-				"friendlyURL": "/tools",
 				"privateLayout": false,
 				"type": "layout"
 			},
