@@ -3,7 +3,7 @@
 		"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION",
 		"menuItems": [
 			{
-				"displayIcon": "web-content",
+				"displayIcon": "page",
 				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION2",
 				"friendlyURL": "/on-page",
 				"privateLayout": false,
@@ -17,7 +17,7 @@
 				"type": "layout"
 			},
 			{
-				"displayIcon": "control-panel",
+				"displayIcon": "cog",
 				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION6",
 				"friendlyURL": "/settings",
 				"privateLayout": false,
@@ -27,7 +27,7 @@
 				"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION7",
 				"menuItems": [
 					{
-						"displayIcon": "custom-field",
+						"displayIcon": "control-panel",
 						"externalReferenceCode": "SEOSTUDIOPRIMARYNAVIGATION8",
 						"friendlyURL": "/configurations",
 						"privateLayout": false,
