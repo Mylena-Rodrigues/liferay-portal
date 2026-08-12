@@ -25,6 +25,7 @@ import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.object.test.util.ObjectRelationshipTestUtil;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
@@ -195,6 +196,67 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 
 			Assert.assertTrue(
 				firstMessageSent, firstMessageSent.contains(text));
+		}
+	}
+
+	@Ignore
+	@Test
+	public void testPostChatByExternalReferenceCodeMessageWithToolsQuestion()
+		throws Exception {
+
+		try (CompanyConfigurationTemporarySwapper
+				companyConfigurationTemporarySwapper =
+					new CompanyConfigurationTemporarySwapper(
+						TestPropsValues.getCompanyId(),
+						VertexAIConfiguration.class.getName(),
+						HashMapDictionaryBuilder.<String, Object>put(
+							"projectId",
+							TestPropsUtil.get("vertex.ai.project.id")
+						).put(
+							"textModelLocation",
+							TestPropsUtil.get("vertex.ai.text.model.location")
+						).put(
+							"textModelName",
+							TestPropsUtil.get("vertex.ai.text.model.name")
+						).build())) {
+
+			CountDownLatch countDownLatch = new CountDownLatch(4);
+			List<String> lines = new ArrayList<>();
+
+			String sseEventSinkKey = SseEventSourceTestUtil.open(
+				List.of(countDownLatch), lines, "chats/subscribe");
+
+			_postChatByExternalReferenceCodeMessage(
+				"What are the tools available to you? List their names, " +
+					"identifiers, and descriptions.",
+				sseEventSinkKey);
+
+			Assert.assertTrue(countDownLatch.await(30, TimeUnit.SECONDS));
+
+			Assert.assertEquals(lines.toString(), 4, lines.size());
+			Assert.assertEquals("event: Chat Message Sent", lines.get(2));
+
+			String response = StringUtil.toLowerCase(lines.get(3));
+
+			ObjectDefinition agentDefinitionObjectDefinition =
+				_objectDefinitionLocalService.
+					getObjectDefinitionByExternalReferenceCode(
+						"L_AI_HUB_AGENT_DEFINITION",
+						TestPropsValues.getCompanyId());
+
+			for (ObjectEntry agentDefinitionObjectEntry :
+					_objectEntryLocalService.getObjectEntries(
+						0,
+						agentDefinitionObjectDefinition.getObjectDefinitionId(),
+						QueryUtil.ALL_POS, QueryUtil.ALL_POS)) {
+
+				Assert.assertFalse(
+					response,
+					response.contains(
+						StringUtil.toLowerCase(
+							agentDefinitionObjectEntry.
+								getExternalReferenceCode())));
+			}
 		}
 	}
 
