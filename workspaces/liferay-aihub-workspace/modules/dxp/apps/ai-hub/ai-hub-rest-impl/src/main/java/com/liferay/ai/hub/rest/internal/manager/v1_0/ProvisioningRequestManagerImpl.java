@@ -33,7 +33,6 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManager;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -56,10 +55,8 @@ import jakarta.ws.rs.BadRequestException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -197,26 +194,29 @@ public class ProvisioningRequestManagerImpl
 			ServiceContext serviceContext)
 		throws Exception {
 
-		String externalReferenceCode =
-			customerAccountEntry.getAccountEntryId() +
-				"-ai-hub-oauth2-application";
-
 		OAuth2Application oAuth2Application =
 			_oAuth2ApplicationLocalService.
 				fetchOAuth2ApplicationByExternalReferenceCode(
-					externalReferenceCode, customerAccountEntry.getCompanyId());
+					customerAccountEntry.getAccountEntryId() +
+						"-ai-hub-oauth2-application",
+					customerAccountEntry.getCompanyId());
 
-		String clientId = OAuth2SecureRandomGenerator.generateClientId();
-		String clientSecret =
-			OAuth2SecureRandomGenerator.generateClientSecret();
+		String clientId = null;
+		String clientSecret = null;
 
-		if (oAuth2Application != null) {
+		if (oAuth2Application == null) {
+			clientId = OAuth2SecureRandomGenerator.generateClientId();
+			clientSecret = OAuth2SecureRandomGenerator.generateClientSecret();
+		}
+		else {
 			clientId = oAuth2Application.getClientId();
 			clientSecret = oAuth2Application.getClientSecret();
 		}
 
 		_oAuth2ApplicationLocalService.addOrUpdateOAuth2Application(
-			externalReferenceCode, user.getUserId(), user.getFullName(),
+			customerAccountEntry.getAccountEntryId() +
+				"-ai-hub-oauth2-application",
+			user.getUserId(), user.getFullName(),
 			List.of(GrantType.CLIENT_CREDENTIALS), "client_secret_post",
 			user.getUserId(), clientId, ClientProfile.HEADLESS_SERVER.id(),
 			clientSecret, null, List.of(), null, 0, null,
@@ -259,11 +259,7 @@ public class ProvisioningRequestManagerImpl
 
 		if (systemObjectDefinitionManager == null) {
 			throw new IllegalStateException(
-				StringBundler.concat(
-					"Unable to persist the provisioning fields of account ",
-					"entry ", customerAccountEntry.getExternalReferenceCode(),
-					" because the account entry system object definition ",
-					"manager does not exist"));
+				"Unable to persist the provisioning fields of account entry");
 		}
 
 		_validateAddOns(
@@ -446,34 +442,28 @@ public class ProvisioningRequestManagerImpl
 		};
 	}
 
-	private void _validateAddOns(String[] addOns, long companyId) {
+	private void _validateAddOns(String[] addOns, long companyId)
+		throws Exception {
+
 		if ((addOns == null) || (addOns.length == 0)) {
 			return;
 		}
 
 		ListTypeDefinition listTypeDefinition =
 			_listTypeDefinitionLocalService.
-				fetchListTypeDefinitionByExternalReferenceCode(
+				getListTypeDefinitionByExternalReferenceCode(
 					"L_AI_HUB_ADD_ONS", companyId);
 
-		if (listTypeDefinition == null) {
-			throw new BadRequestException(
-				"No add-ons are available on this instance");
-		}
-
-		Set<String> keys = new HashSet<>();
-
-		for (ListTypeEntry listTypeEntry :
-				_listTypeEntryLocalService.getListTypeEntries(
-					listTypeDefinition.getListTypeDefinitionId(),
-					QueryUtil.ALL_POS, QueryUtil.ALL_POS)) {
-
-			keys.add(listTypeEntry.getKey());
-		}
+		List<String> keys = TransformUtil.transform(
+			_listTypeEntryLocalService.getListTypeEntries(
+				listTypeDefinition.getListTypeDefinitionId(), QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS),
+			ListTypeEntry::getKey);
 
 		for (String addOn : addOns) {
 			if (!keys.contains(addOn)) {
-				throw new BadRequestException("Invalid add-on: " + addOn);
+				throw new BadRequestException(
+					"Invalid add-on: \"" + addOn + "\"");
 			}
 		}
 	}
