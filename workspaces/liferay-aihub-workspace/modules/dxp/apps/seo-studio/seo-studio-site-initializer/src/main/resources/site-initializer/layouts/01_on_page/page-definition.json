@@ -3,6 +3,20 @@
 		"pageElements": [
 			{
 				"definition": {
+					"fragment": {
+						"key": "page-title",
+						"siteKey": "SEO Studio"
+					},
+					"fragmentConfig": {
+					},
+					"fragmentFields": [
+					],
+					"indexed": true
+				},
+				"type": "Fragment"
+			},
+			{
+				"definition": {
 					"indexed": true,
 					"layout": {
 					}

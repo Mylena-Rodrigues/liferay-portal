@@ -42,8 +42,9 @@ export default function OnPage({
 	return (
 		<>
 			<SectionHeader
+				icon="view"
 				lastScanDate={lastScanDate}
-				title={Liferay.Language.get('on-page')}
+				title={Liferay.Language.get('insights')}
 			/>
 
 			<MetricsDashboard

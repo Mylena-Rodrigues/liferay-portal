@@ -6,6 +6,7 @@
 import {fetch, sub} from 'frontend-js-web';
 import React, {useEffect, useRef, useState} from 'react';
 
+import SectionHeader from '../components/SectionHeader';
 import GaugeChart from './GaugeChart';
 
 import './PageSpeedCharts.scss';
@@ -29,7 +30,7 @@ interface ScanResult {
 	seoScore: number;
 }
 
-function formatDate(dateString: string): string {
+function formatScanDate(dateString: string): string {
 	const date = new Date(dateString);
 
 	const formattedDate = date.toLocaleDateString(undefined, {
@@ -43,9 +44,13 @@ function formatDate(dateString: string): string {
 		minute: '2-digit',
 	});
 
+	return `${formattedDate} ${formattedTime}`;
+}
+
+function formatDate(dateString: string): string {
 	return sub(
 		Liferay.Language.get('last-checked-x'),
-		`${formattedDate} ${formattedTime}`
+		formatScanDate(dateString)
 	);
 }
 
@@ -151,6 +156,13 @@ export default function PageSpeedCharts({initialResult}: Props) {
 	if (!result) {
 		return (
 			<div className="p-3 p-md-4">
+				<SectionHeader
+					icon="analytics"
+					lastScanDate={null}
+					showRunScanButton={false}
+					title={Liferay.Language.get('overview')}
+				/>
+
 				<div className="sheet">
 					<div className="pagespeed-charts-header">
 						<h2 className="pagespeed-charts-title">
@@ -176,6 +188,17 @@ export default function PageSpeedCharts({initialResult}: Props) {
 
 	return (
 		<div className="p-3 p-md-4">
+			<SectionHeader
+				icon="analytics"
+				lastScanDate={
+					result.dateCreated
+						? formatScanDate(result.dateCreated)
+						: null
+				}
+				showRunScanButton={false}
+				title={Liferay.Language.get('overview')}
+			/>
+
 			<div className="sheet">
 				<div className="pagespeed-charts-header">
 					<div>

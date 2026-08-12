@@ -1,8 +1,30 @@
 .seo-studio-section-header {
 	align-items: center;
 	display: flex;
+	margin-bottom: 8px;
+
+	.seo-studio-section-header-icon {
+		align-items: center;
+		color: #6b6c7e;
+		display: flex;
+		margin-right: 8px;
+	}
 
 	.seo-studio-section-header-title {
 		flex: 1;
+		font-size: 0.875rem;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+		margin-bottom: 0;
+		text-transform: uppercase;
+	}
+
+	.seo-studio-section-header-last-scan {
+		align-items: center;
+		display: flex;
+
+		.seo-studio-section-header-last-scan-icon {
+			margin-right: 4px;
+		}
 	}
 }

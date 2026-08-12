@@ -4,6 +4,20 @@
 			{
 				"definition": {
 					"fragment": {
+						"key": "page-title",
+						"siteKey": "SEO Studio"
+					},
+					"fragmentConfig": {
+					},
+					"fragmentFields": [
+					],
+					"indexed": true
+				},
+				"type": "Fragment"
+			},
+			{
+				"definition": {
+					"fragment": {
 						"key": "com.liferay.seo.studio.web.internal.fragment.renderer.ViewPageSpeedChartsFragmentRenderer"
 					},
 					"fragmentConfig": {

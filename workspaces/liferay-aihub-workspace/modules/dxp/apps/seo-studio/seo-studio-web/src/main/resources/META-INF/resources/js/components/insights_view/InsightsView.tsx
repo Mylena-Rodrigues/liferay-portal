@@ -40,8 +40,6 @@ export default function InsightsView({
 	return (
 		<InsightsViewContext.Provider value={contextValue}>
 			<div className="seo-studio-insights-section">
-				<h3>{Liferay.Language.get('insights')}</h3>
-
 				<FrontendDataSet
 					apiURL={apiURL}
 					appURL={`${Liferay.ThemeDisplay.getPortalURL()}/o/frontend-data-set-taglib/app`}
