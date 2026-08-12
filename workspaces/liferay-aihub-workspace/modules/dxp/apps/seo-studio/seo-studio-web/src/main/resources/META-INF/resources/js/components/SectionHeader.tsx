@@ -17,8 +17,6 @@ export default function SectionHeader({
 	lastScanDate: string | null;
 	title: string;
 }) {
-	const lastScanLabel = lastScanDate || Liferay.Language.get('never');
-
 	const themeImagesPath = Liferay.ThemeDisplay.getPathThemeImages?.() ?? '';
 
 	const spritemap = `${themeImagesPath}/clay/icons.svg`;
@@ -34,13 +32,26 @@ export default function SectionHeader({
 			<h3 className="seo-studio-section-header-title">{title}</h3>
 
 			<div className="seo-studio-section-header-last-scan text-secondary">
-				<ClayIcon
-					className="seo-studio-section-header-last-scan-icon text-success"
-					spritemap={spritemap}
-					symbol="check-circle"
-				/>
+				{lastScanDate ? (
+					<>
+						<ClayIcon
+							className="seo-studio-section-header-last-scan-icon text-success"
+							spritemap={spritemap}
+							symbol="check-circle"
+						/>
+						{Liferay.Language.get('last-scan')}: {lastScanDate}
+					</>
+				) : (
+					<>
+						<ClayIcon
+							className="seo-studio-section-header-last-scan-icon text-warning"
+							spritemap={spritemap}
+							symbol="warning"
+						/>
 
-				{Liferay.Language.get('last-scan')}: {lastScanLabel}
+						{Liferay.Language.get('no-data-available')}
+					</>
+				)}
 			</div>
 		</div>
 	);
