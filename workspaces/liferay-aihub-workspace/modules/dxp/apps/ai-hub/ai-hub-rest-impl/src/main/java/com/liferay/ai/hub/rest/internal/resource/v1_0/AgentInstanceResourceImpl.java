@@ -7,7 +7,6 @@ package com.liferay.ai.hub.rest.internal.resource.v1_0;
 
 import com.liferay.ai.hub.agent.AgentContext;
 import com.liferay.ai.hub.agent.AgentInstanceManager;
-import com.liferay.ai.hub.agent.DefaultAgent;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentDefinition;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentInstance;
 import com.liferay.ai.hub.rest.dto.v1_0.Variable;
@@ -126,7 +125,7 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 			throw new UnsupportedOperationException();
 		}
 
-		_defaultAgent.resume(
+		_agentInstanceManager.resume(
 			AgentContext.builder(
 			).companyId(
 				contextCompany.getCompanyId()
@@ -148,9 +147,6 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 
 	@Reference
 	private AgentInstanceManager _agentInstanceManager;
-
-	@Reference
-	private DefaultAgent _defaultAgent;
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;

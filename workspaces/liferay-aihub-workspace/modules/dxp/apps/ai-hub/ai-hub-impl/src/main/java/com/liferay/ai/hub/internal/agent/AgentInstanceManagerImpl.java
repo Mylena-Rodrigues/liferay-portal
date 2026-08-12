@@ -56,6 +56,13 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
 		return _invoke(() -> internalAgentImpl.invoke(agentContext.getInput()));
 	}
 
+	@Override
+	public void resume(AgentContext agentContext, long agentInstanceId)
+		throws Exception {
+
+		_defaultAgent.resume(agentContext, agentInstanceId);
+	}
+
 	private Object _invoke(Callable<Object> callable) {
 		try {
 			return TransactionInvokerUtil.invoke(_transactionConfig, callable);
