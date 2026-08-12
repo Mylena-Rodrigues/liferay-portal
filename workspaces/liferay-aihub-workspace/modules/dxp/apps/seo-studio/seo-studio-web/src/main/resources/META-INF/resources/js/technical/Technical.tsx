@@ -44,7 +44,6 @@ export default function Technical({
 			<SectionHeader
 				icon="view"
 				lastScanDate={lastScanDate}
-				showRunScanButton={false}
 				title={Liferay.Language.get('insights')}
 			/>
 

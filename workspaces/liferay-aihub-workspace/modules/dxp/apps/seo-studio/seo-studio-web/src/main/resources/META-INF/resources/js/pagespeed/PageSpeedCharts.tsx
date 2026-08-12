@@ -159,7 +159,6 @@ export default function PageSpeedCharts({initialResult}: Props) {
 				<SectionHeader
 					icon="analytics"
 					lastScanDate={null}
-					showRunScanButton={false}
 					title={Liferay.Language.get('overview')}
 				/>
 
@@ -195,7 +194,6 @@ export default function PageSpeedCharts({initialResult}: Props) {
 						? formatScanDate(result.dateCreated)
 						: null
 				}
-				showRunScanButton={false}
 				title={Liferay.Language.get('overview')}
 			/>
 
