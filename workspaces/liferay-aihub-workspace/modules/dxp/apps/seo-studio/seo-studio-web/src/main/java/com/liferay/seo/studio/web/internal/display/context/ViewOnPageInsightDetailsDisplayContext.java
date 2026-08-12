@@ -83,7 +83,7 @@ public class ViewOnPageInsightDetailsDisplayContext {
 
 		return PortalUtil.getLayoutFullURL(
 			LayoutLocalServiceUtil.getLayoutByFriendlyURL(
-				_themeDisplay.getScopeGroupId(), false, "/content-seo"),
+				_themeDisplay.getScopeGroupId(), false, "/on-page"),
 			_themeDisplay);
 	}
 
