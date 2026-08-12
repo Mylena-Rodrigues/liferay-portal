@@ -6,6 +6,7 @@
 package com.liferay.ai.hub.rest.internal.resource.v1_0;
 
 import com.liferay.ai.hub.agent.AgentContext;
+import com.liferay.ai.hub.agent.AgentInstanceManager;
 import com.liferay.ai.hub.agent.DefaultAgent;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentDefinition;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentInstance;
@@ -15,12 +16,8 @@ import com.liferay.ai.hub.rest.manager.v1_0.AgentDefinitionManager;
 import com.liferay.ai.hub.rest.resource.v1_0.AgentInstanceResource;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.ai.hub.util.AccountEntryUtil;
-import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.transaction.Propagation;
-import com.liferay.portal.kernel.transaction.TransactionConfig;
-import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
@@ -104,7 +101,8 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 			agentDefinition.getWorkflowDefinitionName()
 		).build();
 
-		String result = String.valueOf(_invokeAgent(agentContext));
+		String result = String.valueOf(
+			_agentInstanceManager.invoke(agentContext));
 
 		return new AgentInstance() {
 			{
@@ -145,22 +143,11 @@ public class AgentInstanceResourceImpl extends BaseAgentInstanceResourceImpl {
 			agentInstanceId);
 	}
 
-	private Object _invokeAgent(AgentContext agentContext) {
-		try {
-			return TransactionInvokerUtil.invoke(
-				_transactionConfig, () -> _defaultAgent.invoke(agentContext));
-		}
-		catch (Throwable throwable) {
-			return ReflectionUtil.throwException(throwable);
-		}
-	}
-
-	private static final TransactionConfig _transactionConfig =
-		TransactionConfig.Factory.create(
-			Propagation.NOT_SUPPORTED, new Class<?>[] {Exception.class});
-
 	@Reference
 	private AgentDefinitionManager _agentDefinitionManager;
+
+	@Reference
+	private AgentInstanceManager _agentInstanceManager;
 
 	@Reference
 	private DefaultAgent _defaultAgent;

@@ -6,7 +6,8 @@
 package com.liferay.ai.hub.rest.internal.resource.v1_0;
 
 import com.liferay.ai.hub.agent.AgentContext;
-import com.liferay.ai.hub.agent.SupervisorAgent;
+import com.liferay.ai.hub.agent.AgentInstanceManager;
+import com.liferay.ai.hub.chat.ChatManager;
 import com.liferay.ai.hub.rest.dto.v1_0.Message;
 import com.liferay.ai.hub.rest.internal.util.ContextUserUtil;
 import com.liferay.ai.hub.rest.internal.util.OAuth2ApplicationIdResolverUtil;
@@ -47,10 +48,10 @@ public class MessageResourceImpl extends BaseMessageResourceImpl {
 			message.getChatbotExternalReferenceCode(),
 			contextCompany.getCompanyId(), contextUser);
 
-		_supervisorAgent.invoke(
+		_agentInstanceManager.invoke(
 			AgentContext.builder(
-			).chatbotExternalReferenceCode(
-				message.getChatbotExternalReferenceCode()
+			).agentDefinitionExternalReferenceCode(
+				"L_SUPERVISOR"
 			).companyId(
 				contextCompany.getCompanyId()
 			).dtoConverterContext(
@@ -65,7 +66,7 @@ public class MessageResourceImpl extends BaseMessageResourceImpl {
 				HashMapBuilder.<String, Object>putAll(
 					message.getContext()
 				).put(
-					"message", message.getText()
+					"request", message.getText()
 				).build()
 			).instructionDefinitionScope(
 				message.getInstructionDefinitionScopeAsString()
@@ -76,6 +77,9 @@ public class MessageResourceImpl extends BaseMessageResourceImpl {
 				ServiceContextFactory.getInstance(contextHttpServletRequest)
 			).sseEventSinkKey(
 				externalReferenceCode
+			).subagents(
+				agentContext -> _chatManager.getSubagents(
+					agentContext, message.getChatbotExternalReferenceCode())
 			).userId(
 				user.getUserId()
 			).userToken(
@@ -87,9 +91,12 @@ public class MessageResourceImpl extends BaseMessageResourceImpl {
 	}
 
 	@Reference
-	private DTOConverterRegistry _dtoConverterRegistry;
+	private AgentInstanceManager _agentInstanceManager;
 
 	@Reference
-	private SupervisorAgent _supervisorAgent;
+	private ChatManager _chatManager;
+
+	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
 
 }
