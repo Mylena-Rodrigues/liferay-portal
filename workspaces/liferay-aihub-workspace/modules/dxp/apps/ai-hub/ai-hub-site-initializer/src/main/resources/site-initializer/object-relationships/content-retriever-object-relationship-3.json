@@ -1,0 +1,14 @@
+{
+	"deletionType": "cascade",
+	"edge": true,
+	"externalReferenceCode": "L_AI_HUB_CONTENT_RETRIEVER_TO_L_AI_HUB_CONTENT_RETRIEVER_CONFIGURATIONS",
+	"label": {
+		"en_US": "AI Hub Content Retriever to AI Hub Content Retriever Configurations"
+	},
+	"name": "contentRetrieverToCRConfigurations",
+	"objectDefinitionId1": "[$OBJECT_DEFINITION_ID:AIHubContentRetriever$]",
+	"objectDefinitionId2": "[$OBJECT_DEFINITION_ID:AIHubContentRetrieverConfiguration$]",
+	"objectDefinitionName2": "AIHubContentRetrieverConfiguration",
+	"system": true,
+	"type": "oneToMany"
+}

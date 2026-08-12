@@ -1,0 +1,23 @@
+{
+	"className": "com.liferay.object.model.ObjectDefinition#K3T7",
+	"enableFormContainer": false,
+	"enableIndexSearch": true,
+	"externalReferenceCode": "L_AI_HUB_CONTENT_RETRIEVER_CONFIGURATION",
+	"friendlyURLSeparator": "l",
+	"label": {
+		"en_US": "AI Hub Content Retriever Configuration"
+	},
+	"modifiable": true,
+	"name": "AIHubContentRetrieverConfiguration",
+	"objectFields": [
+	],
+	"objectFolderExternalReferenceCode": "default",
+	"panelCategoryKey": "control_panel.object",
+	"pluralLabel": {
+		"en_US": "AI Hub Content Retriever Configurations"
+	},
+	"portlet": true,
+	"scope": "company",
+	"system": true,
+	"titleObjectFieldName": "domain"
+}
