@@ -147,6 +147,20 @@ components:
                 type:
                     type: string
             type: object
+        ContentRetrieverConfiguration:
+            properties:
+                domain:
+                    type: string
+                excludePaths:
+                    type: string
+                externalReferenceCode:
+                    readOnly: true
+                    type: string
+                includePaths:
+                    type: string
+                seedUrls:
+                    type: string
+            type: object
         Credential:
             properties:
                 clientId:
@@ -634,6 +648,96 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ContentRetriever"
             tags: ["ContentRetriever"]
+    "/content-retrievers/by-external-reference-code/{externalReferenceCode}/content-retriever-configurations":
+        get:
+            operationId: getContentRetrieverByExternalReferenceCodeContentRetrieverConfigurationsPage
+            parameters:
+                -   in: path
+                    name: externalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: query
+                    name: filter
+                    schema:
+                        type: string
+                -   in: query
+                    name: page
+                    schema:
+                        type: integer
+                -   in: query
+                    name: pageSize
+                    schema:
+                        type: integer
+                -   in: query
+                    name: search
+                    schema:
+                        type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/ContentRetrieverConfiguration"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/ContentRetrieverConfiguration"
+                                type: array
+            tags: ["ContentRetrieverConfiguration"]
+    "/content-retrievers/by-external-reference-code/{externalReferenceCode}/content-retriever-configurations/{contentRetrieverConfigurationExternalReferenceCode}":
+        delete:
+            operationId: deleteContentRetrieverByExternalReferenceCodeContentRetrieverConfiguration
+            parameters:
+                -   in: path
+                    name: externalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: path
+                    name: contentRetrieverConfigurationExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["ContentRetrieverConfiguration"]
+        put:
+            operationId: putContentRetrieverByExternalReferenceCodeContentRetrieverConfiguration
+            parameters:
+                -   in: path
+                    name: externalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: path
+                    name: contentRetrieverConfigurationExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ContentRetrieverConfiguration"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ContentRetrieverConfiguration"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ContentRetrieverConfiguration"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ContentRetrieverConfiguration"
+            tags: ["ContentRetrieverConfiguration"]
     "/credentials":
         get:
             operationId: getCredential
