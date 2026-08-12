@@ -52,8 +52,6 @@ public class AffectedPagesSectionSEOStudioTableFDSView
 			"r_seoStudioPageToSEOStudioScanInsights_seoStudioPage.pageURL",
 			"friendly-url"
 		).add(
-			"monthlyTraffic", "monthly-traffic"
-		).add(
 			"state", "status",
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
 				"stateCellRenderer")
