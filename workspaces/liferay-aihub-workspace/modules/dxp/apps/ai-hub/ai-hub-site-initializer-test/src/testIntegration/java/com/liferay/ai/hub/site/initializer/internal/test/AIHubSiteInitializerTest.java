@@ -198,6 +198,8 @@ public class AIHubSiteInitializerTest {
 		_assertObjectDefinitionExists("L_AI_HUB_CHATBOT");
 		_assertObjectDefinitionExists("L_AI_HUB_CONFIGURATION");
 		_assertObjectDefinitionExists("L_AI_HUB_CONTENT_RETRIEVER");
+		_assertObjectDefinitionExists(
+			"L_AI_HUB_CONTENT_RETRIEVER_CONFIGURATION");
 		_assertObjectDefinitionExists("L_AI_HUB_CRAWLER_JOB");
 		_assertObjectDefinitionExists("L_AI_HUB_GUARDRAIL");
 		_assertObjectDefinitionExists("L_AI_HUB_INSTRUCTION_DEFINITION");
@@ -236,8 +238,16 @@ public class AIHubSiteInitializerTest {
 			"r_accountToAIHubConfigurations_accountEntryId");
 		_assertObjectFieldsExist(
 			"L_AI_HUB_CONTENT_RETRIEVER", "crawlDate", "description",
-			"indexName", "r_accountToAIHubContentRetrievers_accountEntryId",
-			"title", "type", "url");
+			"indexName", "maxCrawlDepth", "maxDocumentsCount", "maxDuration",
+			"maxFragmentsCountPerDocument", "maxLinksPerPage",
+			"maxUniqueURLsCount",
+			"r_accountToAIHubContentRetrievers_accountEntryId", "title",
+			"type");
+		_assertObjectFieldsExist(
+			"L_AI_HUB_CONTENT_RETRIEVER_CONFIGURATION", "domain",
+			"excludePaths", "includePaths",
+			"r_contentRetrieverToCRConfigurations_l_aiHubContentRetrieverId",
+			"seedUrls");
 		_assertObjectFieldsExist(
 			"L_AI_HUB_CRAWLER_JOB", "crawlerJobStatus", "endDate",
 			"errorMessage", "executionId", "indexedDocumentCount",
@@ -294,6 +304,12 @@ public class AIHubSiteInitializerTest {
 			"L_AI_HUB_AGENT_DEFINITIONS_TO_L_AI_HUB_GUARDRAILS",
 			"L_AI_HUB_AGENT_DEFINITION",
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+		_assertObjectRelationshipExists(
+			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
+			"L_AI_HUB_CONTENT_RETRIEVER_TO_" +
+				"L_AI_HUB_CONTENT_RETRIEVER_CONFIGURATIONS",
+			"L_AI_HUB_CONTENT_RETRIEVER",
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 		_assertObjectRelationshipExists(
 			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
 			"L_AI_HUB_CONTENT_RETRIEVER_TO_L_AI_HUB_CRAWLER_JOBS",

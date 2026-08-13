@@ -273,10 +273,6 @@ public class AgentDefinitionResourceTest
 										"type",
 										StringUtil.toLowerCase(
 											RandomTestUtil.randomString())
-									).put(
-										"url",
-										StringUtil.toLowerCase(
-											RandomTestUtil.randomString())
 									).build())
 							).build();
 						}
@@ -349,9 +345,6 @@ public class AgentDefinitionResourceTest
 			Assert.assertEquals(
 				objectEntry1.getPropertyValue("type"),
 				objectEntry2.getPropertyValue("type"));
-			Assert.assertEquals(
-				objectEntry1.getPropertyValue("url"),
-				objectEntry2.getPropertyValue("url"));
 
 			WorkflowDefinition workflowDefinition1 =
 				_workflowDefinitionManager.getLatestWorkflowDefinition(
