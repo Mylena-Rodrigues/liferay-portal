@@ -27,6 +27,7 @@ import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.object.test.util.ObjectRelationshipTestUtil;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
+import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -69,6 +70,7 @@ import com.liferay.portal.kernel.workflow.WorkflowInstance;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.kernel.workflow.WorkflowNode;
 import com.liferay.portal.search.test.util.IdempotentRetryAssert;
+import com.liferay.portal.security.audit.AuditMessageProcessor;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
@@ -86,6 +88,7 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -101,6 +104,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
