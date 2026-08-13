@@ -41,8 +41,6 @@ import dev.langchain4j.model.chat.ChatModel;
 
 import java.lang.reflect.InvocationTargetException;
 
-import java.util.Locale;
-
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -194,9 +192,6 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 
 		String[] agentDefinitionExternalReferenceCodes = null;
 
-		DTOConverterContext dtoConverterContext =
-			agentContext.getDTOConverterContext();
-
 		dev.langchain4j.agentic.supervisor.SupervisorAgent supervisorAgent =
 			AgenticServices.supervisorBuilder(
 			).chatMemoryProvider(
@@ -244,6 +239,9 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 		if (Validator.isBlank(data) ||
 			_hasAgentDefinitionExternalReferenceCode(
 				data, agentContext.getSubagents())) {
+
+			DTOConverterContext dtoConverterContext =
+				agentContext.getDTOConverterContext();
 
 			data = _language.get(
 				dtoConverterContext.getLocale(),

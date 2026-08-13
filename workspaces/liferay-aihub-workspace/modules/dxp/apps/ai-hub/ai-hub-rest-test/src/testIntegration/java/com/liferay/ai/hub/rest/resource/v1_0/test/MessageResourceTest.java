@@ -202,6 +202,39 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 		_testPostChatByExternalReferenceCodeMessageWithUnassociatedAgentDefinition();
 	}
 
+	private JSONObject _postChatByExternalReferenceCodeMessage(
+			String inputText, String sseEventSinkKey)
+		throws Exception {
+
+		return _postChatByExternalReferenceCodeMessage(
+			null, inputText, sseEventSinkKey);
+	}
+
+	private JSONObject _postChatByExternalReferenceCodeMessage(
+			String chatbotExternalReferenceCode, String inputText,
+			String sseEventSinkKey)
+		throws Exception {
+
+		JSONObject tokenJSONObject = TokenTestUtil.postToken();
+
+		return HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"chatbotExternalReferenceCode", chatbotExternalReferenceCode
+			).put(
+				"text", inputText
+			).toString(),
+			"ai-hub/v1.0/chats/by-external-reference-code/" + sseEventSinkKey +
+				"/messages",
+			HashMapBuilder.put(
+				"Authorization",
+				"Bearer " + tokenJSONObject.getString("accessToken")
+			).put(
+				"Liferay-AI-Hub-Cell-On-Behalf-Of",
+				tokenJSONObject.getString("userToken")
+			).build(),
+			Http.Method.POST);
+	}
+
 	private void _testPostChatByExternalReferenceCodeMessageWithToolsQuestion()
 		throws Exception {
 
@@ -395,39 +428,6 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 
 			SseUtil.closeAll();
 		}
-	}
-
-	private JSONObject _postChatByExternalReferenceCodeMessage(
-			String inputText, String sseEventSinkKey)
-		throws Exception {
-
-		return _postChatByExternalReferenceCodeMessage(
-			null, inputText, sseEventSinkKey);
-	}
-
-	private JSONObject _postChatByExternalReferenceCodeMessage(
-			String chatbotExternalReferenceCode, String inputText,
-			String sseEventSinkKey)
-		throws Exception {
-
-		JSONObject tokenJSONObject = TokenTestUtil.postToken();
-
-		return HTTPTestUtil.invokeToJSONObject(
-			JSONUtil.put(
-				"chatbotExternalReferenceCode", chatbotExternalReferenceCode
-			).put(
-				"text", inputText
-			).toString(),
-			"ai-hub/v1.0/chats/by-external-reference-code/" + sseEventSinkKey +
-				"/messages",
-			HashMapBuilder.put(
-				"Authorization",
-				"Bearer " + tokenJSONObject.getString("accessToken")
-			).put(
-				"Liferay-AI-Hub-Cell-On-Behalf-Of",
-				tokenJSONObject.getString("userToken")
-			).build(),
-			Http.Method.POST);
 	}
 
 	private static AccountEntry _accountEntry;
