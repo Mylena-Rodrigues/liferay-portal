@@ -34,9 +34,6 @@ public class AgentContext {
 		_oAuth2ApplicationId = builder._oAuth2ApplicationId;
 		_serviceContext = builder._serviceContext;
 		_sseEventSinkKey = builder._sseEventSinkKey;
-		_userId = builder._userId;
-		_userToken = builder._userToken;
-		_workflowDefinitionName = builder._workflowDefinitionName;
 
 		if (builder._subagentsFunction != null) {
 			_subagents = builder._subagentsFunction.apply(this);
@@ -44,6 +41,10 @@ public class AgentContext {
 		else {
 			_subagents = new Object[0];
 		}
+
+		_userId = builder._userId;
+		_userToken = builder._userToken;
+		_workflowDefinitionName = builder._workflowDefinitionName;
 	}
 
 	public String getAgentDefinitionExternalReferenceCode() {

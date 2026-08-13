@@ -197,11 +197,12 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 			Assert.assertTrue(
 				firstMessageSent, firstMessageSent.contains(text));
 		}
+
+		_testPostChatByExternalReferenceCodeMessageWithToolsQuestion();
+		_testPostChatByExternalReferenceCodeMessageWithUnassociatedAgentDefinition();
 	}
 
-	@Ignore
-	@Test
-	public void testPostChatByExternalReferenceCodeMessageWithToolsQuestion()
+	private void _testPostChatByExternalReferenceCodeMessageWithToolsQuestion()
 		throws Exception {
 
 		try (CompanyConfigurationTemporarySwapper
@@ -260,9 +261,7 @@ public class MessageResourceTest extends BaseMessageResourceTestCase {
 		}
 	}
 
-	@Ignore
-	@Test
-	public void testPostChatByExternalReferenceCodeMessageWithUnassociatedAgentDefinition()
+	private void _testPostChatByExternalReferenceCodeMessageWithUnassociatedAgentDefinition()
 		throws Exception {
 
 		ObjectDefinition chatbotObjectDefinition =
