@@ -101,6 +101,8 @@ public class LiferayWebSearchContentRetriever extends BaseContentRetriever {
 				_blueprintExternalReferenceCode);
 		}
 
+		location = HttpComponentsUtil.addParameter(
+			location, "nestedFields", "embedded");
 		location = HttpComponentsUtil.addParameter(location, "page", 1);
 		location = HttpComponentsUtil.addParameter(location, "pageSize", 5);
 		location = HttpComponentsUtil.addParameter(
@@ -143,10 +145,18 @@ public class LiferayWebSearchContentRetriever extends BaseContentRetriever {
 				itemURL = searchResult.getItemURL();
 			}
 
+			String content = searchResult.getDescription();
+
+			JSONObject embeddedJSONObject = itemJSONObject.getJSONObject(
+				"embedded");
+
+			if (embeddedJSONObject != null) {
+				content = embeddedJSONObject.toString();
+			}
+
 			WebSearchOrganicResult webSearchOrganicResult =
 				WebSearchOrganicResult.from(
-					searchResult.getTitle(), URI.create(itemURL), null,
-					searchResult.getDescription(),
+					searchResult.getTitle(), URI.create(itemURL), null, content,
 					Map.of("score", String.valueOf(searchResult.getScore())));
 
 			contents.add(Content.from(webSearchOrganicResult.toTextSegment()));
