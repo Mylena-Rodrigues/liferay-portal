@@ -173,7 +173,6 @@ public abstract class BaseContentRetrieverResourceTestCase {
 		contentRetriever.setIndexName(regex);
 		contentRetriever.setTitle(regex);
 		contentRetriever.setType(regex);
-		contentRetriever.setUrl(regex);
 
 		String json = ContentRetrieverSerDes.toJSON(contentRetriever);
 
@@ -186,7 +185,6 @@ public abstract class BaseContentRetrieverResourceTestCase {
 		Assert.assertEquals(regex, contentRetriever.getIndexName());
 		Assert.assertEquals(regex, contentRetriever.getTitle());
 		Assert.assertEquals(regex, contentRetriever.getType());
-		Assert.assertEquals(regex, contentRetriever.getUrl());
 	}
 
 	@Test
@@ -406,6 +404,40 @@ public abstract class BaseContentRetrieverResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("maxCrawlDepth", additionalAssertFieldName)) {
+				if (contentRetriever.getMaxCrawlDepth() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("maxDuration", additionalAssertFieldName)) {
+				if (contentRetriever.getMaxDuration() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("maxLinksPerPage", additionalAssertFieldName)) {
+				if (contentRetriever.getMaxLinksPerPage() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"maxUniqueURLsCount", additionalAssertFieldName)) {
+
+				if (contentRetriever.getMaxUniqueURLsCount() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("title", additionalAssertFieldName)) {
 				if (contentRetriever.getTitle() == null) {
 					valid = false;
@@ -424,14 +456,6 @@ public abstract class BaseContentRetrieverResourceTestCase {
 
 			if (Objects.equals("type", additionalAssertFieldName)) {
 				if (contentRetriever.getType() == null) {
-					valid = false;
-				}
-
-				continue;
-			}
-
-			if (Objects.equals("url", additionalAssertFieldName)) {
-				if (contentRetriever.getUrl() == null) {
 					valid = false;
 				}
 
@@ -617,6 +641,52 @@ public abstract class BaseContentRetrieverResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("maxCrawlDepth", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						contentRetriever1.getMaxCrawlDepth(),
+						contentRetriever2.getMaxCrawlDepth())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("maxDuration", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						contentRetriever1.getMaxDuration(),
+						contentRetriever2.getMaxDuration())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("maxLinksPerPage", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						contentRetriever1.getMaxLinksPerPage(),
+						contentRetriever2.getMaxLinksPerPage())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"maxUniqueURLsCount", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						contentRetriever1.getMaxUniqueURLsCount(),
+						contentRetriever2.getMaxUniqueURLsCount())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("title", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						contentRetriever1.getTitle(),
@@ -643,17 +713,6 @@ public abstract class BaseContentRetrieverResourceTestCase {
 				if (!Objects.deepEquals(
 						contentRetriever1.getType(),
 						contentRetriever2.getType())) {
-
-					return false;
-				}
-
-				continue;
-			}
-
-			if (Objects.equals("url", additionalAssertFieldName)) {
-				if (!Objects.deepEquals(
-						contentRetriever1.getUrl(),
-						contentRetriever2.getUrl())) {
 
 					return false;
 				}
@@ -941,6 +1000,30 @@ public abstract class BaseContentRetrieverResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("maxCrawlDepth")) {
+			sb.append(String.valueOf(contentRetriever.getMaxCrawlDepth()));
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("maxDuration")) {
+			sb.append(String.valueOf(contentRetriever.getMaxDuration()));
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("maxLinksPerPage")) {
+			sb.append(String.valueOf(contentRetriever.getMaxLinksPerPage()));
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("maxUniqueURLsCount")) {
+			sb.append(String.valueOf(contentRetriever.getMaxUniqueURLsCount()));
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("title")) {
 			Object object = contentRetriever.getTitle();
 
@@ -994,52 +1077,6 @@ public abstract class BaseContentRetrieverResourceTestCase {
 
 		if (entityFieldName.equals("type")) {
 			Object object = contentRetriever.getType();
-
-			String value = String.valueOf(object);
-
-			if (operator.equals("contains")) {
-				sb = new StringBundler();
-
-				sb.append("contains(");
-				sb.append(entityFieldName);
-				sb.append(",'");
-
-				if ((object != null) && (value.length() > 2)) {
-					sb.append(value.substring(1, value.length() - 1));
-				}
-				else {
-					sb.append(value);
-				}
-
-				sb.append("')");
-			}
-			else if (operator.equals("startswith")) {
-				sb = new StringBundler();
-
-				sb.append("startswith(");
-				sb.append(entityFieldName);
-				sb.append(",'");
-
-				if ((object != null) && (value.length() > 1)) {
-					sb.append(value.substring(0, value.length() - 1));
-				}
-				else {
-					sb.append(value);
-				}
-
-				sb.append("')");
-			}
-			else {
-				sb.append("'");
-				sb.append(value);
-				sb.append("'");
-			}
-
-			return sb.toString();
-		}
-
-		if (entityFieldName.equals("url")) {
-			Object object = contentRetriever.getUrl();
 
 			String value = String.valueOf(object);
 
@@ -1138,9 +1175,12 @@ public abstract class BaseContentRetrieverResourceTestCase {
 					RandomTestUtil.randomString());
 				indexName = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				maxCrawlDepth = RandomTestUtil.randomInt();
+				maxDuration = RandomTestUtil.randomInt();
+				maxLinksPerPage = RandomTestUtil.randomInt();
+				maxUniqueURLsCount = RandomTestUtil.randomInt();
 				title = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				type = StringUtil.toLowerCase(RandomTestUtil.randomString());
-				url = StringUtil.toLowerCase(RandomTestUtil.randomString());
 			}
 		};
 	}
@@ -1368,4 +1408,4 @@ public abstract class BaseContentRetrieverResourceTestCase {
 		_contentRetrieverResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1914870186
+// LIFERAY-REST-BUILDER-HASH:-49199722

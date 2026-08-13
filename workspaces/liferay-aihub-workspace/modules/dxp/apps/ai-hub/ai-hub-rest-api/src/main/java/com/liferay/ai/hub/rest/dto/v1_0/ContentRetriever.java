@@ -260,6 +260,170 @@ public class ContentRetriever implements Serializable {
 	private Supplier<String> _indexNameSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
+	public Integer getMaxCrawlDepth() {
+		if (_maxCrawlDepthSupplier != null) {
+			maxCrawlDepth = _maxCrawlDepthSupplier.get();
+
+			_maxCrawlDepthSupplier = null;
+		}
+
+		return maxCrawlDepth;
+	}
+
+	public void setMaxCrawlDepth(Integer maxCrawlDepth) {
+		this.maxCrawlDepth = maxCrawlDepth;
+
+		_maxCrawlDepthSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setMaxCrawlDepth(
+		UnsafeSupplier<Integer, Exception> maxCrawlDepthUnsafeSupplier) {
+
+		_maxCrawlDepthSupplier = () -> {
+			try {
+				return maxCrawlDepthUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Integer maxCrawlDepth;
+
+	@JsonIgnore
+	private Supplier<Integer> _maxCrawlDepthSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Integer getMaxDuration() {
+		if (_maxDurationSupplier != null) {
+			maxDuration = _maxDurationSupplier.get();
+
+			_maxDurationSupplier = null;
+		}
+
+		return maxDuration;
+	}
+
+	public void setMaxDuration(Integer maxDuration) {
+		this.maxDuration = maxDuration;
+
+		_maxDurationSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setMaxDuration(
+		UnsafeSupplier<Integer, Exception> maxDurationUnsafeSupplier) {
+
+		_maxDurationSupplier = () -> {
+			try {
+				return maxDurationUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Integer maxDuration;
+
+	@JsonIgnore
+	private Supplier<Integer> _maxDurationSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Integer getMaxLinksPerPage() {
+		if (_maxLinksPerPageSupplier != null) {
+			maxLinksPerPage = _maxLinksPerPageSupplier.get();
+
+			_maxLinksPerPageSupplier = null;
+		}
+
+		return maxLinksPerPage;
+	}
+
+	public void setMaxLinksPerPage(Integer maxLinksPerPage) {
+		this.maxLinksPerPage = maxLinksPerPage;
+
+		_maxLinksPerPageSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setMaxLinksPerPage(
+		UnsafeSupplier<Integer, Exception> maxLinksPerPageUnsafeSupplier) {
+
+		_maxLinksPerPageSupplier = () -> {
+			try {
+				return maxLinksPerPageUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Integer maxLinksPerPage;
+
+	@JsonIgnore
+	private Supplier<Integer> _maxLinksPerPageSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Integer getMaxUniqueURLsCount() {
+		if (_maxUniqueURLsCountSupplier != null) {
+			maxUniqueURLsCount = _maxUniqueURLsCountSupplier.get();
+
+			_maxUniqueURLsCountSupplier = null;
+		}
+
+		return maxUniqueURLsCount;
+	}
+
+	public void setMaxUniqueURLsCount(Integer maxUniqueURLsCount) {
+		this.maxUniqueURLsCount = maxUniqueURLsCount;
+
+		_maxUniqueURLsCountSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setMaxUniqueURLsCount(
+		UnsafeSupplier<Integer, Exception> maxUniqueURLsCountUnsafeSupplier) {
+
+		_maxUniqueURLsCountSupplier = () -> {
+			try {
+				return maxUniqueURLsCountUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Integer maxUniqueURLsCount;
+
+	@JsonIgnore
+	private Supplier<Integer> _maxUniqueURLsCountSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
 	public String getTitle() {
 		if (_titleSupplier != null) {
 			title = _titleSupplier.get();
@@ -382,45 +546,6 @@ public class ContentRetriever implements Serializable {
 	@JsonIgnore
 	private Supplier<String> _typeSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
-	public String getUrl() {
-		if (_urlSupplier != null) {
-			url = _urlSupplier.get();
-
-			_urlSupplier = null;
-		}
-
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-
-		_urlSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setUrl(UnsafeSupplier<String, Exception> urlUnsafeSupplier) {
-		_urlSupplier = () -> {
-			try {
-				return urlUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String url;
-
-	@JsonIgnore
-	private Supplier<String> _urlSupplier;
-
 	@Override
 	public boolean equals(Object object) {
 		if (this == object) {
@@ -527,6 +652,54 @@ public class ContentRetriever implements Serializable {
 			sb.append("\"");
 		}
 
+		Integer maxCrawlDepth = getMaxCrawlDepth();
+
+		if (maxCrawlDepth != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"maxCrawlDepth\": ");
+
+			sb.append(maxCrawlDepth);
+		}
+
+		Integer maxDuration = getMaxDuration();
+
+		if (maxDuration != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"maxDuration\": ");
+
+			sb.append(maxDuration);
+		}
+
+		Integer maxLinksPerPage = getMaxLinksPerPage();
+
+		if (maxLinksPerPage != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"maxLinksPerPage\": ");
+
+			sb.append(maxLinksPerPage);
+		}
+
+		Integer maxUniqueURLsCount = getMaxUniqueURLsCount();
+
+		if (maxUniqueURLsCount != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"maxUniqueURLsCount\": ");
+
+			sb.append(maxUniqueURLsCount);
+		}
+
 		String title = getTitle();
 
 		if (title != null) {
@@ -567,22 +740,6 @@ public class ContentRetriever implements Serializable {
 			sb.append("\"");
 
 			sb.append(_escape(type));
-
-			sb.append("\"");
-		}
-
-		String url = getUrl();
-
-		if (url != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"url\": ");
-
-			sb.append("\"");
-
-			sb.append(_escape(url));
 
 			sb.append("\"");
 		}
@@ -688,4 +845,4 @@ public class ContentRetriever implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:365141571
+// LIFERAY-REST-BUILDER-HASH:1922229235

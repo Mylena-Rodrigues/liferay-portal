@@ -133,6 +133,90 @@ public class ContentRetriever implements Cloneable, Serializable {
 
 	protected String indexName;
 
+	public Integer getMaxCrawlDepth() {
+		return maxCrawlDepth;
+	}
+
+	public void setMaxCrawlDepth(Integer maxCrawlDepth) {
+		this.maxCrawlDepth = maxCrawlDepth;
+	}
+
+	public void setMaxCrawlDepth(
+		UnsafeSupplier<Integer, Exception> maxCrawlDepthUnsafeSupplier) {
+
+		try {
+			maxCrawlDepth = maxCrawlDepthUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Integer maxCrawlDepth;
+
+	public Integer getMaxDuration() {
+		return maxDuration;
+	}
+
+	public void setMaxDuration(Integer maxDuration) {
+		this.maxDuration = maxDuration;
+	}
+
+	public void setMaxDuration(
+		UnsafeSupplier<Integer, Exception> maxDurationUnsafeSupplier) {
+
+		try {
+			maxDuration = maxDurationUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Integer maxDuration;
+
+	public Integer getMaxLinksPerPage() {
+		return maxLinksPerPage;
+	}
+
+	public void setMaxLinksPerPage(Integer maxLinksPerPage) {
+		this.maxLinksPerPage = maxLinksPerPage;
+	}
+
+	public void setMaxLinksPerPage(
+		UnsafeSupplier<Integer, Exception> maxLinksPerPageUnsafeSupplier) {
+
+		try {
+			maxLinksPerPage = maxLinksPerPageUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Integer maxLinksPerPage;
+
+	public Integer getMaxUniqueURLsCount() {
+		return maxUniqueURLsCount;
+	}
+
+	public void setMaxUniqueURLsCount(Integer maxUniqueURLsCount) {
+		this.maxUniqueURLsCount = maxUniqueURLsCount;
+	}
+
+	public void setMaxUniqueURLsCount(
+		UnsafeSupplier<Integer, Exception> maxUniqueURLsCountUnsafeSupplier) {
+
+		try {
+			maxUniqueURLsCount = maxUniqueURLsCountUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Integer maxUniqueURLsCount;
+
 	public String getTitle() {
 		return title;
 	}
@@ -195,25 +279,6 @@ public class ContentRetriever implements Cloneable, Serializable {
 
 	protected String type;
 
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public void setUrl(UnsafeSupplier<String, Exception> urlUnsafeSupplier) {
-		try {
-			url = urlUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected String url;
-
 	@Override
 	public ContentRetriever clone() throws CloneNotSupportedException {
 		return (ContentRetriever)super.clone();
@@ -246,4 +311,4 @@ public class ContentRetriever implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1383308028
+// LIFERAY-REST-BUILDER-HASH:-1021476475
