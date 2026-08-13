@@ -264,8 +264,8 @@ public class ProvisioningRequestManagerImpl
 		}
 
 		_validateAddOns(
-			provisioningRequest.getAddOns(),
-			customerAccountEntry.getCompanyId());
+			customerAccountEntry.getCompanyId(),
+			provisioningRequest.getAddOns());
 
 		systemObjectDefinitionManager.updateBaseModel(
 			customerAccountEntry.getAccountEntryId(),
@@ -443,7 +443,7 @@ public class ProvisioningRequestManagerImpl
 		};
 	}
 
-	private void _validateAddOns(String[] addOns, long companyId)
+	private void _validateAddOns(long companyId, String[] addOns)
 		throws Exception {
 
 		if ((addOns == null) || (addOns.length == 0)) {
@@ -463,8 +463,7 @@ public class ProvisioningRequestManagerImpl
 
 		for (String addOn : addOns) {
 			if (!keys.contains(addOn)) {
-				throw new BadRequestException(
-					"Invalid add-on: \"" + addOn + "\"");
+				throw new BadRequestException("Invalid add-on " + addOn);
 			}
 		}
 	}

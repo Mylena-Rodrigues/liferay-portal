@@ -202,11 +202,11 @@ public class ProvisioningRequestResourceTest
 		provisioningRequest4.setAddOns(new String[0]);
 		provisioningRequest4.setTier(ProvisioningRequest.Tier.ENTERPRISE);
 
-		OAuth2Application oAuth2Application = _getOAuth2Application(
+		OAuth2Application oAuth2Application1 = _getOAuth2Application(
 			customerAccountEntry);
 
-		String clientId = oAuth2Application.getClientId();
-		String clientSecret = oAuth2Application.getClientSecret();
+		String clientId = oAuth2Application1.getClientId();
+		String clientSecret = oAuth2Application1.getClientSecret();
 
 		ProvisioningRequest provisioningRequest5 =
 			provisioningRequestResource.postProvisioning(provisioningRequest4);
@@ -223,12 +223,11 @@ public class ProvisioningRequestResourceTest
 			customerAccountEntry, provisioningRequest4);
 		_assertOAuth2Application(customerAccountEntry, provisioningRequest4);
 
-		OAuth2Application updatedOAuth2Application = _getOAuth2Application(
+		OAuth2Application oAuth2Application2 = _getOAuth2Application(
 			customerAccountEntry);
 
-		Assert.assertEquals(clientId, updatedOAuth2Application.getClientId());
-		Assert.assertEquals(
-			clientSecret, updatedOAuth2Application.getClientSecret());
+		Assert.assertEquals(clientId, oAuth2Application2.getClientId());
+		Assert.assertEquals(clientSecret, oAuth2Application2.getClientSecret());
 	}
 
 	@Override
