@@ -259,7 +259,8 @@ public class ProvisioningRequestManagerImpl
 
 		if (systemObjectDefinitionManager == null) {
 			throw new IllegalStateException(
-				"Unable to persist the provisioning fields of account entry");
+				"Unable to persist the provisioning fields of account entry " +
+					customerAccountEntry.getExternalReferenceCode());
 		}
 
 		_validateAddOns(
