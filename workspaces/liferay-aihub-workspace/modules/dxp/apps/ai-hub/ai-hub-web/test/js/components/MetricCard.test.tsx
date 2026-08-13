@@ -8,7 +8,7 @@ import React from 'react';
 
 import '@testing-library/jest-dom';
 
-import MetricCard from '../../../../src/main/resources/META-INF/resources/js/activity_dashboard/components/MetricCard';
+import MetricCard from '../../../src/main/resources/META-INF/resources/js/components/MetricCard';
 
 describe('MetricCard', () => {
 	it('renders the children area when children are provided', () => {

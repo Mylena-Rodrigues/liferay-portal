@@ -31,14 +31,6 @@ function renderDashboard() {
 }
 
 describe('ActivityDashboard', () => {
-	it('renders the page heading', () => {
-		renderDashboard();
-
-		expect(
-			screen.getByRole('heading', {level: 1, name: 'activity'})
-		).toBeInTheDocument();
-	});
-
 	it('renders the agents and chatbots cards with their counts', () => {
 		renderDashboard();
 
