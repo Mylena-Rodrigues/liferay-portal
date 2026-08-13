@@ -172,6 +172,18 @@ public class ContentRetrieverManagerImpl implements ContentRetrieverManager {
 				setIndexName(
 					() -> GetterUtil.getString(
 						objectEntry.getPropertyValue("indexName")));
+				setMaxCrawlDepth(
+					() -> GetterUtil.getInteger(
+						objectEntry.getPropertyValue("maxCrawlDepth")));
+				setMaxDuration(
+					() -> GetterUtil.getInteger(
+						objectEntry.getPropertyValue("maxDuration")));
+				setMaxLinksPerPage(
+					() -> GetterUtil.getInteger(
+						objectEntry.getPropertyValue("maxLinksPerPage")));
+				setMaxUniqueURLsCount(
+					() -> GetterUtil.getInteger(
+						objectEntry.getPropertyValue("maxUniqueURLsCount")));
 				setTitle(
 					() -> GetterUtil.getString(
 						objectEntry.getPropertyValue("title")));
@@ -181,9 +193,6 @@ public class ContentRetrieverManagerImpl implements ContentRetrieverManager {
 				setType(
 					() -> GetterUtil.getString(
 						objectEntry.getPropertyValue("type")));
-				setUrl(
-					() -> GetterUtil.getString(
-						objectEntry.getPropertyValue("url")));
 			}
 		};
 	}
@@ -214,14 +223,22 @@ public class ContentRetrieverManagerImpl implements ContentRetrieverManager {
 						).put(
 							"indexName", indexName
 						).put(
+							"maxCrawlDepth", contentRetriever.getMaxCrawlDepth()
+						).put(
+							"maxDuration", contentRetriever.getMaxDuration()
+						).put(
+							"maxLinksPerPage",
+							contentRetriever.getMaxLinksPerPage()
+						).put(
+							"maxUniqueURLsCount",
+							contentRetriever.getMaxUniqueURLsCount()
+						).put(
 							"r_accountToAIHubContentRetrievers_accountEntryId",
 							String.valueOf(accountEntryId)
 						).put(
 							"title_i18n", contentRetriever.getTitle_i18n()
 						).put(
 							"type", contentRetriever.getType()
-						).put(
-							"url", contentRetriever.getUrl()
 						).build());
 				}
 			},

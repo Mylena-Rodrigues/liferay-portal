@@ -125,6 +125,18 @@ components:
                     type: string
                 indexName:
                     type: string
+                maxCrawlDepth:
+                    format: int32
+                    type: integer
+                maxDuration:
+                    format: int32
+                    type: integer
+                maxLinksPerPage:
+                    format: int32
+                    type: integer
+                maxUniqueURLsCount:
+                    format: int32
+                    type: integer
                 title:
                     readOnly: true
                     type: string
@@ -133,8 +145,6 @@ components:
                         type: string
                     type: object
                 type:
-                    type: string
-                url:
                     type: string
             type: object
         Credential:

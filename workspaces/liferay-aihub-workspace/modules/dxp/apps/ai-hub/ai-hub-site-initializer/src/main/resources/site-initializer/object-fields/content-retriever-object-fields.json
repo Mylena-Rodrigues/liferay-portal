@@ -57,6 +57,19 @@
 		{
 			"DBType": "Integer",
 			"businessType": "Integer",
+			"externalReferenceCode": "MAX_CRAWL_DEPTH",
+			"indexed": true,
+			"label": {
+				"en_US": "Maximum Crawl Depth"
+			},
+			"name": "maxCrawlDepth",
+			"required": true,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
 			"externalReferenceCode": "MAX_DOCUMENTS_COUNT",
 			"indexed": true,
 			"label": {
@@ -70,6 +83,19 @@
 		{
 			"DBType": "Integer",
 			"businessType": "Integer",
+			"externalReferenceCode": "MAX_DURATION",
+			"indexed": true,
+			"label": {
+				"en_US": "Maximum Duration"
+			},
+			"name": "maxDuration",
+			"required": true,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
 			"externalReferenceCode": "MAX_FRAGMENTS_COUNT_PER_DOCUMENT",
 			"indexed": true,
 			"label": {
@@ -77,6 +103,32 @@
 			},
 			"name": "maxFragmentsCountPerDocument",
 			"required": false,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "MAX_LINKS_PER_PAGE",
+			"indexed": true,
+			"label": {
+				"en_US": "Maximum Links per Page"
+			},
+			"name": "maxLinksPerPage",
+			"required": true,
+			"system": true,
+			"type": "Integer"
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"externalReferenceCode": "MAX_UNIQUE_URLS_COUNT",
+			"indexed": true,
+			"label": {
+				"en_US": "Maximum Unique URLs Count"
+			},
+			"name": "maxUniqueURLsCount",
+			"required": true,
 			"system": true,
 			"type": "Integer"
 		},
@@ -108,22 +160,6 @@
 				"en_US": "Type"
 			},
 			"name": "type",
-			"readOnly": false,
-			"required": false,
-			"system": true,
-			"type": "String"
-		},
-		{
-			"DBType": "String",
-			"businessType": "Text",
-			"defaultValue": "null",
-			"externalReferenceCode": "URL",
-			"indexed": true,
-			"indexedLanguageId": "en_US",
-			"label": {
-				"en_US": "URL"
-			},
-			"name": "url",
 			"readOnly": false,
 			"required": false,
 			"system": true,
