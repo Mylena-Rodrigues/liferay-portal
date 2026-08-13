@@ -205,9 +205,6 @@ public class ProvisioningRequestResourceTest
 		OAuth2Application oAuth2Application1 = _getOAuth2Application(
 			customerAccountEntry);
 
-		String clientId = oAuth2Application1.getClientId();
-		String clientSecret = oAuth2Application1.getClientSecret();
-
 		ProvisioningRequest provisioningRequest5 =
 			provisioningRequestResource.postProvisioning(provisioningRequest4);
 
@@ -226,8 +223,11 @@ public class ProvisioningRequestResourceTest
 		OAuth2Application oAuth2Application2 = _getOAuth2Application(
 			customerAccountEntry);
 
-		Assert.assertEquals(clientId, oAuth2Application2.getClientId());
-		Assert.assertEquals(clientSecret, oAuth2Application2.getClientSecret());
+		Assert.assertEquals(
+			oAuth2Application1.getClientId(), oAuth2Application2.getClientId());
+		Assert.assertEquals(
+			oAuth2Application1.getClientSecret(),
+			oAuth2Application2.getClientSecret());
 	}
 
 	@Override

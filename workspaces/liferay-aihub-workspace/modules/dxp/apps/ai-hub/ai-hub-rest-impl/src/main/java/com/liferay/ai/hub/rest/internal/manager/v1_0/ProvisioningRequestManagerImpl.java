@@ -194,15 +194,15 @@ public class ProvisioningRequestManagerImpl
 			ServiceContext serviceContext)
 		throws Exception {
 
+		String clientId = null;
+		String clientSecret = null;
+
 		OAuth2Application oAuth2Application =
 			_oAuth2ApplicationLocalService.
 				fetchOAuth2ApplicationByExternalReferenceCode(
 					customerAccountEntry.getAccountEntryId() +
 						"-ai-hub-oauth2-application",
 					customerAccountEntry.getCompanyId());
-
-		String clientId = null;
-		String clientSecret = null;
 
 		if (oAuth2Application == null) {
 			clientId = OAuth2SecureRandomGenerator.generateClientId();
