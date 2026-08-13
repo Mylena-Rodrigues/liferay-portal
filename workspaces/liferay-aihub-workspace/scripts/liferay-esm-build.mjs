@@ -56,6 +56,7 @@ const EXPORTS_PROVIDERS = [
 // /o/<provider>/__liferay__/index.js
 
 const INDEX_PROVIDERS = {
+	'@liferay/ai-hub-web': 'ai-hub-web',
 	'@liferay/frontend-data-set-web': 'frontend-data-set-web',
 	'@liferay/frontend-js-react-web': 'frontend-js-react-web',
 	'@liferay/object-js-components-web': 'object-js-components-web',

@@ -7,6 +7,7 @@ export {default as AgentDefinitionForm} from './agent_definition_form/AgentDefin
 export {default as AgentDefinitionItemTitlePropsTransformer} from './agent_definition_item_title/AgentDefinitionItemTitlePropsTransformer';
 export {default as ChatbotForm} from './chatbot_form/ChatbotForm';
 export {default as ChatbotItemTitlePropsTransformer} from './chatbot_item_title/ChatbotItemTitlePropsTransformer';
+export {default as MetricCard} from './components/MetricCard';
 export {default as ListTitlePropsTransformer} from './components/listTitlePropsTransformer';
 export {default as ConfigurationForm} from './configuration_form/ConfigurationForm';
 export {default as ContentRetrieverForm} from './content_retriever_form/ContentRetrieverForm';

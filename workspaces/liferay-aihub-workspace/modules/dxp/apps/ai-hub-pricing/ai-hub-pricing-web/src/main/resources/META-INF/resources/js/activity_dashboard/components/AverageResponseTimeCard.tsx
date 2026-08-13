@@ -4,10 +4,10 @@
  */
 
 import ClayIcon from '@clayui/icon';
+import {MetricCard} from '@liferay/ai-hub-web';
 import React from 'react';
 
 import {formatMillisecondsAsSeconds} from '../utils/formatters';
-import MetricCard from './MetricCard';
 
 export default function AverageResponseTimeCard({value}: {value: number}) {
 	return (

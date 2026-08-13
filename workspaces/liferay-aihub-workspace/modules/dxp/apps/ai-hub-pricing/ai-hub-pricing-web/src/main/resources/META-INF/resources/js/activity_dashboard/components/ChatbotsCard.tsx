@@ -4,9 +4,8 @@
  */
 
 import ClayIcon from '@clayui/icon';
+import {MetricCard} from '@liferay/ai-hub-web';
 import React from 'react';
-
-import MetricCard from './MetricCard';
 
 export default function ChatbotsCard({value}: {value: number}) {
 	return (

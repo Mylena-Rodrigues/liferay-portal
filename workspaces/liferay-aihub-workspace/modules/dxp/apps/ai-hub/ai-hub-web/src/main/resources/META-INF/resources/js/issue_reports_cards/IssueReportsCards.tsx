@@ -6,7 +6,7 @@
 import ClayIcon from '@clayui/icon';
 import React from 'react';
 
-import MetricCard from './components/MetricCard';
+import MetricCard from '../components/MetricCard';
 
 interface IssueReportsCardsProps {
 	criticalIssuesCount: number;

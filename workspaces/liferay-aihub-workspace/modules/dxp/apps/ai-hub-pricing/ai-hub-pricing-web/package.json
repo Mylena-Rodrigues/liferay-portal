@@ -5,6 +5,7 @@
 		"@clayui/icon": "^3.164.0",
 		"@clayui/layout": "^3.164.0",
 		"@clayui/loading-indicator": "^3.164.0",
+		"@liferay/ai-hub-web": "*",
 		"react": "18.2.0",
 		"react-dom": "18.2.0"
 	},
