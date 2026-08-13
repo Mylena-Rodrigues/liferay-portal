@@ -7,7 +7,6 @@ package com.liferay.seo.studio.controller;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.petra.function.UnsafeSupplier;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -15,6 +14,7 @@ import com.liferay.seo.studio.constants.SEOStudioScanConstants;
 import com.liferay.seo.studio.model.CrawlHit;
 import com.liferay.seo.studio.service.KubernetesJobService;
 import com.liferay.seo.studio.service.SEOStudioLinksAndURLsInsightService;
+import com.liferay.seo.studio.service.SEOStudioMetadataInsightService;
 import com.liferay.seo.studio.service.SEOStudioService;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -30,12 +30,9 @@ import java.net.http.HttpResponse;
 
 import java.time.Duration;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -211,84 +208,6 @@ public class CrawlerRestController extends BaseRestController {
 		}
 	}
 
-	private List<JSONObject> _getMetadataInsightJSONObjects(
-		List<CrawlHit> crawlHits) {
-
-		Set<String> missingOrEmptyMetaDescriptionTagPageURLs =
-			new LinkedHashSet<>();
-		Set<String> missingOrEmptyTitleTagPageURLs = new LinkedHashSet<>();
-
-		for (CrawlHit crawlHit : crawlHits) {
-			String canonicalURL = crawlHit.getCanonicalURL();
-
-			if (Validator.isNull(canonicalURL)) {
-				continue;
-			}
-
-			if (Validator.isNull(crawlHit.getMetaDescription())) {
-				missingOrEmptyMetaDescriptionTagPageURLs.add(canonicalURL);
-			}
-
-			if (Validator.isNull(crawlHit.getTitle())) {
-				missingOrEmptyTitleTagPageURLs.add(canonicalURL);
-			}
-		}
-
-		return Arrays.asList(
-			new JSONObject(
-			).put(
-				"category", "metadata"
-			).put(
-				"classification", "opportunity"
-			).put(
-				"description",
-				StringBundler.concat(
-					"This page has no <meta name=\"description\"> tag, or its ",
-					"content attribute is empty. Without one, Google ",
-					"autogenerates a snippet from body text — typically ",
-					"producing a less compelling preview than an authored ",
-					"description.")
-			).put(
-				"fixHint",
-				StringBundler.concat(
-					"Add a unique meta description of roughly 150 to 160 ",
-					"characters that summarizes the page and includes its ",
-					"primary keywords, so search engines show it verbatim in ",
-					"the results snippet.")
-			).put(
-				"name", "missingOrEmptyMetaDescriptionTag"
-			).put(
-				"pageURLs", missingOrEmptyMetaDescriptionTagPageURLs
-			).put(
-				"severity", "2"
-			),
-			new JSONObject(
-			).put(
-				"category", "metadata"
-			).put(
-				"classification", "problem"
-			).put(
-				"description",
-				StringBundler.concat(
-					"This page has no <title> tag, or the tag is present but ",
-					"empty. The title is the first thing search engines and ",
-					"users read in SERP listings and carries one of the ",
-					"strongest on page ranking signals.")
-			).put(
-				"fixHint",
-				StringBundler.concat(
-					"Add a concise, unique <title> of roughly 50 to 60 ",
-					"characters that leads with the page's primary keyword ",
-					"and reflects its actual content.")
-			).put(
-				"name", "missingOrEmptyTitleTag"
-			).put(
-				"pageURLs", missingOrEmptyTitleTagPageURLs
-			).put(
-				"severity", "3"
-			));
-	}
-
 	private boolean _isSitemapReachable(String sitemapURL) {
 		try {
 			HttpResponse<String> httpResponse = _httpClient.send(
@@ -401,7 +320,9 @@ public class CrawlerRestController extends BaseRestController {
 			List<JSONObject> metadataInsightJSONObjects =
 				_getInsightJSONObjects(
 					"metadata",
-					() -> _getMetadataInsightJSONObjects(crawlHits));
+					() ->
+						_seoStudioMetadataInsightService.getInsightJSONObjects(
+							crawlHits));
 
 			long accountEntryId = seoStudioScanJSONObject.getLong(
 				"r_accountToSEOStudioScans_accountEntryId");
@@ -478,6 +399,9 @@ public class CrawlerRestController extends BaseRestController {
 	@Autowired
 	private SEOStudioLinksAndURLsInsightService
 		_seoStudioLinksAndURLsInsightService;
+
+	@Autowired
+	private SEOStudioMetadataInsightService _seoStudioMetadataInsightService;
 
 	@Autowired
 	private SEOStudioService _seoStudioService;
