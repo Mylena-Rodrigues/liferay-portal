@@ -20,7 +20,7 @@ export default function IssueReportsCards({
 	positiveRatingPercent,
 }: IssueReportsCardsProps) {
 	return (
-		<section className="container-fluid issue-reports-user-activity mb-4 mt-4">
+		<section className="container-fluid issue-reports-user-activity mb-4">
 			<h2 className="h4 mb-3">{Liferay.Language.get('user-activity')}</h2>
 
 			<div className="row">
