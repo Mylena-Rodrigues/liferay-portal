@@ -5,6 +5,10 @@
 
 package com.liferay.ai.hub.service;
 
+import com.liferay.ai.hub.model.CrawlerConfiguration;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringUtil;
+
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -22,16 +26,18 @@ import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.net.URI;
-
 import java.nio.charset.StandardCharsets;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,17 +51,8 @@ import org.yaml.snakeyaml.Yaml;
 @Service
 public class KubernetesJobService {
 
-	public Job createJob(long accountEntryId, String indexName, String url) {
-		URI uri = null;
-
-		try {
-			uri = URI.create(url);
-		}
-		catch (IllegalArgumentException illegalArgumentException) {
-			throw new IllegalArgumentException(
-				"Invalid crawler URL \"" + url + "\"",
-				illegalArgumentException);
-		}
+	public Job createJob(
+		long accountEntryId, CrawlerConfiguration crawlerConfiguration) {
 
 		Job job = _kubernetesClient.batch(
 		).v1(
@@ -82,7 +79,7 @@ public class KubernetesJobService {
 			).withEnv(
 				_createEnvVar(
 					"CRAWLER_CONFIG_YAML",
-					_getCrawlerConfigurationYAML(indexName, uri))
+					_getCrawlerConfigurationYAML(crawlerConfiguration))
 			).endContainer(
 			).endSpec(
 			).endTemplate(
@@ -154,7 +151,9 @@ public class KubernetesJobService {
 		).build();
 	}
 
-	private String _getCrawlerConfigurationYAML(String indexName, URI uri) {
+	private String _getCrawlerConfigurationYAML(
+		CrawlerConfiguration crawlerConfiguration) {
+
 		DumperOptions dumperOptions = new DumperOptions();
 
 		dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -169,11 +168,24 @@ public class KubernetesJobService {
 
 		Map<String, Object> domain = domains.get(0);
 
-		domain.put("seed_urls", Collections.singletonList(uri.toString()));
-		domain.put("url", uri.getScheme() + "://" + uri.getAuthority());
+		configuration.put(
+			"domains",
+			_getDomains(
+				crawlerConfiguration.getDomainsJSONArray(),
+				(List<Map<String, Object>>)domain.get("crawl_rules")));
 
 		configuration.put("log_level", _crawlerLogLevel);
-		configuration.put("output_index", indexName);
+		configuration.put(
+			"max_crawl_depth", crawlerConfiguration.getMaxCrawlDepth());
+		configuration.put(
+			"max_duration", crawlerConfiguration.getMaxDuration());
+		configuration.put(
+			"max_extracted_links_count",
+			crawlerConfiguration.getMaxLinksPerPage());
+		configuration.put(
+			"max_unique_url_count",
+			crawlerConfiguration.getMaxUniqueURLsCount());
+		configuration.put("output_index", crawlerConfiguration.getIndexName());
 
 		Map<String, Object> elasticsearch =
 			(Map<String, Object>)configuration.get("elasticsearch");
@@ -182,6 +194,56 @@ public class KubernetesJobService {
 		elasticsearch.put("port", _elasticsearchPort);
 
 		return yaml.dump(configuration);
+	}
+
+	private List<Map<String, Object>> _getDomains(
+		JSONArray jsonArray, List<Map<String, Object>> systemCrawlRules) {
+
+		List<Map<String, Object>> domains = new ArrayList<>();
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			List<Map<String, Object>> crawlRules = new ArrayList<>();
+
+			for (Map<String, Object> systemCrawlRule : systemCrawlRules) {
+				crawlRules.add(new LinkedHashMap<>(systemCrawlRule));
+			}
+
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			for (String includePath :
+					StringUtil.split(
+						jsonObject.optString("includePaths"),
+						CharPool.NEW_LINE)) {
+
+				crawlRules.add(
+					Map.of(
+						"pattern", includePath.trim(), "policy", "allow",
+						"type", "regex"));
+			}
+
+			for (String excludePath :
+					StringUtil.split(
+						jsonObject.optString("excludePaths"),
+						CharPool.NEW_LINE)) {
+
+				crawlRules.add(
+					Map.of(
+						"pattern", excludePath.trim(), "policy", "deny", "type",
+						"regex"));
+			}
+
+			List<String> seedUrls = StringUtil.split(
+				jsonObject.optString("seedUrls"), CharPool.NEW_LINE);
+
+			seedUrls.replaceAll(String::trim);
+
+			domains.add(
+				Map.of(
+					"crawl_rules", crawlRules, "seed_urls", seedUrls, "url",
+					jsonObject.optString("domain")));
+		}
+
+		return domains;
 	}
 
 	private ScalableResource<Job> _getJobScalableResource(String name) {

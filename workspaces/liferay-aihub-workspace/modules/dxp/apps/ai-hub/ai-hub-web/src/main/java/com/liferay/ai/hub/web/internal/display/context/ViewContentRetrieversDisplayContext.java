@@ -64,9 +64,11 @@ public class ViewContentRetrieversDisplayContext {
 				"view", "view", LanguageUtil.get(_httpServletRequest, "view"),
 				"get", null, null),
 			new FDSActionDropdownItem(
-				getAPIURL() +
-					"/by-external-reference-code/{externalReferenceCode}" +
-						"/object-actions/crawler",
+				HttpComponentsUtil.addParameters(
+					getAPIURL() +
+						"/by-external-reference-code/{externalReferenceCode}" +
+							"/object-actions/crawler",
+					"nestedFields", "contentRetrieverToCRConfigurations"),
 				"reload", "put",
 				LanguageUtil.get(_httpServletRequest, "sync-now"), "put", null,
 				"async"),

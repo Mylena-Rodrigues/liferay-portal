@@ -5,6 +5,7 @@
 
 package com.liferay.ai.hub;
 
+import com.liferay.ai.hub.model.CrawlerConfiguration;
 import com.liferay.ai.hub.service.KubernetesJobService;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
@@ -16,6 +17,7 @@ import java.net.URI;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +59,13 @@ public class ObjectActionCrawlerRestController extends BaseRestController {
 		Job job = _kubernetesJobService.createJob(
 			valuesJSONObject.getLong(
 				"r_accountToAIHubContentRetrievers_accountEntryId"),
-			valuesJSONObject.getString("indexName"),
-			valuesJSONObject.getString("url"));
+			new CrawlerConfiguration(
+				_getDomainsJSONArray(jsonObject),
+				valuesJSONObject.getString("indexName"),
+				valuesJSONObject.getInt("maxCrawlDepth"),
+				valuesJSONObject.getInt("maxDuration"),
+				valuesJSONObject.getInt("maxLinksPerPage"),
+				valuesJSONObject.getInt("maxUniqueURLsCount")));
 
 		return ResponseEntity.ok(
 			post(
@@ -80,6 +87,34 @@ public class ObjectActionCrawlerRestController extends BaseRestController {
 					objectEntryJSONObject.getLong("objectEntryId")
 				).toString(),
 				URI.create("/o/ai-hub/crawler-jobs")));
+	}
+
+	private JSONArray _getDomainsJSONArray(JSONObject jsonObject) {
+		JSONArray domainsJSONArray = new JSONArray();
+
+		JSONObject objectEntryDTOAIHubContentRetrieverJSONObject =
+			jsonObject.getJSONObject("objectEntryDTOAIHubContentRetriever");
+
+		JSONObject propertiesJSONObject =
+			objectEntryDTOAIHubContentRetrieverJSONObject.getJSONObject(
+				"properties");
+
+		JSONArray contentRetrieverToCRConfigurationsJSONArray =
+			propertiesJSONObject.optJSONArray(
+				"contentRetrieverToCRConfigurations", new JSONArray());
+
+		for (int i = 0;
+			 i < contentRetrieverToCRConfigurationsJSONArray.length(); i++) {
+
+			JSONObject contentRetrieverToCRConfigurationJSONObject =
+				contentRetrieverToCRConfigurationsJSONArray.getJSONObject(i);
+
+			domainsJSONArray.put(
+				contentRetrieverToCRConfigurationJSONObject.getJSONObject(
+					"properties"));
+		}
+
+		return domainsJSONArray;
 	}
 
 	private static final Log _log = LogFactory.getLog(
