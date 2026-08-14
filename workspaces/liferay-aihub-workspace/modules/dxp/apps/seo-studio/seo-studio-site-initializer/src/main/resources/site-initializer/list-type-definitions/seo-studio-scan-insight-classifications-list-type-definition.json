@@ -18,6 +18,12 @@
 			"key": "problem",
 			"name": "Problem",
 			"system": true
+		},
+		{
+			"externalReferenceCode": "WARNING",
+			"key": "warning",
+			"name": "Warning",
+			"system": true
 		}
 	],
 	"name": "SEO Studio Scan Insight Classifications",
