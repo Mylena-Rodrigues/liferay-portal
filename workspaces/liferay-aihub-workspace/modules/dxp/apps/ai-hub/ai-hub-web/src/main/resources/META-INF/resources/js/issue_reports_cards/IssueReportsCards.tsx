@@ -44,7 +44,7 @@ export default function IssueReportsCards({
 					<MetricCard
 						icon={<ClayIcon symbol="exclamation-full" />}
 						title={Liferay.Language.get('critical-issues')}
-						value={String(criticalIssuesCount)}
+						value={criticalIssuesCount}
 					/>
 				</div>
 			</div>
