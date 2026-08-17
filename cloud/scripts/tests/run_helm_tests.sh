@@ -24,6 +24,7 @@ function main {
 		aws-infrastructure
 		aws-infrastructure-provider
 		aws-marketplace
+		azure-infrastructure-provider
 		default
 		dxp-operator
 		gcp
@@ -34,9 +35,9 @@ function main {
 		platform-components
 	)
 
-	if [[ -n "${requested_chart}" ]]
+	if [[ -n ${requested_chart} ]]
 	then
-		if [[ ! -d "${cloud_dir}/helm/${requested_chart}" ]]
+		if [[ ! -d ${cloud_dir}/helm/${requested_chart} ]]
 		then
 			echo "Unable to find chart ${requested_chart}."
 

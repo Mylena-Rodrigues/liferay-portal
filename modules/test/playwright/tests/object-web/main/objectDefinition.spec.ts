@@ -1247,6 +1247,11 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 
 			await editObjectDetailsPage.goToDetailsTab();
 
+			const originalEntryTitleField =
+				(
+					await editObjectDetailsPage.entryTitleField.textContent()
+				)?.trim() ?? '';
+
 			await editObjectDetailsPage.entryTitleField.click();
 
 			await page
@@ -1262,6 +1267,23 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 			await expect(editObjectDetailsPage.entryTitleField).toContainText(
 				'Screen Name'
 			);
+
+			// User is a system object shared by the whole run, so put its title
+			// field back the way it was found. Left on Screen Name, a later
+			// execution opens the dropdown with that option already selected and
+			// waits on it until the test times out, so the test can otherwise
+			// only pass once per environment.
+
+			await editObjectDetailsPage.entryTitleField.click();
+
+			await page
+				.getByRole('option', {
+					exact: true,
+					name: originalEntryTitleField,
+				})
+				.click();
+
+			await editObjectDetailsPage.saveObjectDefinition();
 		}
 	);
 
@@ -2786,6 +2808,19 @@ test.describe('Manage object definitions through Page Templates', () => {
 				type: 'objectDefinition',
 			});
 
+			await collectionsPage.goto(site.friendlyUrlPath);
+
+			await page.goto(
+				(await page
+					.getByRole('link', {name: 'Collection Providers'})
+					.getAttribute('href')) +
+					'&_com_liferay_asset_list_web_portlet_AssetListPortlet_delta=200'
+			);
+
+			await expect(
+				page.getByText(objectDefinition.name).first()
+			).toBeVisible();
+
 			await viewObjectDefinitionsPage.goto();
 
 			await viewObjectDefinitionsPage.changeObjectActivateStatus(
@@ -2794,9 +2829,12 @@ test.describe('Manage object definitions through Page Templates', () => {
 
 			await collectionsPage.goto(site.friendlyUrlPath);
 
-			await page
-				.getByRole('link', {name: 'Collection Providers'})
-				.click();
+			await page.goto(
+				(await page
+					.getByRole('link', {name: 'Collection Providers'})
+					.getAttribute('href')) +
+					'&_com_liferay_asset_list_web_portlet_AssetListPortlet_delta=200'
+			);
 
 			await expect(
 				page.getByText(objectDefinition.name).first()
@@ -2810,9 +2848,12 @@ test.describe('Manage object definitions through Page Templates', () => {
 
 			await collectionsPage.goto(site.friendlyUrlPath);
 
-			await page
-				.getByRole('link', {name: 'Collection Providers'})
-				.click();
+			await page.goto(
+				(await page
+					.getByRole('link', {name: 'Collection Providers'})
+					.getAttribute('href')) +
+					'&_com_liferay_asset_list_web_portlet_AssetListPortlet_delta=200'
+			);
 
 			await expect(
 				page.getByText(objectDefinition.name).first()

@@ -6,7 +6,9 @@
 {{- end -}}
 
 {{- define "liferay-platform.chartSource" -}}
-{{- if .path -}}
+{{- if hasPrefix "oci://" .repoURL -}}
+path: .
+{{- else if .path -}}
 path: {{ .path }}
 {{- else -}}
 chart: {{ .chart }}
@@ -16,7 +18,7 @@ targetRevision: {{ .targetRevision | quote }}
 {{- end -}}
 
 {{- define "liferay-platform.clusterSecretStoreName" -}}
-{{- printf "%s-secret-store" .Values.clusterIdentity.deploymentName -}}
+{{- printf "%s-secret-store" .Values.deploymentContext.deploymentName -}}
 {{- end -}}
 
 {{- define "liferay-platform.crossplaneDeploymentRuntimeConfigAnnotations" -}}

@@ -22,6 +22,7 @@ import {ObjectFieldsPage} from '../../../pages/object-web/object-fields/ObjectFi
 import {getRandomInt} from '../../../utils/getRandomInt';
 import getRandomString from '../../../utils/getRandomString';
 import {waitForAlert} from '../../../utils/waitForAlert';
+import {waitForSearchToBeReady} from '../../../utils/waitForSearchToBeReady';
 import {AsyncArray} from '../utils/AsyncArray';
 import {generateObjectFields} from '../utils/generateObjectFields';
 import {postListTypeDefinitionListTypeEntries} from '../utils/postListTypeDefinitionListTypeEntries';
@@ -2513,6 +2514,9 @@ test.describe('Create Object Fields', () => {
 			.getByRole('search')
 			.getByRole('searchbox', {name: 'Search'})
 			.fill('Cancel Field');
+
+		await waitForSearchToBeReady(page);
+
 		await page.keyboard.press('Enter');
 
 		await expect(page.getByText('No Results Found')).toBeVisible();
@@ -2789,7 +2793,6 @@ test.describe('Manage object fields default value properties', () => {
 		async ({
 			apiHelpers,
 			modelBuilderDiagramPage,
-			modelBuilderLeftSidebarPage,
 			modelBuilderObjectDefinitionNodePage,
 			modelBuilderRightSidebarPage,
 			page,
@@ -2801,6 +2804,8 @@ test.describe('Manage object fields default value properties', () => {
 
 			let objectName: string;
 
+			let objectFolderName: string;
+
 			await test.step('create object with boolean field', async () => {
 				const objectFields = generateObjectFields({
 					objectFieldBusinessTypes: ['Boolean'],
@@ -2808,9 +2813,26 @@ test.describe('Manage object fields default value properties', () => {
 
 				booleanFieldName = objectFields[0].label['en_US'];
 
+				// An isolated folder keeps the diagram to this one definition, so
+				// the node is fitted into view; the Default folder holds every
+				// system definition and pushes the node's controls under the
+				// right sidebar, which Playwright cannot scroll away.
+
+				const objectFolder =
+					await apiHelpers.objectAdmin.postRandomObjectFolder();
+
+				apiHelpers.data.push({
+					id: objectFolder.id,
+					type: 'objectFolder',
+				});
+
+				objectFolderName = objectFolder.name;
+
 				const objectDefinition =
 					await apiHelpers.objectAdmin.postRandomObjectDefinition({
 						objectFields,
+						objectFolderExternalReferenceCode:
+							objectFolder.externalReferenceCode,
 						status: {code: 0},
 					});
 
@@ -2826,12 +2848,8 @@ test.describe('Manage object fields default value properties', () => {
 
 			await test.step('set default value to false for boolean field and check in object entry', async () => {
 				await modelBuilderDiagramPage.goto({
-					objectFolderName: 'Default',
+					objectFolderName,
 				});
-
-				await modelBuilderLeftSidebarPage.sidebarItems
-					.filter({hasText: objectName})
-					.click();
 
 				await modelBuilderObjectDefinitionNodePage.clickShowAllFieldsButton(
 					objectName,
@@ -2841,7 +2859,7 @@ test.describe('Manage object fields default value properties', () => {
 				await modelBuilderDiagramPage.objectDefinitionNodes
 					.filter({hasText: objectName})
 					.getByText('Boolean', {exact: true})
-					.click();
+					.dispatchEvent('click');
 
 				await modelBuilderRightSidebarPage.setDefaultValue(
 					'Boolean',
@@ -2859,12 +2877,8 @@ test.describe('Manage object fields default value properties', () => {
 
 			await test.step('set default value to true for boolean field and check in object entry', async () => {
 				await modelBuilderDiagramPage.goto({
-					objectFolderName: 'Default',
+					objectFolderName,
 				});
-
-				await modelBuilderLeftSidebarPage.sidebarItems
-					.filter({hasText: objectName})
-					.click();
 
 				await modelBuilderObjectDefinitionNodePage.clickShowAllFieldsButton(
 					objectName,
@@ -2874,7 +2888,7 @@ test.describe('Manage object fields default value properties', () => {
 				await modelBuilderDiagramPage.objectDefinitionNodes
 					.filter({hasText: objectName})
 					.getByText('Boolean', {exact: true})
-					.click();
+					.dispatchEvent('click');
 
 				await modelBuilderRightSidebarPage.setDefaultValue(
 					'Boolean',
@@ -2890,12 +2904,8 @@ test.describe('Manage object fields default value properties', () => {
 
 			await test.step('untoggle default value for boolean field and check in object entry', async () => {
 				await modelBuilderDiagramPage.goto({
-					objectFolderName: 'Default',
+					objectFolderName,
 				});
-
-				await modelBuilderLeftSidebarPage.sidebarItems
-					.filter({hasText: objectName})
-					.click();
 
 				await modelBuilderObjectDefinitionNodePage.clickShowAllFieldsButton(
 					objectName,
@@ -2905,7 +2915,7 @@ test.describe('Manage object fields default value properties', () => {
 				await modelBuilderDiagramPage.objectDefinitionNodes
 					.filter({hasText: objectName})
 					.getByText('Boolean', {exact: true})
-					.click();
+					.dispatchEvent('click');
 
 				await modelBuilderRightSidebarPage.advancedTab.click();
 

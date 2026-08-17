@@ -823,6 +823,13 @@ public class PortalUpgradeProcessRegistryImpl
 				null));
 
 		upgradeVersionTreeMap.put(new Version(38, 8, 0), new UpgradeDB2());
+
+		upgradeVersionTreeMap.put(
+			new Version(38, 8, 1),
+			new LayoutDuplicateExternalReferenceCodeUpgradeProcess());
+
+		upgradeVersionTreeMap.put(
+			new Version(38, 8, 2), new UpgradeCompanyInfo());
 	}
 
 }
