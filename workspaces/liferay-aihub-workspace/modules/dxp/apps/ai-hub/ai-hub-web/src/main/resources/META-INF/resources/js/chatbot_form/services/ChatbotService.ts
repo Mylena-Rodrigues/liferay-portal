@@ -65,6 +65,28 @@ async function getChatbotDefinition(externalReferenceCode: string) {
 	return response.json();
 }
 
+async function patchChatbotDefinition(
+	existingExternalReferenceCode: string,
+	chatbot: Partial<Chatbot>
+) {
+	const response = await fetch(
+		`${CHATBOT_BY_ERC_URI}${existingExternalReferenceCode}`,
+		{
+			body: JSON.stringify(chatbot),
+			headers: HEADERS,
+			method: 'PATCH',
+		}
+	);
+
+	if (!response.ok) {
+		const errorBody = await response.json().catch(() => ({}));
+
+		throw new Error(errorBody?.detail || errorBody?.title || '');
+	}
+
+	return response.json();
+}
+
 async function postChatbotDefinition(chatbot: Chatbot) {
 	const response = await fetch(CHATBOT_BASE_URI, {
 		body: JSON.stringify(chatbot),
@@ -73,31 +95,9 @@ async function postChatbotDefinition(chatbot: Chatbot) {
 	});
 
 	if (!response.ok) {
-		const {message, title} = await response.json().catch(() => ({}));
+		const errorBody = await response.json().catch(() => ({}));
 
-		throw new Error(title || message || '');
-	}
-
-	return response.json();
-}
-
-async function putChatbotDefinition(
-	existingExternalReferenceCode: string,
-	chatbot: Chatbot
-) {
-	const response = await fetch(
-		`${CHATBOT_BY_ERC_URI}${existingExternalReferenceCode}`,
-		{
-			body: JSON.stringify(chatbot),
-			headers: HEADERS,
-			method: 'PUT',
-		}
-	);
-
-	if (!response.ok) {
-		const {message, title} = await response.json().catch(() => ({}));
-
-		throw new Error(title || message || '');
+		throw new Error(errorBody?.detail || errorBody?.title || '');
 	}
 
 	return response.json();
@@ -120,7 +120,7 @@ export {
 	disassociateChatbotFromAgentDefinition,
 	getChatbotDefinition,
 	getChatbotDefinitions,
+	patchChatbotDefinition,
 	postChatbotDefinition,
 	putChatbotAgentDefinitionRelationship,
-	putChatbotDefinition,
 };

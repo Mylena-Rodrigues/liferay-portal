@@ -26,9 +26,9 @@ import SuggestedQuestionsTable from './SuggestedQuestionsTable';
 import {
 	disassociateChatbotFromAgentDefinition,
 	getChatbotDefinition,
+	patchChatbotDefinition,
 	postChatbotDefinition,
 	putChatbotAgentDefinitionRelationship,
-	putChatbotDefinition,
 } from './services/ChatbotService';
 import {Chatbot, SuggestedQuestion} from './types/Chatbot';
 import {
@@ -143,6 +143,7 @@ export default function ChatbotForm({
 		originalSelectedAgentDefinitions,
 		setOriginalSelectedAgentDefinitions,
 	] = useState<AgentDefinitionOption[]>([]);
+	const [avatarChanged, setAvatarChanged] = useState(false);
 	const [avatarLoading, setAvatarLoading] = useState(false);
 	const [suggestedQuestions, setSuggestedQuestions] = useState<
 		SuggestedQuestion[]
@@ -230,6 +231,8 @@ export default function ChatbotForm({
 				},
 				avatarFileName: file.name,
 			}));
+
+			setAvatarChanged(true);
 		}
 		catch (error) {
 			openToast({
@@ -252,6 +255,8 @@ export default function ChatbotForm({
 			avatar: null,
 			avatarFileName: undefined,
 		}));
+
+		setAvatarChanged(true);
 	};
 
 	const handleCopyEmbedCode = () => {
@@ -270,8 +275,11 @@ export default function ChatbotForm({
 
 	const handleSubmit = async () => {
 		try {
+			const {avatar, avatarFileName, ...chatbotFields} = formData;
+
 			const payload = {
-				...formData,
+				...chatbotFields,
+				...(avatarChanged ? {avatar} : {}),
 				r_accountToAIHubChatbots_accountEntryERC:
 					accountEntryExternalReferenceCode,
 				suggestedQuestions_i18n: toLocalizedValue(suggestedQuestions),
@@ -285,10 +293,19 @@ export default function ChatbotForm({
 				existingChatbotExternalReferenceCode;
 
 			if (existingChatbotExternalReferenceCode) {
-				await putChatbotDefinition(
+				await patchChatbotDefinition(
 					existingChatbotExternalReferenceCode,
 					payload
 				);
+
+				if (payload.externalReferenceCode) {
+					chatbotExternalReferenceCode =
+						payload.externalReferenceCode;
+
+					setExistingChatbotExternalReferenceCode(
+						chatbotExternalReferenceCode
+					);
+				}
 			}
 			else {
 				const created = await postChatbotDefinition(payload);
@@ -305,16 +322,23 @@ export default function ChatbotForm({
 				}));
 			}
 
+			const addedAgents = selectedAgentDefinitions.filter(
+				(current) =>
+					!originalSelectedAgentDefinitions.some(
+						(original) =>
+							original.externalReferenceCode ===
+							current.externalReferenceCode
+					)
+			);
+
 			await Promise.all(
-				selectedAgentDefinitions.map((agent) =>
+				addedAgents.map((agent) =>
 					putChatbotAgentDefinitionRelationship(
 						chatbotExternalReferenceCode,
 						agent.externalReferenceCode
 					)
 				)
 			);
-
-			// Determine removed agents by comparing with original selection
 
 			const removedAgents = originalSelectedAgentDefinitions.filter(
 				(original) =>
@@ -334,9 +358,9 @@ export default function ChatbotForm({
 				)
 			);
 
-			// Update original selection after successful submission
-
 			setOriginalSelectedAgentDefinitions(selectedAgentDefinitions);
+
+			setAvatarChanged(false);
 
 			openToast({
 				message: Liferay.Language.get('chatbot-was-saved-successfully'),
@@ -355,6 +379,8 @@ export default function ChatbotForm({
 
 	useEffect(() => {
 		async function fetchFormData() {
+			setExistingChatbotExternalReferenceCode(externalReferenceCode);
+
 			if (!externalReferenceCode) {
 				setFormData({
 					active: false,
@@ -371,6 +397,7 @@ export default function ChatbotForm({
 					title_i18n: {},
 				});
 
+				setAvatarChanged(false);
 				setSelectedAgentDefinitions([]);
 				setOriginalSelectedAgentDefinitions([]);
 				setSuggestedQuestions([]);
@@ -414,6 +441,8 @@ export default function ChatbotForm({
 						chatbotDefinition.suggestedQuestions_i18n,
 					title_i18n: chatbotDefinition.title_i18n,
 				});
+
+				setAvatarChanged(false);
 
 				setSuggestedQuestions(
 					toSuggestedQuestions(
@@ -472,7 +501,7 @@ export default function ChatbotForm({
 						aria-label={Liferay.Language.get('save')}
 						data-title="Save Button"
 						data-title-set-as-html
-						disabled={readOnly}
+						disabled={avatarLoading || readOnly}
 						onClick={handleSubmit}
 						size="sm"
 					>

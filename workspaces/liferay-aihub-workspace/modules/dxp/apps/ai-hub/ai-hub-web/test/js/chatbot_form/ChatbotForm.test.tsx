@@ -28,8 +28,8 @@ jest.mock(
 );
 
 const mockGetChatbotDefinition = jest.fn();
+const mockPatchChatbotDefinition = jest.fn();
 const mockPostChatbotDefinition = jest.fn();
-const mockPutChatbotDefinition = jest.fn();
 const mockOpenToast = jest.fn();
 
 jest.mock(
@@ -38,11 +38,11 @@ jest.mock(
 		disassociateChatbotFromAgentDefinition: jest.fn().mockResolvedValue({}),
 		getChatbotDefinition: (...args: any[]) =>
 			mockGetChatbotDefinition(...args),
+		patchChatbotDefinition: (...args: any[]) =>
+			mockPatchChatbotDefinition(...args),
 		postChatbotDefinition: (...args: any[]) =>
 			mockPostChatbotDefinition(...args),
 		putChatbotAgentDefinitionRelationship: jest.fn().mockResolvedValue({}),
-		putChatbotDefinition: (...args: any[]) =>
-			mockPutChatbotDefinition(...args),
 	})
 );
 
@@ -245,7 +245,7 @@ describe('ChatbotForm company logo upload', () => {
 		mockOpenToast.mockClear();
 		mockGetChatbotDefinition.mockReset();
 		mockPostChatbotDefinition.mockReset();
-		mockPutChatbotDefinition.mockReset();
+		mockPatchChatbotDefinition.mockReset();
 	});
 
 	afterEach(() => {
@@ -266,18 +266,22 @@ describe('ChatbotForm company logo upload', () => {
 		);
 	});
 
-	it('disables the select button while reading the file', async () => {
+	it('disables the save and select buttons while reading the file', async () => {
 		render(<ChatbotForm {...defaultProps} />);
 
 		const file = makeFile('logo.png', 512);
 
 		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
 
+		const saveButton = screen.getByRole('button', {name: 'save'});
 		const selectButton = screen.getByLabelText('select-x');
 
+		expect(saveButton).toBeDisabled();
 		expect(selectButton).toBeDisabled();
 
-		await waitFor(() => expect(selectButton).not.toBeDisabled());
+		await waitFor(() => expect(saveButton).not.toBeDisabled());
+
+		expect(selectButton).not.toBeDisabled();
 	});
 
 	it('hides the Clear button when no company logo is set', () => {
@@ -317,12 +321,202 @@ describe('ChatbotForm company logo upload', () => {
 	});
 });
 
+describe('ChatbotForm avatar persistence', () => {
+	beforeEach(() => {
+		mockOpenToast.mockClear();
+		mockGetChatbotDefinition.mockReset();
+		mockPatchChatbotDefinition.mockReset();
+		mockPostChatbotDefinition.mockReset();
+	});
+
+	afterEach(() => {
+		cleanup();
+	});
+
+	it('leaves the avatar out of the payload on the save after an upload was saved', async () => {
+		mockGetChatbotDefinition.mockResolvedValue({
+			active: true,
+			externalReferenceCode: 'CHATBOT-ERC',
+			title_i18n: {en_US: 'Bot'},
+		});
+		mockPatchChatbotDefinition.mockResolvedValue({});
+
+		render(
+			<ChatbotForm
+				{...defaultProps}
+				externalReferenceCode="CHATBOT-ERC"
+			/>
+		);
+
+		await screen.findByDisplayValue('CHATBOT-ERC');
+
+		const file = makeFile('logo.png', 512);
+
+		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
+
+		await screen.findByText('logo.png');
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockOpenToast).toHaveBeenCalledWith(
+				expect.objectContaining({type: 'success'})
+			)
+		);
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPatchChatbotDefinition).toHaveBeenCalledTimes(2)
+		);
+
+		expect(mockPatchChatbotDefinition.mock.calls[0][1].avatar).toEqual(
+			expect.objectContaining({name: 'logo.png'})
+		);
+		expect(mockPatchChatbotDefinition.mock.calls[1][1]).not.toHaveProperty(
+			'avatar'
+		);
+	});
+
+	it('leaves the avatar out of the payload when it was not changed', async () => {
+		mockGetChatbotDefinition.mockResolvedValue({
+			active: true,
+			avatar: {
+				externalReferenceCode: 'AVATAR-ERC',
+				id: 41679,
+				name: 'logo.png',
+			},
+			externalReferenceCode: 'CHATBOT-ERC',
+			title_i18n: {en_US: 'Bot'},
+		});
+		mockPatchChatbotDefinition.mockResolvedValue({});
+
+		render(
+			<ChatbotForm
+				{...defaultProps}
+				externalReferenceCode="CHATBOT-ERC"
+			/>
+		);
+
+		await screen.findByText('logo.png');
+
+		fireEvent.change(screen.getByPlaceholderText('description'), {
+			target: {value: 'Updated description'},
+		});
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPatchChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(mockPatchChatbotDefinition.mock.calls[0][1]).not.toHaveProperty(
+			'avatar'
+		);
+	});
+
+	it('sends a null avatar when the avatar was cleared', async () => {
+		mockGetChatbotDefinition.mockResolvedValue({
+			active: true,
+			avatar: {
+				externalReferenceCode: 'AVATAR-ERC',
+				id: 41679,
+				name: 'logo.png',
+			},
+			externalReferenceCode: 'CHATBOT-ERC',
+			title_i18n: {en_US: 'Bot'},
+		});
+		mockPatchChatbotDefinition.mockResolvedValue({});
+
+		render(
+			<ChatbotForm
+				{...defaultProps}
+				externalReferenceCode="CHATBOT-ERC"
+			/>
+		);
+
+		await screen.findByText('logo.png');
+
+		fireEvent.click(screen.getByRole('button', {name: 'clear'}));
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPatchChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(mockPatchChatbotDefinition.mock.calls[0][1].avatar).toBeNull();
+	});
+
+	it('sends the uploaded avatar file on save', async () => {
+		mockGetChatbotDefinition.mockResolvedValue({
+			active: true,
+			externalReferenceCode: 'CHATBOT-ERC',
+			title_i18n: {en_US: 'Bot'},
+		});
+		mockPatchChatbotDefinition.mockResolvedValue({});
+
+		render(
+			<ChatbotForm
+				{...defaultProps}
+				externalReferenceCode="CHATBOT-ERC"
+			/>
+		);
+
+		await screen.findByDisplayValue('CHATBOT-ERC');
+
+		const file = makeFile('logo.png', 512);
+
+		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
+
+		await screen.findByText('logo.png');
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPatchChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(mockPatchChatbotDefinition.mock.calls[0][1].avatar).toEqual({
+			fileBase64: expect.any(String),
+			mimeType: 'image/png',
+			name: 'logo.png',
+		});
+	});
+
+	it('sends the uploaded avatar on create', async () => {
+		mockPostChatbotDefinition.mockResolvedValue({
+			externalReferenceCode: 'CHATBOT-ERC',
+		});
+
+		render(<ChatbotForm {...defaultProps} />);
+
+		const file = makeFile('logo.png', 512);
+
+		fireEvent.change(getHiddenFileInput(), {target: {files: [file]}});
+
+		await screen.findByText('logo.png');
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		await waitFor(() =>
+			expect(mockPostChatbotDefinition).toHaveBeenCalled()
+		);
+
+		expect(mockPostChatbotDefinition.mock.calls[0][0].avatar).toEqual({
+			fileBase64: expect.any(String),
+			mimeType: 'image/png',
+			name: 'logo.png',
+		});
+	});
+});
+
 describe('ChatbotForm disclaimer message', () => {
 	beforeEach(() => {
 		mockOpenToast.mockClear();
 		mockGetChatbotDefinition.mockReset();
 		mockPostChatbotDefinition.mockReset();
-		mockPutChatbotDefinition.mockReset();
+		mockPatchChatbotDefinition.mockReset();
 	});
 
 	afterEach(() => {
@@ -399,7 +593,7 @@ describe('ChatbotForm intro message', () => {
 		mockOpenToast.mockClear();
 		mockGetChatbotDefinition.mockReset();
 		mockPostChatbotDefinition.mockReset();
-		mockPutChatbotDefinition.mockReset();
+		mockPatchChatbotDefinition.mockReset();
 	});
 
 	afterEach(() => {
@@ -483,7 +677,7 @@ describe('ChatbotForm suggested questions', () => {
 		mockOpenToast.mockClear();
 		mockGetChatbotDefinition.mockReset();
 		mockPostChatbotDefinition.mockReset();
-		mockPutChatbotDefinition.mockReset();
+		mockPatchChatbotDefinition.mockReset();
 	});
 
 	afterEach(() => {
@@ -531,7 +725,7 @@ describe('ChatbotForm suggested questions', () => {
 			suggestedQuestions_i18n: {en_US: 'Q1\nQ2'},
 			title_i18n: {en_US: 'Bot'},
 		});
-		mockPutChatbotDefinition.mockResolvedValue({});
+		mockPatchChatbotDefinition.mockResolvedValue({});
 
 		render(
 			<ChatbotForm
@@ -547,11 +741,11 @@ describe('ChatbotForm suggested questions', () => {
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
 		await waitFor(() =>
-			expect(mockPutChatbotDefinition).toHaveBeenCalled()
+			expect(mockPatchChatbotDefinition).toHaveBeenCalled()
 		);
 
 		expect(
-			mockPutChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
+			mockPatchChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
 		).toEqual({en_US: 'Q2'});
 	});
 
@@ -562,7 +756,7 @@ describe('ChatbotForm suggested questions', () => {
 			suggestedQuestions_i18n: {en_US: 'Q1\nQ2'},
 			title_i18n: {en_US: 'Bot'},
 		});
-		mockPutChatbotDefinition.mockResolvedValue({});
+		mockPatchChatbotDefinition.mockResolvedValue({});
 
 		render(
 			<ChatbotForm
@@ -586,11 +780,11 @@ describe('ChatbotForm suggested questions', () => {
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
 		await waitFor(() =>
-			expect(mockPutChatbotDefinition).toHaveBeenCalled()
+			expect(mockPatchChatbotDefinition).toHaveBeenCalled()
 		);
 
 		expect(
-			mockPutChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
+			mockPatchChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
 		).toEqual({en_US: 'Q1 edited\nQ2'});
 	});
 
@@ -601,7 +795,7 @@ describe('ChatbotForm suggested questions', () => {
 			suggestedQuestions_i18n: {en_US: 'Q1\nQ2', pt_BR: 'P1'},
 			title_i18n: {en_US: 'Bot'},
 		});
-		mockPutChatbotDefinition.mockResolvedValue({});
+		mockPatchChatbotDefinition.mockResolvedValue({});
 
 		render(
 			<ChatbotForm
@@ -617,11 +811,11 @@ describe('ChatbotForm suggested questions', () => {
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
 		await waitFor(() =>
-			expect(mockPutChatbotDefinition).toHaveBeenCalled()
+			expect(mockPatchChatbotDefinition).toHaveBeenCalled()
 		);
 
 		expect(
-			mockPutChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
+			mockPatchChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
 		).toEqual({en_US: 'Q1\nQ2', pt_BR: 'P1'});
 	});
 
@@ -632,7 +826,7 @@ describe('ChatbotForm suggested questions', () => {
 			suggestedQuestions_i18n: {en_US: 'Q1\nQ2'},
 			title_i18n: {en_US: 'Bot'},
 		});
-		mockPutChatbotDefinition.mockResolvedValue({});
+		mockPatchChatbotDefinition.mockResolvedValue({});
 
 		render(
 			<ChatbotForm
@@ -648,11 +842,11 @@ describe('ChatbotForm suggested questions', () => {
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
 		await waitFor(() =>
-			expect(mockPutChatbotDefinition).toHaveBeenCalled()
+			expect(mockPatchChatbotDefinition).toHaveBeenCalled()
 		);
 
 		expect(
-			mockPutChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
+			mockPatchChatbotDefinition.mock.calls[0][1].suggestedQuestions_i18n
 		).toEqual({en_US: 'Q2\nQ1'});
 	});
 });

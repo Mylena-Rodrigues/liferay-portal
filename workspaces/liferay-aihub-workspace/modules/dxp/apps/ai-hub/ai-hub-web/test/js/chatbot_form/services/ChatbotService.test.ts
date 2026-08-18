@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getChatbotDefinitions} from '../../../../src/main/resources/META-INF/resources/js/chatbot_form/services/ChatbotService';
+import {
+	getChatbotDefinitions,
+	patchChatbotDefinition,
+} from '../../../../src/main/resources/META-INF/resources/js/chatbot_form/services/ChatbotService';
 
 const mockFetch = jest.fn();
 
@@ -74,6 +77,55 @@ describe('ChatbotService', () => {
 			mockFetch.mockResolvedValueOnce({ok: false});
 
 			await expect(getChatbotDefinitions()).rejects.toThrow();
+		});
+	});
+
+	describe('patchChatbotDefinition', () => {
+		it('sends a PATCH request to the by-external-reference-code endpoint', async () => {
+			mockFetch.mockResolvedValueOnce({
+				json: () => Promise.resolve({}),
+				ok: true,
+			});
+
+			await patchChatbotDefinition('CHATBOT-ERC', {
+				description: 'Updated description',
+			});
+
+			expect(mockFetch).toHaveBeenCalledWith(
+				`${BASE_URI}/by-external-reference-code/CHATBOT-ERC`,
+				expect.objectContaining({
+					body: JSON.stringify({
+						description: 'Updated description',
+					}),
+					method: 'PATCH',
+				})
+			);
+		});
+
+		it('throws the error detail over the title when the response is not ok', async () => {
+			mockFetch.mockResolvedValueOnce({
+				json: () =>
+					Promise.resolve({
+						detail: 'The value is invalid',
+						title: 'BAD_REQUEST',
+					}),
+				ok: false,
+			});
+
+			await expect(
+				patchChatbotDefinition('CHATBOT-ERC', {})
+			).rejects.toThrow('The value is invalid');
+		});
+
+		it('throws the error title when the response has no detail', async () => {
+			mockFetch.mockResolvedValueOnce({
+				json: () => Promise.resolve({title: 'Invalid chatbot'}),
+				ok: false,
+			});
+
+			await expect(
+				patchChatbotDefinition('CHATBOT-ERC', {})
+			).rejects.toThrow('Invalid chatbot');
 		});
 	});
 });
