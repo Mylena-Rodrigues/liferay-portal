@@ -237,7 +237,6 @@ describe('ChatbotForm assigned agents search', () => {
 
 		expect(mockGetAgentDefinitions).toHaveBeenCalledWith({});
 	});
-
 });
 
 describe('ChatbotForm company logo upload', () => {
@@ -815,9 +814,7 @@ describe('ChatbotForm suggested questions', () => {
 			/>
 		);
 
-		fireEvent.click(
-			await screen.findByRole('button', {name: 'delete-Q1'})
-		);
+		fireEvent.click(await screen.findByRole('button', {name: 'delete-Q1'}));
 
 		fireEvent.click(screen.getByRole('button', {name: 'save'}));
 
