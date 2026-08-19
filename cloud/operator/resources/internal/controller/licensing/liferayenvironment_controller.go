@@ -16,12 +16,13 @@ import (
 	"encoding/pem"
 	"fmt"
 	"maps"
-	"math"
 	"path/filepath"
+	"strings"
 	"time"
 
 	licensingv1alpha1 "github.com/liferay/liferay-portal/cloud/operator/api/licensing/v1alpha1"
 	addon "github.com/liferay/liferay-portal/cloud/operator/internal/addon"
+	backoff "github.com/liferay/liferay-portal/cloud/operator/internal/backoff"
 	license "github.com/liferay/liferay-portal/cloud/operator/internal/license"
 	provisioning "github.com/liferay/liferay-portal/cloud/operator/internal/provisioning"
 	appsv1 "k8s.io/api/apps/v1"
@@ -40,11 +41,11 @@ import (
 
 const (
 	conditionActivated             = "Activated"
+	conditionAddOnsReady           = "AddOnsReady"
 	conditionGracePeriodExpired    = "GracePeriodExpired"
 	conditionLicenseValid          = "LicenseValid"
 	conditionProvisioningReachable = "ProvisioningReachable"
 	conditionReplicasCountValid    = "ReplicasCountValid"
-	downloadPollInterval           = 15 * time.Second
 	entitlementsSecretSuffix       = "-entitlements"
 	environmentLabel               = "licensing.liferay.com/environment"
 	gracePeriodReplicaCeiling      = 1
@@ -125,7 +126,9 @@ func (liferayEnvironmentReconciler *LiferayEnvironmentReconciler) Reconcile(
 
 	apps := []licensingv1alpha1.AppStatus{}
 
-	pending := false
+	now := metav1.Now()
+
+	requeueAfter := time.Duration(0)
 
 	if liferayEnvironment.Spec.Offline {
 		apps, error = liferayEnvironmentReconciler.extractOfflineAddOns(
@@ -136,24 +139,31 @@ func (liferayEnvironmentReconciler *LiferayEnvironmentReconciler) Reconcile(
 			return controllerruntime.Result{}, error
 		}
 	} else {
-		apps, pending = liferayEnvironmentReconciler.Syncer.Sync(
-			entitlements.AddOns,
-			cache,
-			context,
-			environmentID,
-			liferayEnvironment.Namespace,
-			privateKey,
+		apps, requeueAfter = liferayEnvironmentReconciler.Syncer.Sync(
+			addon.SyncRequest{
+				AddOns:        entitlements.AddOns,
+				Cache:         cache,
+				Context:       context,
+				Current:       liferayEnvironment.Status.Apps,
+				EnvironmentID: environmentID,
+				Namespace:     liferayEnvironment.Namespace,
+				Now:           now,
+				PrivateKey:    privateKey,
+			},
 		)
 	}
+
+	meta.SetStatusCondition(
+		&liferayEnvironment.Status.Conditions,
+		addOnsReadyCondition(addon.Summarize(apps)),
+	)
 
 	liferayEnvironment.Status.Apps = apps
 
 	liferayEnvironment.Status.Phase = "Ready"
 
-	requeueAfter := liferayEnvironmentReconciler.HeartbeatInterval
-
-	if pending {
-		requeueAfter = downloadPollInterval
+	if requeueAfter == 0 {
+		requeueAfter = liferayEnvironmentReconciler.HeartbeatInterval
 	}
 
 	return liferayEnvironmentReconciler.finishAfter(
@@ -183,18 +193,43 @@ func (liferayEnvironmentReconciler *LiferayEnvironmentReconciler) SetupWithManag
 	)
 }
 
-func backoffDuration(
-	consecutiveFailures int32,
-	retryInitialDelay time.Duration,
-	retryMaxDelay time.Duration,
-) time.Duration {
-	backoff := float64(retryInitialDelay) * math.Pow(2, float64(max(consecutiveFailures-1, 0)))
+func addOnsReadyCondition(summary addon.Summary) metav1.Condition {
+	if len(summary.Failed) > 0 {
+		names := make([]string, 0, len(summary.Failed))
 
-	if backoff >= float64(retryMaxDelay) {
-		return retryMaxDelay
+		for _, name := range summary.Failed {
+			names = append(names, fmt.Sprintf("%q", name))
+		}
+
+		return metav1.Condition{
+			Message: fmt.Sprintf(
+				"Unable to download %d of %d entitled add-ons: %s.",
+				len(summary.Failed), summary.Entitled,
+				strings.Join(names, ", "),
+			),
+			Reason: "DownloadsFailing",
+			Status: metav1.ConditionFalse,
+			Type:   conditionAddOnsReady,
+		}
 	}
 
-	return time.Duration(backoff)
+	if summary.Pending > 0 {
+		return metav1.Condition{
+			Message: fmt.Sprintf(
+				"Downloads are in progress for %d of %d entitled add-ons.",
+				summary.Pending, summary.Entitled,
+			),
+			Reason: "Downloading",
+			Status: metav1.ConditionFalse,
+			Type:   conditionAddOnsReady,
+		}
+	}
+
+	return metav1.Condition{
+		Reason: "Downloaded",
+		Status: metav1.ConditionTrue,
+		Type:   conditionAddOnsReady,
+	}
 }
 
 func (liferayEnvironmentReconciler *LiferayEnvironmentReconciler) clearUnreachable(
@@ -295,7 +330,72 @@ func (liferayEnvironmentReconciler *LiferayEnvironmentReconciler) enforceLicense
 
 	liferayEnvironment.Status.License.Checksum = licenseChecksum(entitlements.LicenseXML)
 	liferayEnvironment.Status.License.LastVerified = &now
-	liferayEnvironment.Status.License.MaxClusterNodes = entitlements.MaxClusterNodes
+
+	owner, error := license.Owner(entitlements.LicenseXML)
+
+	if error != nil {
+		logger.Error(error, "License validation failed", "environmentID", environmentID)
+
+		liferayEnvironment.Status.License.MaxClusterNodes = nil
+		liferayEnvironment.Status.License.ValidUntil = nil
+
+		meta.SetStatusCondition(
+			&liferayEnvironment.Status.Conditions,
+			metav1.Condition{
+				Message: error.Error(),
+				Reason:  "Invalid",
+				Status:  metav1.ConditionFalse,
+				Type:    conditionLicenseValid,
+			},
+		)
+
+		liferayEnvironment.Status.Phase = "Degraded"
+
+		return liferayEnvironmentReconciler.finishAfter(
+			context, liferayEnvironment, liferayEnvironmentReconciler.HeartbeatInterval,
+		)
+	}
+
+	if owner != environmentID {
+		logger.Info(
+			"License was issued for a different environment",
+			"environmentID", environmentID, "owner", owner,
+		)
+
+		blocked := int32(0)
+
+		liferayEnvironment.Status.License.MaxClusterNodes = &blocked
+		liferayEnvironment.Status.License.ValidUntil = nil
+
+		meta.SetStatusCondition(
+			&liferayEnvironment.Status.Conditions,
+			metav1.Condition{
+				Message: fmt.Sprintf(
+					"License owner %q does not match this environment %q.",
+					owner, environmentID,
+				),
+				Reason: "EnvironmentMismatch",
+				Status: metav1.ConditionFalse,
+				Type:   conditionLicenseValid,
+			},
+		)
+
+		liferayEnvironment.Status.Phase = "Degraded"
+
+		if error := liferayEnvironmentReconciler.enforceReplicaCeiling(
+			context, liferayEnvironment, 0,
+		); error != nil {
+			return controllerruntime.Result{}, error
+		}
+
+		return liferayEnvironmentReconciler.finishAfter(
+			context, liferayEnvironment, liferayEnvironmentReconciler.HeartbeatInterval,
+		)
+	}
+
+	maxClusterNodes := entitlements.MaxClusterNodes
+
+	liferayEnvironment.Status.License.MaxClusterNodes = &maxClusterNodes
 
 	expirationDate, error := license.ExpirationDate(entitlements.LicenseXML)
 
@@ -375,22 +475,6 @@ func (liferayEnvironmentReconciler *LiferayEnvironmentReconciler) enforceReplica
 	maxClusterNodes int32,
 ) error {
 	logger := logf.FromContext(context)
-
-	if maxClusterNodes <= 0 {
-		liferayEnvironment.Status.EffectiveReplicas = nil
-
-		meta.SetStatusCondition(
-			&liferayEnvironment.Status.Conditions,
-			metav1.Condition{
-				Message: "The licensed maximum cluster node count is not yet known.",
-				Reason:  "MaxClusterNodesUnknown",
-				Status:  metav1.ConditionUnknown,
-				Type:    conditionReplicasCountValid,
-			},
-		)
-
-		return nil
-	}
 
 	statefulSet := &appsv1.StatefulSet{}
 
@@ -605,7 +689,7 @@ func (liferayEnvironmentReconciler *LiferayEnvironmentReconciler) finishWithBack
 	liferayEnvironment *licensingv1alpha1.LiferayEnvironment,
 ) (controllerruntime.Result, error) {
 	return liferayEnvironmentReconciler.finishAfter(
-		context, liferayEnvironment, backoffDuration(
+		context, liferayEnvironment, backoff.Duration(
 			liferayEnvironment.Status.ConsecutiveFailures,
 			liferayEnvironmentReconciler.RetryInitialDelay,
 			liferayEnvironmentReconciler.RetryMaxDelay,

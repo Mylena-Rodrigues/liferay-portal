@@ -32,7 +32,7 @@ const STATISTICS = {
 	brokenLinksCount: 7,
 	expiredCount: 6,
 	expiringSoonCount: 0,
-	inDraftCount: 0,
+	inDraftCount: 3,
 	pendingCount: 4,
 	reviewDateOverdueCount: 3,
 	scheduledCount: 0,
@@ -89,7 +89,7 @@ describe('[CMS Dashboard] GovernanceDashboard', () => {
 		await waitFor(() =>
 			expect(
 				mockedGovernanceService.getAssetStatistics
-			).toHaveBeenCalledWith(undefined)
+			).toHaveBeenCalledWith(undefined, expect.any(AbortSignal))
 		);
 	});
 
@@ -99,7 +99,7 @@ describe('[CMS Dashboard] GovernanceDashboard', () => {
 		await waitFor(() =>
 			expect(
 				mockedGovernanceService.getAssetStatistics
-			).toHaveBeenCalledWith(undefined)
+			).toHaveBeenCalledWith(undefined, expect.any(AbortSignal))
 		);
 
 		await userEvent.click(
@@ -115,7 +115,73 @@ describe('[CMS Dashboard] GovernanceDashboard', () => {
 		await waitFor(() =>
 			expect(
 				mockedGovernanceService.getAssetStatistics
-			).toHaveBeenCalledWith('02')
+			).toHaveBeenCalledWith('02', expect.any(AbortSignal))
+		);
+	});
+
+	it('shows the four sub-scores next to the global score', async () => {
+		render(<GovernanceDashboard />);
+
+		const banner = await screen.findByRole('region', {
+			name: 'governance-health',
+		});
+
+		const flow = await within(banner).findByText('flow');
+
+		expect(flow.previousSibling).toHaveTextContent('88');
+
+		expect(
+			within(banner).getByText('originality').previousSibling
+		).toHaveTextContent('—');
+
+		expect(
+			within(banner).getByText('reliability').previousSibling
+		).toHaveTextContent('0');
+
+		expect(
+			within(banner).getByText('freshness').previousSibling
+		).toHaveTextContent('100');
+
+		expect(within(banner).getByText('49')).toBeInTheDocument();
+	});
+
+	it('explains what the score measures in a popover', async () => {
+		render(<GovernanceDashboard />);
+
+		const button = await screen.findByRole('button', {
+			name: 'about-governance-health',
+		});
+
+		expect(
+			screen.queryByText('governance-health-help')
+		).not.toBeInTheDocument();
+
+		await userEvent.click(button);
+
+		expect(
+			await screen.findByText('governance-health-help')
+		).toBeInTheDocument();
+
+		expect(screen.getByText('reliability-help')).toBeInTheDocument();
+
+		expect(screen.getByText('flow-help')).toBeInTheDocument();
+	});
+
+	it('closes the popover with the escape key', async () => {
+		render(<GovernanceDashboard />);
+
+		const button = await screen.findByRole('button', {
+			name: 'about-governance-health',
+		});
+
+		await userEvent.click(button);
+
+		expect(button).toHaveAttribute('aria-expanded', 'true');
+
+		await userEvent.keyboard('{Escape}');
+
+		await waitFor(() =>
+			expect(button).toHaveAttribute('aria-expanded', 'false')
 		);
 	});
 
