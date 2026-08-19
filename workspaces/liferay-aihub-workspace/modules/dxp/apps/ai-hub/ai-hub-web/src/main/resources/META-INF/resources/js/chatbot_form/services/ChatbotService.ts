@@ -90,7 +90,7 @@ async function patchChatbotDefinition(
 		throw new Error(errorBody?.detail || errorBody?.title || '');
 	}
 
-	return response.json();
+	return response.json().catch(() => ({}));
 }
 
 async function postChatbotDefinition(chatbot: Chatbot) {
