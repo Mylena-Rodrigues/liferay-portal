@@ -91,6 +91,13 @@ function generateEmbedCode(externalReferenceCode: string, portalURL: string) {
 </script>`;
 }
 
+function isAvatarChanged(avatar: Chatbot['avatar']) {
+	return (
+		avatar === null ||
+		(!!avatar && typeof avatar === 'object' && 'fileBase64' in avatar)
+	);
+}
+
 function readFileAsBase64(file: File): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -143,7 +150,6 @@ export default function ChatbotForm({
 		originalSelectedAgentDefinitions,
 		setOriginalSelectedAgentDefinitions,
 	] = useState<AgentDefinitionOption[]>([]);
-	const [avatarChanged, setAvatarChanged] = useState(false);
 	const [avatarLoading, setAvatarLoading] = useState(false);
 	const [suggestedQuestions, setSuggestedQuestions] = useState<
 		SuggestedQuestion[]
@@ -231,8 +237,6 @@ export default function ChatbotForm({
 				},
 				avatarFileName: file.name,
 			}));
-
-			setAvatarChanged(true);
 		}
 		catch (error) {
 			openToast({
@@ -255,8 +259,6 @@ export default function ChatbotForm({
 			avatar: null,
 			avatarFileName: undefined,
 		}));
-
-		setAvatarChanged(true);
 	};
 
 	const handleCopyEmbedCode = () => {
@@ -279,7 +281,7 @@ export default function ChatbotForm({
 
 			const payload = {
 				...chatbotFields,
-				...(avatarChanged ? {avatar} : {}),
+				...(isAvatarChanged(avatar) ? {avatar} : {}),
 				r_accountToAIHubChatbots_accountEntryERC:
 					accountEntryExternalReferenceCode,
 				suggestedQuestions_i18n: toLocalizedValue(suggestedQuestions),
@@ -310,6 +312,19 @@ export default function ChatbotForm({
 				}));
 
 				chatbotExternalReferenceCode = externalReferenceCode;
+			}
+
+			const savedAvatar = savedChatbot?.avatar;
+
+			if (savedAvatar && typeof savedAvatar === 'object') {
+				setFormData((prev) => ({
+					...prev,
+					avatar: {
+						externalReferenceCode:
+							savedAvatar.externalReferenceCode,
+					},
+					avatarFileName: savedAvatar.name,
+				}));
 			}
 
 			const addedAgents = selectedAgentDefinitions.filter(
@@ -350,8 +365,6 @@ export default function ChatbotForm({
 
 			setOriginalSelectedAgentDefinitions(selectedAgentDefinitions);
 
-			setAvatarChanged(false);
-
 			openToast({
 				message: Liferay.Language.get('chatbot-was-saved-successfully'),
 				type: 'success',
@@ -387,7 +400,6 @@ export default function ChatbotForm({
 					title_i18n: {},
 				});
 
-				setAvatarChanged(false);
 				setSelectedAgentDefinitions([]);
 				setOriginalSelectedAgentDefinitions([]);
 				setSuggestedQuestions([]);
@@ -431,8 +443,6 @@ export default function ChatbotForm({
 						chatbotDefinition.suggestedQuestions_i18n,
 					title_i18n: chatbotDefinition.title_i18n,
 				});
-
-				setAvatarChanged(false);
 
 				setSuggestedQuestions(
 					toSuggestedQuestions(

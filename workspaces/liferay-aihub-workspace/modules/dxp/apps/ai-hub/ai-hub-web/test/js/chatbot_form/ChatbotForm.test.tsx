@@ -339,7 +339,14 @@ describe('ChatbotForm avatar persistence', () => {
 			externalReferenceCode: 'CHATBOT-ERC',
 			title_i18n: {en_US: 'Bot'},
 		});
-		mockPatchChatbotDefinition.mockResolvedValue({});
+		mockPatchChatbotDefinition.mockResolvedValue({
+			avatar: {
+				externalReferenceCode: 'AVATAR-ERC',
+				id: 41679,
+				name: 'logo.png',
+			},
+			externalReferenceCode: 'CHATBOT-ERC',
+		});
 
 		render(
 			<ChatbotForm
