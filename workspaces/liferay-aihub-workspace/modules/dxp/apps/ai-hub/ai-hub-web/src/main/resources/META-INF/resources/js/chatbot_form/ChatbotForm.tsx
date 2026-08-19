@@ -317,14 +317,18 @@ export default function ChatbotForm({
 			const savedAvatar = savedChatbot?.avatar;
 
 			if (savedAvatar && typeof savedAvatar === 'object') {
-				setFormData((prev) => ({
-					...prev,
-					avatar: {
-						externalReferenceCode:
-							savedAvatar.externalReferenceCode,
-					},
-					avatarFileName: savedAvatar.name,
-				}));
+				setFormData((prev) =>
+					prev.avatar === avatar
+						? {
+								...prev,
+								avatar: {
+									externalReferenceCode:
+										savedAvatar.externalReferenceCode,
+								},
+								avatarFileName: savedAvatar.name,
+							}
+						: prev
+				);
 			}
 
 			const addedAgents = selectedAgentDefinitions.filter(
