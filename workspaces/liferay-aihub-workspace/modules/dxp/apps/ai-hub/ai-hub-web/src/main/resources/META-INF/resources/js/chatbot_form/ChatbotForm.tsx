@@ -665,7 +665,10 @@ export default function ChatbotForm({
 													</span>
 
 													<Button
-														disabled={readOnly}
+														disabled={
+															avatarLoading ||
+															readOnly
+														}
 														displayType="danger"
 														onClick={
 															handleClearAvatar

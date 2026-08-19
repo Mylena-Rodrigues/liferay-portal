@@ -266,6 +266,38 @@ describe('ChatbotForm company logo upload', () => {
 		);
 	});
 
+	it('disables the Clear button while reading the file', async () => {
+		mockGetChatbotDefinition.mockResolvedValue({
+			active: true,
+			avatar: {
+				externalReferenceCode: 'AVATAR-ERC',
+				id: 41679,
+				name: 'logo.png',
+			},
+			externalReferenceCode: 'CHATBOT-ERC',
+			title_i18n: {en_US: 'Bot'},
+		});
+
+		render(
+			<ChatbotForm
+				{...defaultProps}
+				externalReferenceCode="CHATBOT-ERC"
+			/>
+		);
+
+		await screen.findByText('logo.png');
+
+		fireEvent.change(getHiddenFileInput(), {
+			target: {files: [makeFile('new-logo.png', 512)]},
+		});
+
+		const clearButton = screen.getByRole('button', {name: 'clear'});
+
+		expect(clearButton).toBeDisabled();
+
+		await waitFor(() => expect(clearButton).not.toBeDisabled());
+	});
+
 	it('disables the save and select buttons while reading the file', async () => {
 		render(<ChatbotForm {...defaultProps} />);
 
