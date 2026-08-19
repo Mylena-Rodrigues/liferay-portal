@@ -21,13 +21,19 @@ async function disassociateChatbotFromAgentDefinition(
 	chatbotERC: string,
 	agentERC: string
 ) {
-	return fetch(
+	const response = await fetch(
 		`${CHATBOT_BY_ERC_URI}${chatbotERC}/agentDefinitionsToChatbots/${agentERC}/disassociate`,
 		{
 			headers: HEADERS,
 			method: 'POST',
 		}
 	);
+
+	if (!response.ok) {
+		const errorBody = await response.json().catch(() => ({}));
+
+		throw new Error(errorBody?.detail || errorBody?.title || '');
+	}
 }
 
 async function getChatbotDefinitions(params?: Record<string, string>) {
@@ -107,13 +113,19 @@ async function putChatbotAgentDefinitionRelationship(
 	chatbotERC: string,
 	agentERC: string
 ) {
-	return fetch(
+	const response = await fetch(
 		`${CHATBOT_BY_ERC_URI}${chatbotERC}/agentDefinitionsToChatbots/${agentERC}`,
 		{
 			headers: HEADERS,
 			method: 'PUT',
 		}
 	);
+
+	if (!response.ok) {
+		const errorBody = await response.json().catch(() => ({}));
+
+		throw new Error(errorBody?.detail || errorBody?.title || '');
+	}
 }
 
 export {
