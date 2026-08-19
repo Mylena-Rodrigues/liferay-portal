@@ -588,6 +588,48 @@ describe('ChatbotForm disclaimer message', () => {
 	});
 });
 
+describe('ChatbotForm external reference code', () => {
+	beforeEach(() => {
+		mockOpenToast.mockClear();
+		mockGetChatbotDefinition.mockReset();
+		mockPatchChatbotDefinition.mockReset();
+	});
+
+	afterEach(() => {
+		cleanup();
+	});
+
+	it('adopts the external reference code returned by the save', async () => {
+		mockGetChatbotDefinition.mockResolvedValue({
+			active: true,
+			externalReferenceCode: 'chatbot-erc',
+			title_i18n: {en_US: 'Bot'},
+		});
+		mockPatchChatbotDefinition.mockResolvedValue({
+			externalReferenceCode: 'CHATBOT-ERC',
+		});
+
+		render(
+			<ChatbotForm
+				{...defaultProps}
+				externalReferenceCode="chatbot-erc"
+			/>
+		);
+
+		await screen.findByDisplayValue('chatbot-erc');
+
+		fireEvent.click(screen.getByRole('button', {name: 'save'}));
+
+		expect(
+			await screen.findByDisplayValue('CHATBOT-ERC')
+		).toBeInTheDocument();
+
+		expect(
+			mockPatchChatbotDefinition.mock.calls[0][1].externalReferenceCode
+		).toBe('chatbot-erc');
+	});
+});
+
 describe('ChatbotForm intro message', () => {
 	beforeEach(() => {
 		mockOpenToast.mockClear();

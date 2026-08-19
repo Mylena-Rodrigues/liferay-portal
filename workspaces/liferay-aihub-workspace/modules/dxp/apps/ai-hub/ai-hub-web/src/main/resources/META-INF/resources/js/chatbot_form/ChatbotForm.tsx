@@ -292,34 +292,24 @@ export default function ChatbotForm({
 			let chatbotExternalReferenceCode =
 				existingChatbotExternalReferenceCode;
 
-			if (existingChatbotExternalReferenceCode) {
-				await patchChatbotDefinition(
-					existingChatbotExternalReferenceCode,
-					payload
-				);
+			const savedChatbot = existingChatbotExternalReferenceCode
+				? await patchChatbotDefinition(
+						existingChatbotExternalReferenceCode,
+						payload
+					)
+				: await postChatbotDefinition(payload);
 
-				if (payload.externalReferenceCode) {
-					chatbotExternalReferenceCode =
-						payload.externalReferenceCode;
+			if (savedChatbot?.externalReferenceCode) {
+				const {externalReferenceCode} = savedChatbot;
 
-					setExistingChatbotExternalReferenceCode(
-						chatbotExternalReferenceCode
-					);
-				}
-			}
-			else {
-				const created = await postChatbotDefinition(payload);
+				setExistingChatbotExternalReferenceCode(externalReferenceCode);
 
-				chatbotExternalReferenceCode = created.externalReferenceCode;
-
-				setExistingChatbotExternalReferenceCode(
-					chatbotExternalReferenceCode
-				);
-
-				setFormData((prev) => ({
+				setFormData((prev: Chatbot) => ({
 					...prev,
-					externalReferenceCode: chatbotExternalReferenceCode,
+					externalReferenceCode,
 				}));
+
+				chatbotExternalReferenceCode = externalReferenceCode;
 			}
 
 			const addedAgents = selectedAgentDefinitions.filter(
