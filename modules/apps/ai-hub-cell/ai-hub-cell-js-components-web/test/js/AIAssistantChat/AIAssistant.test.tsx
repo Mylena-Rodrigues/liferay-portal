@@ -16,12 +16,13 @@ import '@testing-library/jest-dom';
 
 import AIAssistant, {
 	close,
+	endAgentRun,
 	getState,
 	open,
 	releaseHost,
+	startAgentRun,
 } from '../../../src/main/resources/META-INF/resources/js/AIAssistantChat/AIAssistant';
 import AIAssistantTriggerButton from '../../../src/main/resources/META-INF/resources/js/AIAssistantChat/AIAssistantTriggerButton';
-import {BUSY_EVENT} from '../../../src/main/resources/META-INF/resources/js/AIAssistantChat/busyEvents';
 
 jest.mock('@liferay/frontend-js-react-web', () => ({
 	render: jest.fn(),
@@ -175,57 +176,7 @@ describe('AIAssistantTriggerButton', () => {
 		expect(getState().command).toBeNull();
 	});
 
-	it('blocks the running trigger from retriggering its job', () => {
-		const previousListenerCount = (Liferay.on as jest.Mock).mock.calls
-			.length;
-
-		renderTL(
-			<>
-				<AIAssistantTriggerButton
-					instructionDefinitionScope="cms"
-					label="Categories"
-					triggerId="categories"
-				/>
-				<AIAssistantTriggerButton
-					instructionDefinitionScope="cms"
-					label="Tags"
-					triggerId="tags"
-				/>
-			</>
-		);
-
-		function broadcastBusy(busy: boolean, agentERC = 'L_AUTO_CATEGORIZE') {
-			act(() => {
-				(Liferay.on as jest.Mock).mock.calls
-					.slice(previousListenerCount)
-					.filter(([event]) => event === BUSY_EVENT)
-					.forEach(([, listener]) => listener({agentERC, busy}));
-			});
-		}
-
-		const categories = screen.getByRole('button', {name: 'Categories'});
-		const tags = screen.getByRole('button', {name: 'Tags'});
-
-		fireEvent.click(categories);
-
-		broadcastBusy(true);
-
-		expect(categories).toBeDisabled();
-		expect(tags).toBeEnabled();
-
-		fireEvent.click(categories);
-
-		expect(getState().command?.triggerId).toBe('categories');
-
-		broadcastBusy(false);
-
-		expect(categories).toBeEnabled();
-	});
-
-	it('ignores runs that belong to another trigger', () => {
-		const previousListenerCount = (Liferay.on as jest.Mock).mock.calls
-			.length;
-
+	it('keeps the trigger disabled for its whole run, even while closed', () => {
 		renderTL(
 			<AIAssistantTriggerButton
 				agentERC="L_AUTO_CATEGORIZE"
@@ -235,69 +186,95 @@ describe('AIAssistantTriggerButton', () => {
 			/>
 		);
 
-		const [, listener] =
-			(Liferay.on as jest.Mock).mock.calls
-				.slice(previousListenerCount)
-				.find(([event]) => event === BUSY_EVENT) ?? [];
-
 		const categories = screen.getByRole('button', {name: 'Categories'});
 
 		fireEvent.click(categories);
 
 		act(() => {
-			listener({agentERC: 'L_GENERATE_TAGS', busy: true});
-		});
-
-		expect(categories).toBeEnabled();
-
-		act(() => {
-			listener({agentERC: 'L_AUTO_CATEGORIZE', busy: true});
+			startAgentRun('run-1', 'L_AUTO_CATEGORIZE');
 		});
 
 		expect(categories).toBeDisabled();
-
-		act(() => {
-			listener({agentERC: 'L_GENERATE_TAGS', busy: false});
-		});
-
-		expect(categories).toBeDisabled();
-	});
-
-	it('clears a stale busy state when the trigger opens the assistant again', () => {
-		const previousListenerCount = (Liferay.on as jest.Mock).mock.calls
-			.length;
-
-		renderTL(
-			<AIAssistantTriggerButton
-				instructionDefinitionScope="cms"
-				label="Generate"
-				triggerId="generate"
-			/>
-		);
-
-		const [, listener] =
-			(Liferay.on as jest.Mock).mock.calls
-				.slice(previousListenerCount)
-				.find(([event]) => event === BUSY_EVENT) ?? [];
-
-		const trigger = screen.getByRole('button', {name: 'Generate'});
-
-		fireEvent.click(trigger);
-
-		act(() => {
-			listener({agentERC: 'L_AUTO_CATEGORIZE', busy: true});
-		});
-
-		expect(trigger).toBeDisabled();
 
 		act(() => {
 			close();
 		});
 
-		fireEvent.click(trigger);
+		expect(categories).toBeDisabled();
 
-		expect(trigger).toBeEnabled();
-		expect(getState().command?.triggerId).toBe('generate');
+		act(() => {
+			endAgentRun('run-1');
+		});
+
+		expect(categories).toBeEnabled();
+	});
+
+	it('disables only the triggers that opted into the running agent', () => {
+		renderTL(
+			<>
+				<AIAssistantTriggerButton
+					agentERC="L_AUTO_CATEGORIZE"
+					instructionDefinitionScope="cms"
+					label="Categories"
+					triggerId="categories"
+				/>
+				<AIAssistantTriggerButton
+					agentERC="L_GENERATE_TAGS"
+					instructionDefinitionScope="cms"
+					label="Tags"
+					triggerId="tags"
+				/>
+				<AIAssistantTriggerButton
+					instructionDefinitionScope="cms"
+					label="Chat"
+					triggerId="chat"
+				/>
+			</>
+		);
+
+		act(() => {
+			startAgentRun('run-1', 'L_AUTO_CATEGORIZE');
+		});
+
+		expect(screen.getByRole('button', {name: 'Categories'})).toBeDisabled();
+		expect(screen.getByRole('button', {name: 'Tags'})).toBeEnabled();
+		expect(screen.getByRole('button', {name: 'Chat'})).toBeEnabled();
+
+		act(() => {
+			endAgentRun('run-1');
+		});
+	});
+
+	it('keeps the trigger disabled until the last run of its agent ends', () => {
+		renderTL(
+			<AIAssistantTriggerButton
+				agentERC="L_AUTO_CATEGORIZE"
+				instructionDefinitionScope="cms"
+				label="Categories"
+				triggerId="categories"
+			/>
+		);
+
+		const categories = screen.getByRole('button', {name: 'Categories'});
+
+		act(() => {
+			startAgentRun('run-1', 'L_AUTO_CATEGORIZE');
+			startAgentRun('run-2', 'L_AUTO_CATEGORIZE');
+		});
+
+		expect(categories).toBeDisabled();
+
+		act(() => {
+			endAgentRun('run-1');
+		});
+
+		expect(categories).toBeDisabled();
+
+		act(() => {
+			endAgentRun('run-2');
+		});
+
+		expect(categories).toBeEnabled();
 	});
 
 	it('marks only the trigger that is driving the host as expanded', () => {

@@ -6,7 +6,7 @@
 import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {sub} from 'frontend-js-web';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useId, useState} from 'react';
 
 import CategorizationSuggestions from '../../Categorization/components/CategorizationSuggestions';
 import {
@@ -17,7 +17,7 @@ import {getCandidateCategories} from '../../Categorization/services/getCandidate
 import {getExistingTags} from '../../Categorization/services/getExistingTags';
 import {ECategorizationAgent, Suggestion} from '../../Categorization/types';
 import useCategorizationAgent from '../../Categorization/useCategorizationAgent';
-import {fireBusyEvent} from '../busyEvents';
+import {endAgentRun, startAgentRun} from '../AIAssistant';
 
 function getKey(suggestion: Suggestion): string {
 	return `${suggestion.id ?? suggestion.name}`;
@@ -34,8 +34,11 @@ export default function CategorizationMessageBalloon({
 	scopeId,
 	targets,
 }: CategorizeEventPayload) {
+	const runId = useId();
+
 	const [committed, setCommitted] = useState(false);
 	const [dismissed, setDismissed] = useState<string[]>([]);
+	const [pending, setPending] = useState(true);
 
 	const {regenerate, resolveTargets, run, status, suggestions} =
 		useCategorizationAgent(agent);
@@ -89,6 +92,8 @@ export default function CategorizationMessageBalloon({
 			else {
 				run({content, count, ...data});
 			}
+
+			setPending(false);
 		})();
 
 		return () => {
@@ -140,17 +145,19 @@ export default function CategorizationMessageBalloon({
 
 	const isLoading = status === 'idle' || status === 'loading';
 
+	const running = pending || status === 'loading';
+
 	useEffect(() => {
-		if (!isLoading) {
+		if (!running) {
 			return;
 		}
 
-		fireBusyEvent(agent, true);
+		startAgentRun(runId, agent);
 
 		return () => {
-			fireBusyEvent(agent, false);
+			endAgentRun(runId);
 		};
-	}, [agent, isLoading]);
+	}, [agent, running, runId]);
 
 	return (
 		<>
