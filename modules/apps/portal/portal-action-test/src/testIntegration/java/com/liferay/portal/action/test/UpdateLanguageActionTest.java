@@ -135,14 +135,17 @@ public class UpdateLanguageActionTest {
 	}
 
 	@Test
-	@TestInfo({"LPD-86415", "LPD-102324"})
+	@TestInfo({"LPD-86415", "LPD-102324", "LPD-102413", "LPD-102430"})
 	public void testGetRedirect() throws Exception {
 		_testGetRedirectWithControlPanelURL(false);
 		_testGetRedirectWithControlPanelURL(true);
 		_testGetRedirectWithFriendlyURL(false);
 		_testGetRedirectWithFriendlyURL(true);
+		_testGetRedirectWithGroupFriendlyURLContainingLayoutFriendlyURL();
 		_testGetRedirectWithGroupFriendlyURLWithFriendlyURLMapping();
+		_testGetRedirectWithLayoutFriendlyURLStartingWithPathMain();
 		_testGetRedirectWithLayoutFriendlyURLWithFriendlyURLMapping();
+		_testGetRedirectWithLowerPriorityLanguageIdUniqueInSite();
 		_testGetRedirectWithPortletFriendlyURL(_sourceLocale);
 		_testGetRedirectWithPortletFriendlyURL(null);
 		_testGetRedirectWithFriendlyURLMapping(_sourceLocale);
@@ -564,6 +567,33 @@ public class UpdateLanguageActionTest {
 			_targetLocale, false);
 	}
 
+	private void _testGetRedirectWithGroupFriendlyURLContainingLayoutFriendlyURL()
+		throws Exception {
+
+		_group = _groupLocalService.updateFriendlyURL(
+			_group.getGroupId(), "/homework");
+
+		_layout = _layoutLocalService.updateFriendlyURL(
+			TestPropsValues.getUserId(), _layout.getPlid(), "/home",
+			LocaleUtil.toLanguageId(_sourceLocale));
+		_layout = _layoutLocalService.updateFriendlyURL(
+			TestPropsValues.getUserId(), _layout.getPlid(), "/hogar",
+			LocaleUtil.toLanguageId(_targetLocale));
+
+		String path = "/tags/" + RandomTestUtil.randomString();
+
+		_testGetRedirect(
+			_sourceLocale,
+			StringBundler.concat(
+				PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+				_group.getFriendlyURL(), "/home", path),
+			_targetLocale,
+			StringBundler.concat(
+				PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+				_group.getFriendlyURL(), "/hogar", path),
+			false);
+	}
+
 	private void _testGetRedirectWithGroupFriendlyURLWithFriendlyURLMapping()
 		throws Exception {
 
@@ -661,6 +691,34 @@ public class UpdateLanguageActionTest {
 			sourceLocale, sourceURL, targetLocale, targetURL, virtualHost);
 	}
 
+	private void _testGetRedirectWithLayoutFriendlyURLStartingWithPathMain()
+		throws Exception {
+
+		String redirect = Portal.PATH_MAIN + RandomTestUtil.randomString();
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setParameter("redirect", redirect);
+
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setCompany(
+			_companyLocalService.getCompany(_group.getCompanyId()));
+		themeDisplay.setLayout(_layout);
+		themeDisplay.setLayoutSet(_group.getPublicLayoutSet());
+		themeDisplay.setPathMain(Portal.PATH_MAIN);
+		themeDisplay.setSiteGroupId(_group.getGroupId());
+
+		UpdateLanguageAction updateLanguageAction = new UpdateLanguageAction();
+
+		Assert.assertNotEquals(
+			StringBundler.concat(
+				StringPool.SLASH, _targetLocale.getLanguage(), redirect),
+			updateLanguageAction.getRedirect(
+				mockHttpServletRequest, themeDisplay, _targetLocale));
+	}
+
 	private void _testGetRedirectWithLayoutFriendlyURLWithFriendlyURLMapping()
 		throws Exception {
 
@@ -708,6 +766,42 @@ public class UpdateLanguageActionTest {
 				_group.getFriendlyURL(), _layout.getFriendlyURL(_targetLocale),
 				"?queryString"),
 			false);
+	}
+
+	private void _testGetRedirectWithLowerPriorityLanguageIdUniqueInSite()
+		throws Exception {
+
+		Locale targetLocale = LocaleUtil.UK;
+
+		_group = GroupTestUtil.updateDisplaySettings(
+			_group.getGroupId(),
+			Arrays.asList(LocaleUtil.GERMANY, targetLocale, LocaleUtil.FRANCE),
+			LocaleUtil.GERMANY);
+
+		String redirect = StringBundler.concat(
+			PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+			_group.getFriendlyURL(), _layout.getFriendlyURL(targetLocale));
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setParameter("redirect", redirect);
+
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setCompany(
+			_companyLocalService.getCompany(_group.getCompanyId()));
+		themeDisplay.setLayout(_layout);
+		themeDisplay.setLayoutSet(_group.getPublicLayoutSet());
+		themeDisplay.setSiteGroupId(_group.getGroupId());
+
+		UpdateLanguageAction updateLanguageAction = new UpdateLanguageAction();
+
+		Assert.assertEquals(
+			StringBundler.concat(
+				StringPool.SLASH, targetLocale.getLanguage(), redirect),
+			updateLanguageAction.getRedirect(
+				mockHttpServletRequest, themeDisplay, targetLocale));
 	}
 
 	private void _testGetRedirectWithoutLayoutFriendlyURLWithFriendlyURLMapping(

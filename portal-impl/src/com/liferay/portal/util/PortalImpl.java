@@ -7636,7 +7636,7 @@ public class PortalImpl implements Portal {
 
 		if (Validator.isNotNull(currentLayoutFriendlyURL)) {
 			currentLayoutFriendlyURLIndex = layoutURL.indexOf(
-				currentLayoutFriendlyURL);
+				currentLayoutFriendlyURL + StringPool.SLASH);
 		}
 
 		if (currentLayoutFriendlyURLIndex != -1) {
@@ -7645,7 +7645,7 @@ public class PortalImpl implements Portal {
 					currentLayoutFriendlyURL.length(),
 				layoutURL);
 		}
-		else {
+		else if (!layoutURL.endsWith(currentLayoutFriendlyURL)) {
 			Group group = layout.getGroup();
 
 			String groupFriendlyURL = group.getFriendlyURL();
@@ -7665,10 +7665,14 @@ public class PortalImpl implements Portal {
 			String currentLocalePath =
 				StringPool.SLASH + currentLocale.toLanguageTag();
 
-			if (layoutURL.startsWith(currentLocalePath)) {
+			if (layoutURL.startsWith(currentLocalePath + StringPool.SLASH) ||
+				layoutURL.equals(currentLocalePath)) {
+
 				layoutURL = layoutURL.substring(currentLocalePath.length());
 			}
-			else if (layoutURL.startsWith(i18nPath)) {
+			else if (layoutURL.startsWith(i18nPath + StringPool.SLASH) ||
+					 layoutURL.equals(i18nPath)) {
+
 				layoutURL = layoutURL.substring(i18nPath.length());
 			}
 		}
@@ -7711,7 +7715,8 @@ public class PortalImpl implements Portal {
 			String changeLanguageURL = null;
 
 			if (!Validator.isBlank(themeDisplay.getPathMain()) &&
-				layoutURL.startsWith(themeDisplay.getPathMain())) {
+				layoutURL.startsWith(
+					themeDisplay.getPathMain() + StringPool.SLASH)) {
 
 				changeLanguageURL = layoutURL;
 			}
@@ -8523,9 +8528,7 @@ public class PortalImpl implements Portal {
 			return changeLanguageURL;
 		}
 
-		String i18nPath =
-			StringPool.SLASH +
-				getI18nPathLanguageId(locale, LocaleUtil.toLanguageId(locale));
+		String i18nPath = _buildI18NPath(locale, themeDisplay.getSiteGroup());
 
 		if (path.startsWith(i18nPath + StringPool.SLASH) ||
 			path.equals(i18nPath)) {
