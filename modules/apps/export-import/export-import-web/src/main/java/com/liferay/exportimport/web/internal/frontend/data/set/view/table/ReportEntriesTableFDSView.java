@@ -23,11 +23,12 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	property = {
 		"frontend.data.set.name=" + ExportImportFDSNames.COMPANY_IMPORT_REPORT_ENTRIES,
-		"frontend.data.set.name=" + ExportImportFDSNames.IMPORT_REPORT_ENTRIES
+		"frontend.data.set.name=" + ExportImportFDSNames.IMPORT_REPORT_ENTRIES,
+		"frontend.data.set.name=" + ExportImportFDSNames.PUBLISH_REPORT_ENTRIES
 	},
 	service = FDSView.class
 )
-public class ImportErrorsTableFDSView extends BaseTableFDSView {
+public class ReportEntriesTableFDSView extends BaseTableFDSView {
 
 	@Override
 	public FDSTableSchema getFDSTableSchema(Locale locale) {
@@ -47,7 +48,7 @@ public class ImportErrorsTableFDSView extends BaseTableFDSView {
 		).add(
 			"status", "status",
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
-				"importReportStatusRenderer")
+				"reportEntryStatusRenderer")
 		).build();
 	}
 

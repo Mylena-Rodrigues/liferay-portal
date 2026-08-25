@@ -21,11 +21,12 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	property = {
 		"frontend.data.set.name=" + ExportImportFDSNames.COMPANY_IMPORT_REPORT_ENTRIES,
-		"frontend.data.set.name=" + ExportImportFDSNames.IMPORT_REPORT_ENTRIES
+		"frontend.data.set.name=" + ExportImportFDSNames.IMPORT_REPORT_ENTRIES,
+		"frontend.data.set.name=" + ExportImportFDSNames.PUBLISH_REPORT_ENTRIES
 	},
 	service = GroupedFDSFilters.class
 )
-public class ImportErrorsGroupedFDSFilters implements GroupedFDSFilters {
+public class ReportEntriesGroupedFDSFilters implements GroupedFDSFilters {
 
 	@Override
 	public JSONArray getGroupedFDSFiltersJSONArray(

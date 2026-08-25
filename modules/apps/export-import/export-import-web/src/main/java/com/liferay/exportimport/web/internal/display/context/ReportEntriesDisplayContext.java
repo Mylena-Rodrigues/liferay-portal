@@ -5,6 +5,7 @@
 
 package com.liferay.exportimport.web.internal.display.context;
 
+import com.liferay.exportimport.util.ScopeUtil;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -21,45 +22,54 @@ import java.util.List;
 /**
  * @author Jorge González
  */
-public class ImportReportEntriesDisplayContext {
+public class ReportEntriesDisplayContext {
 
-	public ImportReportEntriesDisplayContext(
+	public ReportEntriesDisplayContext(
 		HttpServletRequest httpServletRequest, RenderResponse renderResponse) {
 
 		_httpServletRequest = httpServletRequest;
 		_renderResponse = renderResponse;
 	}
 
-	public String getAPIURL(String importProcessId) {
-		return StringBundler.concat(
-			"/o/export-import/v1.0/import-processes/", importProcessId,
-			"/report-entries");
-	}
-
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems() {
 		return ListUtil.fromArray(
 			new FDSActionDropdownItem(
-				getImportReportEntryDetailsURL(), "view", "view",
+				_getReportEntryDetailsURL(), "view", "view",
 				LanguageUtil.get(_httpServletRequest, "view"), "get", null,
 				"link"));
 	}
 
-	public String getImportReportEntryDetailsURL() {
+	public String getImportProcessReportEntriesAPIURL(String importProcessId) {
+		return ScopeUtil.getAPIURL(
+			StringBundler.concat(
+				"/import-processes/", importProcessId, "/report-entries"));
+	}
+
+	public String getPublishProcessReportEntriesAPIURL(
+		String publishProcessId) {
+
+		return ScopeUtil.getAPIURL(
+			StringBundler.concat(
+				"/publish-processes/", publishProcessId, "/report-entries"));
+	}
+
+	public String getReportEntryAPIURL(String reportEntryId) {
+		return ScopeUtil.getAPIURL(
+			StringBundler.concat(
+				"/report-entry/", reportEntryId,
+				"?nestedFields=errorStacktrace,scope.label"));
+	}
+
+	private String _getReportEntryDetailsURL() {
 		return PortletURLBuilder.createRenderURL(
 			_renderResponse
 		).setMVCRenderCommandName(
 			"/export_import/view_import_report_entry_detail"
 		).setBackURL(
-			ParamUtil.getString(_httpServletRequest, "redirect")
+			ParamUtil.getString(_httpServletRequest, "backURL")
 		).setParameter(
 			"reportEntryId", "{id}"
 		).buildString();
-	}
-
-	public String getReportEntryAPIURL(String reportEntryId) {
-		return StringBundler.concat(
-			"/o/export-import/v1.0/report-entry/", reportEntryId,
-			"?nestedFields=errorStacktrace,scope.label");
 	}
 
 	private final HttpServletRequest _httpServletRequest;
