@@ -83,6 +83,18 @@ import java.util.TimeZone;
  */
 public class SectionDisplayContextUtil {
 
+	public static void addScheduleDateFDSActionDropdownItems(
+		List<FDSActionDropdownItem> fdsActionDropdownItems,
+		HttpServletRequest httpServletRequest) {
+
+		fdsActionDropdownItems.add(
+			getScheduleDateFDSActionDropdownItem(
+				"update-expiration-date", httpServletRequest));
+		fdsActionDropdownItems.add(
+			getScheduleDateFDSActionDropdownItem(
+				"update-review-date", httpServletRequest));
+	}
+
 	public static String appendGroupIds(
 		String filterString, HttpServletRequest httpServletRequest) {
 
@@ -216,26 +228,9 @@ public class SectionDisplayContextUtil {
 			).build(
 				"find-and-replace"
 			));
-		bulkActionDropdownItems.add(
-			FDSActionDropdownItemBuilder.setHref(
-				StringPool.POUND
-			).setIcon(
-				"date-time"
-			).setLabel(
-				LanguageUtil.get(httpServletRequest, "update-expiration-date")
-			).build(
-				"update-expiration-date"
-			));
-		bulkActionDropdownItems.add(
-			FDSActionDropdownItemBuilder.setHref(
-				StringPool.POUND
-			).setIcon(
-				"date-time"
-			).setLabel(
-				LanguageUtil.get(httpServletRequest, "update-review-date")
-			).build(
-				"update-review-date"
-			));
+
+		_addScheduleDateBulkActionDropdownItems(
+			bulkActionDropdownItems, httpServletRequest);
 
 		_addPermissionsBulkActions(bulkActionDropdownItems, httpServletRequest);
 
@@ -264,12 +259,9 @@ public class SectionDisplayContextUtil {
 			).build(
 				"download"
 			));
-		fdsActionDropdownItems.add(
-			getScheduleDateFDSActionDropdownItem(
-				"update-expiration-date", httpServletRequest));
-		fdsActionDropdownItems.add(
-			getScheduleDateFDSActionDropdownItem(
-				"update-review-date", httpServletRequest));
+
+		addScheduleDateFDSActionDropdownItems(
+			fdsActionDropdownItems, httpServletRequest);
 
 		return fdsActionDropdownItems;
 	}
@@ -339,6 +331,9 @@ public class SectionDisplayContextUtil {
 		_addAddAssetsToProjectBulkAction(
 			bulkActionDropdownItems, httpServletRequest);
 
+		_addScheduleDateBulkActionDropdownItems(
+			bulkActionDropdownItems, httpServletRequest);
+
 		_addPermissionsBulkActions(bulkActionDropdownItems, httpServletRequest);
 
 		return bulkActionDropdownItems;
@@ -351,6 +346,9 @@ public class SectionDisplayContextUtil {
 			getFDSActionDropdownItems(httpServletRequest);
 
 		_addAddToLaunchAction(fdsActionDropdownItems, httpServletRequest);
+
+		addScheduleDateFDSActionDropdownItems(
+			fdsActionDropdownItems, httpServletRequest);
 
 		return fdsActionDropdownItems;
 	}
@@ -866,6 +864,9 @@ public class SectionDisplayContextUtil {
 		_addAddAssetsToProjectBulkAction(
 			bulkActionDropdownItems, httpServletRequest);
 
+		_addScheduleDateBulkActionDropdownItems(
+			bulkActionDropdownItems, httpServletRequest);
+
 		_addPermissionsBulkActions(bulkActionDropdownItems, httpServletRequest);
 
 		return bulkActionDropdownItems;
@@ -914,6 +915,9 @@ public class SectionDisplayContextUtil {
 			).build(
 				"download-folder"
 			));
+
+		addScheduleDateFDSActionDropdownItems(
+			fdsActionDropdownItems, httpServletRequest);
 
 		return fdsActionDropdownItems;
 	}
@@ -964,12 +968,8 @@ public class SectionDisplayContextUtil {
 		List<FDSActionDropdownItem> fdsActionDropdownItems =
 			getFDSActionDropdownItems(httpServletRequest);
 
-		fdsActionDropdownItems.add(
-			getScheduleDateFDSActionDropdownItem(
-				"update-expiration-date", httpServletRequest));
-		fdsActionDropdownItems.add(
-			getScheduleDateFDSActionDropdownItem(
-				"update-review-date", httpServletRequest));
+		addScheduleDateFDSActionDropdownItems(
+			fdsActionDropdownItems, httpServletRequest);
 
 		return fdsActionDropdownItems;
 	}
@@ -1205,6 +1205,32 @@ public class SectionDisplayContextUtil {
 					httpServletRequest, "reset-to-default-permissions")
 			).build(
 				"reset-to-default-permissions"
+			));
+	}
+
+	private static void _addScheduleDateBulkActionDropdownItems(
+		List<DropdownItem> bulkActionDropdownItems,
+		HttpServletRequest httpServletRequest) {
+
+		bulkActionDropdownItems.add(
+			FDSActionDropdownItemBuilder.setHref(
+				StringPool.POUND
+			).setIcon(
+				"date-time"
+			).setLabel(
+				LanguageUtil.get(httpServletRequest, "update-expiration-date")
+			).build(
+				"update-expiration-date"
+			));
+		bulkActionDropdownItems.add(
+			FDSActionDropdownItemBuilder.setHref(
+				StringPool.POUND
+			).setIcon(
+				"date-time"
+			).setLabel(
+				LanguageUtil.get(httpServletRequest, "update-review-date")
+			).build(
+				"update-review-date"
 			));
 	}
 
