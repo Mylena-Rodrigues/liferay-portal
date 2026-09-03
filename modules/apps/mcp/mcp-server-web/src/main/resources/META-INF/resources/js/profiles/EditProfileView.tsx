@@ -17,34 +17,31 @@ import {patchProfile} from '../services/patchProfile';
 import {postProfile} from '../services/postProfile';
 import {Profile, ProfileFormValues, ProfilePayload} from '../types';
 import {openErrorToast, openSuccessToast} from '../utils';
-import ProfileDataMasks from './ProfileDataMasks';
 
-interface EditProfileProps {
+interface EditProfileViewProps {
 	backURL: string;
 	editProfileURL: string;
 	portletNamespace: string;
-	profileId: number;
-	tab: string;
+	profileERC: string;
 }
 
-export default function EditProfile({
+export default function EditProfileView({
 	backURL,
 	editProfileURL,
 	portletNamespace,
-	profileId,
-	tab,
-}: EditProfileProps) {
-	const [loading, setLoading] = useState(profileId > 0);
+	profileERC,
+}: EditProfileViewProps) {
+	const [loading, setLoading] = useState(Boolean(profileERC));
 	const [profile, setProfile] = useState<Profile | null>(null);
 
 	useEffect(() => {
-		if (!profileId || Number(profileId) <= 0) {
+		if (!profileERC) {
 			return;
 		}
 
 		let isMounted = true;
 
-		getProfile(profileId).then(({data, error}) => {
+		getProfile(profileERC).then(({data, error}) => {
 			if (!isMounted) {
 				return;
 			}
@@ -67,7 +64,7 @@ export default function EditProfile({
 		return () => {
 			isMounted = false;
 		};
-	}, [backURL, profileId]);
+	}, [backURL, profileERC]);
 
 	if (loading) {
 		return (
@@ -77,12 +74,8 @@ export default function EditProfile({
 		);
 	}
 
-	if (tab === 'data-masks' && profile) {
-		return <ProfileDataMasks profile={profile} />;
-	}
-
 	return (
-		<EditProfileView
+		<ProfileForm
 			backURL={backURL}
 			editProfileURL={editProfileURL}
 			portletNamespace={portletNamespace}
@@ -91,34 +84,32 @@ export default function EditProfile({
 	);
 }
 
-interface EditProfileViewProps {
+interface ProfileFormProps {
 	backURL: string;
 	editProfileURL: string;
 	portletNamespace: string;
 	profile: Profile | null;
 }
 
-function EditProfileView({
+function ProfileForm({
 	backURL,
 	editProfileURL,
 	portletNamespace,
 	profile,
-}: EditProfileViewProps) {
+}: ProfileFormProps) {
 	const formik = useFormik<ProfileFormValues>({
 		initialValues: {
 			description: profile?.description ?? '',
 			name: profile?.name ?? '',
-			tools: profile?.tools ?? '',
 		},
 		onSubmit: async (values) => {
 			const payload: ProfilePayload = {
 				description: values.description,
 				name: values.name,
-				tools: values.tools,
 			};
 
-			const {data: saved, error} = profile?.id
-				? await patchProfile(profile.id, payload)
+			const {data: saved, error} = profile?.externalReferenceCode
+				? await patchProfile(profile.externalReferenceCode, payload)
 				: await postProfile(payload);
 
 			if (error) {
@@ -135,15 +126,15 @@ function EditProfileView({
 					)
 				);
 
-				if (profile?.id) {
+				if (profile?.externalReferenceCode) {
 					navigate(backURL);
 				}
 				else {
 					const url = new URL(editProfileURL, window.location.origin);
 
 					url.searchParams.set(
-						`${portletNamespace}profileId`,
-						String(saved.id)
+						`${portletNamespace}profileERC`,
+						saved.externalReferenceCode ?? ''
 					);
 
 					navigate(url.toString());
@@ -182,14 +173,6 @@ function EditProfileView({
 						id="profileDescription"
 						label={Liferay.Language.get('description')}
 						name="description"
-						required
-					/>
-
-					<FormField
-						component="textarea"
-						id="profileTools"
-						label={Liferay.Language.get('tools')}
-						name="tools"
 						required
 					/>
 				</FormSection>
