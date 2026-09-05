@@ -119,15 +119,6 @@ public class FIPSModeValidator {
 		}
 	}
 
-	public static void validateSessionTimeout(int sessionTimeout) {
-		if (!PropsValues.FIPS_ENABLED || (sessionTimeout <= 720)) {
-			return;
-		}
-
-		throw new SecurityException(
-			"Session timeout must not be greater than 12 hours in FIPS mode");
-	}
-
 	public static void validateURL(String url) {
 		if (!PropsValues.FIPS_ENABLED ||
 			(Validator.isNotNull(url) &&
@@ -348,10 +339,10 @@ public class FIPSModeValidator {
 		validateAlgorithm(
 			PropsUtil.get(PropsKeys.COMPANY_ENCRYPTION_ALGORITHM));
 		validateAlgorithm(PropsValues.TUNNELING_SERVLET_ENCRYPTION_ALGORITHM);
+
 		_validatePasswordsEncryptionAlgorithm(
 			PropsUtil.get(PropsKeys.PASSWORDS_ENCRYPTION_ALGORITHM));
 		_validatePlaintextSecrets();
-		validateSessionTimeout(PropsValues.SESSION_TIMEOUT);
 	}
 
 	private static void _validateProviders(Provider[] providers) {

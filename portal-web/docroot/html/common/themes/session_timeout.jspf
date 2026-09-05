@@ -25,8 +25,7 @@ String rememberMe = CookiesManagerUtil.getCookieValue(CookiesConstants.NAME_REME
 			redirectUrl:
 				'<%= HtmlUtil.escapeJS(SSOUtil.getSessionExpirationRedirectURL(themeDisplay.getCompanyId(), themeDisplay.getURLHome())) %>',
 			rememberMe: <%= Validator.isNotNull(rememberMe) %>,
-			sessionLength:
-				<%= GetterUtil.getInteger(request.getAttribute(WebKeys.FIPS_SESSION_IDLE_TIMEOUT), PropsValues.SESSION_TIMEOUT * 60) %>,
+			sessionLength: <%= PropsValues.SESSION_TIMEOUT * 60 %>,
 			sessionTimeoutOffset:
 				<%= SessionTimeoutUtil.getAutoExtendOffset(request) %>,
 			warningLength: <%= PropsValues.SESSION_TIMEOUT_WARNING * 60 %>,
