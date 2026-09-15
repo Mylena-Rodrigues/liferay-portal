@@ -6,8 +6,10 @@
 package com.liferay.portal.xmlrpc;
 
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.xmlrpc.Method;
+import com.liferay.portal.kernel.xmlrpc.Response;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.util.Objects;
@@ -23,7 +25,7 @@ import org.osgi.framework.ServiceRegistration;
 /**
  * @author Leon Chi
  */
-public class XmlRpcMethodUtilTest {
+public class XmlRpcServletTest {
 
 	@ClassRule
 	@Rule
@@ -31,16 +33,27 @@ public class XmlRpcMethodUtilTest {
 		LiferayUnitTestRule.INSTANCE;
 
 	@Test
-	public void testNoReturn() {
+	public void testInvokeMethod() throws Exception {
+		Response response = XmlRpcUtil.createSuccess(
+			RandomTestUtil.randomString());
+
 		Method xmlRpcMethod = (Method)ProxyUtil.newProxyInstance(
 			Method.class.getClassLoader(), new Class<?>[] {Method.class},
 			(proxy, method, args) -> {
-				if (Objects.equals(method.getName(), "getToken")) {
-					return _TOKEN;
+				if (Objects.equals(method.getName(), "execute")) {
+					return response;
 				}
 
 				if (Objects.equals(method.getName(), "getMethodName")) {
 					return _METHOD_NAME;
+				}
+
+				if (Objects.equals(method.getName(), "getToken")) {
+					return _TOKEN;
+				}
+
+				if (Objects.equals(method.getName(), "setArguments")) {
+					return true;
 				}
 
 				return null;
@@ -52,8 +65,13 @@ public class XmlRpcMethodUtilTest {
 			bundleContext.registerService(Method.class, xmlRpcMethod, null);
 
 		try {
+			XmlRpcServlet xmlRpcServlet = new XmlRpcServlet();
+
 			Assert.assertSame(
-				xmlRpcMethod, XmlRpcMethodUtil.getMethod(_TOKEN, _METHOD_NAME));
+				response,
+				xmlRpcServlet.invokeMethod(
+					RandomTestUtil.randomLong(), _TOKEN, _METHOD_NAME,
+					new Object[0]));
 		}
 		finally {
 			serviceRegistration.unregister();

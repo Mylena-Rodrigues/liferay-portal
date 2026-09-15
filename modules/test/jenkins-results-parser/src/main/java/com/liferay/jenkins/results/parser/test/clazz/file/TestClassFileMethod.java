@@ -5,16 +5,19 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.file;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * @author Michael Hashimoto
  */
-public class JestJSUnitTestClassFile extends BaseTestClassFile {
+public interface TestClassFileMethod {
 
-	protected JestJSUnitTestClassFile(File file) throws IOException {
-		super(file);
-	}
+	public String getFullName();
+
+	public String getFullName(String separator);
+
+	public TestClassFile getTestClassFile();
+
+	public boolean matches(String name);
+
+	public boolean matchesPattern(String name);
 
 }
