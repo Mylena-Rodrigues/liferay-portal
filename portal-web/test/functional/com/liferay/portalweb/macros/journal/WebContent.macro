@@ -637,9 +637,13 @@ definition {
 
 			Portlet.expandTree();
 
+			AssertElementPresent(
+				key_nodeName = ${webContentLinkToPage},
+				locator1 = "Treeview#NODE_UNSELECTED_TREEITEM");
+
 			Click(
 				key_nodeName = ${webContentLinkToPage},
-				locator1 = "Treeview#NODE_UNSELECTED");
+				locator1 = "Treeview#NODE_UNSELECTED_TREEITEM");
 
 			SelectFrameTop();
 		}
@@ -678,15 +682,9 @@ definition {
 			}
 
 			if (isSet(source)) {
-				Click(
-					key_fieldFieldLabel = ${webContentRichTextFieldLabel},
-					locator1 = "WCEditWebContent#SOURCE_BUTTON");
-
-				Type.typeCodeMirrorEditorNoError(
-					locator1 = "CKEditor#BODY_FIELD_SOURCE_ON",
-					value1 = ${webContentRichText});
-
-				Click(locator1 = "CKEditor#TOOLBAR_SOURCE_BUTTON");
+				CKEditor.addSourceContent(
+					content = ${webContentRichText},
+					fieldLabel = ${webContentRichTextFieldLabel});
 			}
 			else {
 				CKEditor.addContentInWebContent(
@@ -1229,18 +1227,26 @@ definition {
 
 				Portlet.expandTree();
 
+				AssertElementPresent(
+					key_nodeName = ${pageName},
+					locator1 = "Treeview#NODE_UNSELECTED_TREEITEM");
+
 				Click(
 					key_nodeName = ${pageName},
-					locator1 = "Treeview#NODE_UNSELECTED");
+					locator1 = "Treeview#NODE_UNSELECTED_TREEITEM");
 			}
 			else if (${pageType} == "Pages") {
 				Navigator.gotoNavItem(navItem = "Pages");
 
 				Portlet.expandTree();
 
+				AssertElementPresent(
+					key_nodeName = ${pageName},
+					locator1 = "Treeview#NODE_UNSELECTED_TREEITEM");
+
 				Click(
 					key_nodeName = ${pageName},
-					locator1 = "Treeview#NODE_UNSELECTED");
+					locator1 = "Treeview#NODE_UNSELECTED_TREEITEM");
 			}
 			else {
 				if (IsElementNotPresent(key_navItem = ${pageType}, locator1 = "NavBar#NAV_ITEM_LINK")) {
@@ -2280,9 +2286,9 @@ definition {
 			var key_fieldLabel = "Content";
 		}
 
-		AssertTextEquals(
-			locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE_WEB_CONTENT_ARTICLE",
-			value1 = ${webContentContent});
+		CKEditor.assertContentInWebContent(
+			content = ${webContentContent},
+			fieldLabel = ${key_fieldLabel});
 
 		if (isSet(webContentDescription)) {
 			if (isSet(otherLocaleSummary)) {
@@ -2292,9 +2298,9 @@ definition {
 				var key_fieldLabel = "Description";
 			}
 
-			AssertTextEquals(
-				locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE_WEB_CONTENT_ARTICLE",
-				value1 = ${webContentDescription});
+			CKEditor.assertContentInWebContent(
+				content = ${webContentDescription},
+				fieldLabel = ${key_fieldLabel});
 		}
 
 		if (isSet(displayPageTemplateDisabled)) {
@@ -2656,10 +2662,9 @@ definition {
 			locator1 = "TextInput#TITLE",
 			value1 = ${webContentTitle});
 
-		AssertTextEquals(
-			key_fieldLabel = "Content",
-			locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE_WEB_CONTENT_ARTICLE",
-			value1 = ${webContentContent});
+		CKEditor.assertContentInWebContent(
+			content = ${webContentContent},
+			fieldLabel = "Content");
 	}
 
 	@summary = "Default summary"
@@ -2836,10 +2841,9 @@ definition {
 			}
 
 			if (isSet(description)) {
-				AssertTextEquals(
-					key_fieldLabel = "Description",
-					locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE_WEB_CONTENT_ARTICLE",
-					value1 = ${description});
+				CKEditor.assertContentInWebContent(
+					content = ${description},
+					fieldLabel = "Description");
 			}
 		}
 
@@ -3007,10 +3011,9 @@ definition {
 				var webContentRichTextFieldLabel = "Rich Text";
 			}
 
-			AssertTextEquals(
-				key_fieldLabel = ${webContentRichTextFieldLabel},
-				locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE_WEB_CONTENT_ARTICLE",
-				value1 = ${webContentRichText});
+			CKEditor.assertContentInWebContent(
+				content = ${webContentRichText},
+				fieldLabel = ${webContentRichTextFieldLabel});
 		}
 
 		if (isSet(webContentSelectFromList)) {
@@ -3105,10 +3108,9 @@ definition {
 			locator1 = "TextInput#TITLE",
 			value1 = ${webContentTitle});
 
-		AssertTextEquals(
-			key_fieldLabel = "Content",
-			locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE_WEB_CONTENT_ARTICLE",
-			value1 = ${webContentContent});
+		CKEditor.assertContentInWebContent(
+			content = ${webContentContent},
+			fieldLabel = "Content");
 	}
 
 	@summary = "Default summary"

@@ -1584,9 +1584,14 @@ public class JournalArticleLocalServiceImpl
 					IndexerRegistryUtil.nullSafeGetIndexer(
 						JournalArticle.class);
 
-				indexer.reindex(
-					getLatestArticle(
-						groupId, articleId, WorkflowConstants.STATUS_ANY));
+				for (JournalArticle article :
+						journalArticlePersistence.findByG_A(
+							groupId, articleId, QueryUtil.ALL_POS,
+							QueryUtil.ALL_POS,
+							ArticleVersionComparator.getInstance(true))) {
+
+					indexer.reindex(article, false);
+				}
 			}
 		}
 		else {
@@ -4735,8 +4740,7 @@ public class JournalArticleLocalServiceImpl
 						groupId,
 						_classNameLocalService.getClassNameId(
 							JournalArticle.class),
-						article.getResourcePrimKey(), title,
-						_language.getLanguageId(entry.getKey()));
+						article.getResourcePrimKey(), title);
 
 				friendlyURLMap.put(entry.getKey(), urlTitle);
 			}
@@ -6120,6 +6124,10 @@ public class JournalArticleLocalServiceImpl
 
 							currentArticle = journalArticlePersistence.update(
 								currentArticle);
+
+							if (indexer != null) {
+								indexer.reindex(currentArticle, false);
+							}
 
 							notifySubscribers(
 								0, currentArticle, "expired",
@@ -8428,7 +8436,7 @@ public class JournalArticleLocalServiceImpl
 			String urlTitle = friendlyURLEntryLocalService.getUniqueUrlTitle(
 				groupId,
 				_classNameLocalService.getClassNameId(JournalArticle.class),
-				resourcePrimKey, friendlyURL, languageId);
+				resourcePrimKey, friendlyURL);
 
 			urlTitleMap.put(languageId, urlTitle);
 		}
@@ -8445,7 +8453,7 @@ public class JournalArticleLocalServiceImpl
 						groupId,
 						_classNameLocalService.getClassNameId(
 							JournalArticle.class),
-						resourcePrimKey, value, languageId);
+						resourcePrimKey, value);
 
 				urlTitleMap.put(languageId, urlTitle);
 			}

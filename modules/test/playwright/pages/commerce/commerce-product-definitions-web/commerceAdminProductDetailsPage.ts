@@ -33,6 +33,7 @@ export class CommerceAdminProductDetailsPage {
 	readonly frameDropdownSpecification: Locator;
 	readonly frameSubmitSpecification: Locator;
 	readonly menuItemSpecification: (chooseAddOrCreate: string) => Locator;
+	readonly nameInputLocaleSelector: Locator;
 	readonly page: Page;
 	readonly productConfigurationLink: Locator;
 	readonly productDetailsInput: (inputName: string) => Promise<Locator>;
@@ -122,6 +123,9 @@ export class CommerceAdminProductDetailsPage {
 		this.menuItemSpecification = (chooseAddOrCreate: string) => {
 			return page.getByRole('menuitem', {name: chooseAddOrCreate});
 		};
+		this.nameInputLocaleSelector = page.locator(
+			'[id$="nameMapAsXMLBoundingBox"] .input-localized-trigger'
+		);
 		this.page = page;
 		this.productConfigurationLink = page.getByRole('link', {
 			name: 'Configuration',
@@ -254,5 +258,24 @@ export class CommerceAdminProductDetailsPage {
 
 	async goToProductVisibility() {
 		await this.productVisibilityLink.click();
+	}
+
+	async publish() {
+		const publishAlert = this.page
+			.locator('.alert-success')
+			.filter({
+				hasText: 'Success:Your request completed successfully.',
+			})
+			.first();
+
+		await expect(async () => {
+			if (await publishAlert.isHidden()) {
+				await this.publishLink.click({timeout: 5000});
+			}
+
+			await expect(publishAlert).toBeVisible({timeout: 5000});
+		}).toPass({timeout: 30000});
+
+		return publishAlert;
 	}
 }

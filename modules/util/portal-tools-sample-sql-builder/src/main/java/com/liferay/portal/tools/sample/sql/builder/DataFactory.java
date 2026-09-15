@@ -4669,6 +4669,16 @@ public class DataFactory {
 		return friendlyURLEntryModel;
 	}
 
+	public FriendlyURLEntryModel newFriendlyURLEntryModel(
+		ObjectDefinitionModel objectDefinitionModel,
+		ObjectEntryModel objectEntryModel) {
+
+		return newFriendlyURLEntryModel(
+			_globalGroupId,
+			getClassNameId(objectDefinitionModel.getClassName()),
+			objectEntryModel.getObjectEntryId());
+	}
+
 	public GroupModel newGlobalGroupModel() {
 		_globalGroupId = _counter.get();
 
@@ -5759,14 +5769,19 @@ public class DataFactory {
 
 		String uuid = SequentialUUID.generate();
 
-		return newObjectDefinitionModel(
+		ObjectDefinitionModel objectDefinitionModel = newObjectDefinitionModel(
 			objectDefinitionId, objectFolderId, 0, className,
 			StringBundler.concat("O_", _companyId, StringPool.UNDERLINE, name),
 			true, false, true, label, true, name,
-			PanelCategoryKeys.APPLICATIONS_MENU_APPLICATIONS_CUSTOM_APPS,
+			PanelCategoryKeys.CONTROL_PANEL_OBJECT,
 			"c_" + StringUtil.toLowerCase(name) + "_",
 			"c_" + StringUtil.toLowerCase(name), label, true, false, uuid,
 			uuid);
+
+		objectDefinitionModel.setFriendlyURLSeparator(
+			_friendlyURLNormalizer.normalizeWithPeriodsAndSlashes(name));
+
+		return objectDefinitionModel;
 	}
 
 	public List<ObjectDefinitionModel> newObjectDefinitionModels(
@@ -8525,6 +8540,7 @@ public class DataFactory {
 		objectEntryModel.setHeadObjectEntryId(
 			objectEntryModel.getObjectEntryId());
 		objectEntryModel.setObjectDefinitionId(objectDefinitionId);
+		objectEntryModel.setDefaultLanguageId("en_US");
 		objectEntryModel.setStatus(WorkflowConstants.STATUS_APPROVED);
 		objectEntryModel.setStatusByUserId(_sampleUserId);
 		objectEntryModel.setStatusByUserName(_SAMPLE_USER_NAME);
@@ -8974,6 +8990,7 @@ public class DataFactory {
 		userModel.setScreenName(screenName);
 		userModel.setEmailAddress(emailAddress);
 		userModel.setLanguageId("en_US");
+		userModel.setTimeZoneId("UTC");
 		userModel.setGreeting("Welcome " + screenName + StringPool.EXCLAMATION);
 		userModel.setFirstName(firstName);
 		userModel.setLastName(lastName);

@@ -3449,6 +3449,11 @@ components:
                         Stable string key of the product option; on read the value is the option's key, while on write the value may also be the option's numeric identifier encoded as a string, which the service resolves back to the key.
                     example: color
                     type: string
+                optionExternalReferenceCode:
+                    description:
+                        External reference code of the product option this selection answers; it takes precedence over `optionId` and over the numeric form of `key`, and it names the product option link rather than the global option template. During an import, when no product option carries the code and `key` names an existing option, an empty product option is created and completed when the product option itself is imported. Outside an import, a code that matches nothing fails the request with a 404 error.
+                    example: AB-34098-789-N
+                    type: string
                 optionId:
                     description:
                         Internal numeric identifier of the product option this selection answers.
@@ -3456,6 +3461,11 @@ components:
                     format: int64
                     minimum: 0
                     type: integer
+                optionValueExternalReferenceCode:
+                    description:
+                        External reference code of the chosen product option value; it takes precedence over `optionValueId` and over the numeric form of `value`, and it names the product option value link rather than the global option value. During an import, when no product option value carries the code, an empty product option value is created under the resolved product option and completed when the product option value itself is imported. Outside an import, a code that matches nothing fails the request with a 404 error.
+                    example: AB-34098-789-N
+                    type: string
                 optionValueId:
                     description:
                         Internal numeric identifier of the chosen value within the product option referenced by `optionId`.
@@ -5144,6 +5154,94 @@ paths:
                     description:
                         Unexpected error
             summary: Updates a Currency by external reference code.
+            tags:
+                -   Currency
+        put:
+            description:
+                Creates or replaces the commerce currency identified by external reference code. Creates a new currency when the external reference code is unknown, otherwise replaces the existing one, so every omitted field falls back to its default rather than to the stored value. Side effects -- Reindexes the currency.
+            operationId: putCurrencyByExternalReferenceCode
+            parameters:
+                -   $ref: "#/components/parameters/externalReferenceCodePathParam"
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Currency"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/Currency"
+                required: true
+            responses:
+                201:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Currency"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Currency"
+                    description:
+                        Created
+                202:
+                    description:
+                        Accepted - Async
+                204:
+                    description:
+                        No content
+                400:
+                    description:
+                        Invalid input
+                401:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                    description:
+                        Authentication information is missing or invalid
+                403:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                    description:
+                        The authenticated user lacks permission for the requested action on this currency.
+                404:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                    description:
+                        The specified resource was not found
+                422:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                    description:
+                        A domain validation error prevented the currency from being created or updated (for example, a referenced entity is missing, a required cross-reference is unresolved, or a value is out of range).
+                500:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                    description:
+                        Unexpected error
+            summary: Replaces a currency with information sent in the request body. Any missing fields are deleted unless they are required.
             tags:
                 -   Currency
     /currencies/{id}:

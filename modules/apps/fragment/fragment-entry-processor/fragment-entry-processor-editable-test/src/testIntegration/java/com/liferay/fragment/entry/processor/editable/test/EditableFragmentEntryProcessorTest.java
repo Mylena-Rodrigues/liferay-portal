@@ -33,6 +33,7 @@ import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
 import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentEntryLinkConstants;
 import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
+import com.liferay.fragment.entry.processor.analytics.AnalyticsAttributesContributor;
 import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.entry.processor.util.AnalyticsAttributesUtil;
@@ -152,6 +153,11 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -1639,6 +1645,58 @@ public class EditableFragmentEntryProcessorTest {
 	}
 
 	@Test
+	@TestInfo("LPD-104492")
+	public void testFragmentEntryProcessorEditableAssertContributedAnalyticsAttributes()
+		throws Exception {
+
+		Bundle bundle = FrameworkUtil.getBundle(
+			EditableFragmentEntryProcessorTest.class);
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		String value = RandomTestUtil.randomString();
+
+		ServiceRegistration<AnalyticsAttributesContributor>
+			serviceRegistration = bundleContext.registerService(
+				AnalyticsAttributesContributor.class,
+				(infoItemFieldMapped, locale) ->
+					HashMapBuilder.<String, Object>put(
+						"analytics-asset-action", value
+					).put(
+						"analytics-asset-title", value
+					).put(
+						"analytics-test-attribute", value
+					).build(),
+				null);
+
+		try {
+			FileEntry fileEntry = _addImageFileEntry(
+				RandomTestUtil.randomString());
+
+			Element element = _getElement(
+				"data-lfr-editable-id", "link",
+				_getEditableFieldValues(
+					_portal.getClassNameId(FileEntry.class),
+					fileEntry.getFileEntryId(), "FileEntry_previewURL",
+					"link/fragment_entry_link_mapped_asset_field.json"),
+				"link/fragment_entry_link_button.html", LocaleUtil.US,
+				FragmentEntryLinkConstants.VIEW);
+
+			Assert.assertEquals(
+				AnalyticsAttributesUtil.ACTION_IMPRESSION,
+				element.attr("data-analytics-asset-action"));
+			Assert.assertEquals(
+				fileEntry.getTitle(),
+				element.attr("data-analytics-asset-title"));
+			Assert.assertEquals(
+				value, element.attr("data-analytics-test-attribute"));
+		}
+		finally {
+			serviceRegistration.unregister();
+		}
+	}
+
+	@Test
 	@TestInfo("LPD-34747")
 	public void testFragmentEntryProcessorEditableLinkInlineValueEditMode()
 		throws Exception {
@@ -1897,6 +1955,16 @@ public class EditableFragmentEntryProcessorTest {
 		Assert.assertEquals(
 			fileEntry.getFileEntryId(),
 			GetterUtil.getLong(element.attr("data-fileentryid")));
+	}
+
+	@Test
+	@TestInfo({"LPD-72706", "LPD-105357"})
+	public void testFragmentEntryProcessorEditableWithCharacterReferences()
+		throws Exception {
+
+		_testFragmentEntryProcessorEditableWithCharacterReferencesInHTML();
+		_testFragmentEntryProcessorEditableWithCharacterReferencesInMappedText();
+		_testFragmentEntryProcessorEditableWithCharacterReferencesInText();
 	}
 
 	@Test(expected = FragmentEntryContentException.class)
@@ -2572,6 +2640,18 @@ public class EditableFragmentEntryProcessorTest {
 		}
 	}
 
+	private void _assertEditableText(String defaultValue, String expectedText)
+		throws Exception {
+
+		Element element = _getElement(
+			"data-lfr-editable-id", "editable_text",
+			_getEditableValues(defaultValue, "editable_text"),
+			"fragment_entry_editable_text.html", LocaleUtil.US,
+			FragmentEntryLinkConstants.VIEW);
+
+		Assert.assertEquals(expectedText, element.text());
+	}
+
 	private void _assertElementAttribute(
 		String attributeName, long attributeValue, Element element) {
 
@@ -2689,6 +2769,16 @@ public class EditableFragmentEntryProcessorTest {
 				String.valueOf(classNameId), String.valueOf(classPK),
 				externalReferenceCode, fieldId, scopeExternalReferenceCode
 			});
+	}
+
+	private String _getEditableValues(String defaultValue, String editableId) {
+		JSONObject jsonObject = JSONUtil.put(
+			FragmentEntryProcessorConstants.
+				KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+			JSONUtil.put(
+				editableId, JSONUtil.put("defaultValue", defaultValue)));
+
+		return jsonObject.toString();
 	}
 
 	private Element _getElement(
@@ -2859,6 +2949,47 @@ public class EditableFragmentEntryProcessorTest {
 		Assert.assertEquals(expectedHref, element.attr("href"));
 		Assert.assertEquals(
 			"Default Editable Values Link Text", element.text());
+	}
+
+	private void _testFragmentEntryProcessorEditableWithCharacterReferencesInHTML()
+		throws Exception {
+
+		Element element = _getElement(
+			"data-lfr-editable-id", "editable_html",
+			_getEditableValues(
+				"10&nbsp;kg &mdash; 50&hellip;100", "editable_html"),
+			"fragment_entry_editable_html.html", LocaleUtil.US,
+			FragmentEntryLinkConstants.VIEW);
+
+		Assert.assertEquals("10&nbsp;kg — 50…100", element.html());
+	}
+
+	private void _testFragmentEntryProcessorEditableWithCharacterReferencesInMappedText()
+		throws Exception {
+
+		String title = "<script>alert(456)</script>";
+
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(), title, RandomTestUtil.randomString());
+
+		Element element = _getElement(
+			"data-lfr-editable-id", "editable_text",
+			_getEditableFieldValues(
+				_portal.getClassNameId(JournalArticle.class),
+				journalArticle.getResourcePrimKey(), "title",
+				"fragment_entry_link_mapped_asset_field.json"),
+			"fragment_entry_editable_text.html", LocaleUtil.US,
+			FragmentEntryLinkConstants.VIEW);
+
+		Assert.assertEquals(title, element.text());
+	}
+
+	private void _testFragmentEntryProcessorEditableWithCharacterReferencesInText()
+		throws Exception {
+
+		_assertEditableText("Liferay&#39;s", "Liferay's");
+		_assertEditableText("Tom &amp; Jerry", "Tom & Jerry");
+		_assertEditableText("say &#34;hi&#34;", "say \"hi\"");
 	}
 
 	private String _toJSON(FileEntry fileEntry) {

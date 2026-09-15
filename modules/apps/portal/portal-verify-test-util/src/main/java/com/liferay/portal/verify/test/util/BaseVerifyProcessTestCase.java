@@ -5,6 +5,15 @@
 
 package com.liferay.portal.verify.test.util;
 
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.db.DB;
+import com.liferay.portal.kernel.dao.db.DBInspector;
+import com.liferay.portal.kernel.dao.db.DBManagerUtil;
+import com.liferay.portal.kernel.dao.db.DBType;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -81,13 +90,67 @@ public abstract class BaseVerifyProcessTestCase {
 		}
 	}
 
+	protected void alterColumnName(
+			String tableName, String oldColumnName, String newColumnDefinition)
+		throws Exception {
+
+		DB db = DBManagerUtil.getDB();
+
+		try (Connection connection = DataAccess.getConnection()) {
+			db.alterColumnName(
+				connection, tableName, oldColumnName, newColumnDefinition);
+		}
+	}
+
+	protected void alterColumnType(
+			String tableName, String columnName, String columnType)
+		throws Exception {
+
+		DB db = DBManagerUtil.getDB();
+
+		try (Connection connection = DataAccess.getConnection()) {
+			db.alterColumnType(connection, tableName, columnName, columnType);
+		}
+	}
+
 	protected void doVerify() throws VerifyException {
 		VerifyProcess verifyProcess = getVerifyProcess();
 
 		verifyProcess.verify();
 	}
 
+	protected String getNormalizedName(String name) throws Exception {
+		try (Connection connection = DataAccess.getConnection()) {
+			DBInspector dbInspector = new DBInspector(connection);
+
+			return dbInspector.normalizeName(name);
+		}
+	}
+
 	protected abstract VerifyProcess getVerifyProcess();
+
+	protected void renameView(String fromViewName, String toViewName)
+		throws Exception {
+
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
+					TestPropsValues.getCompanyId())) {
+
+			DB db = DBManagerUtil.getDB();
+
+			if (db.getDBType() == DBType.MYSQL) {
+				db.runSQL(
+					StringBundler.concat(
+						"rename table ", fromViewName, " to ", toViewName));
+			}
+			else {
+				db.runSQL(
+					StringBundler.concat(
+						"alter view ", fromViewName, " rename to ",
+						toViewName));
+			}
+		}
+	}
 
 	private DataSource _dataSource;
 	private final Queue<ObjectValuePair<Connection, Exception>>

@@ -6,6 +6,8 @@
 package com.liferay.site.cms.site.initializer.internal.fragment.renderer;
 
 import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
+import com.liferay.depot.service.DepotEntryLocalService;
+import com.liferay.depot.service.DepotEntryService;
 import com.liferay.document.library.configuration.DLConfiguration;
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.object.service.ObjectDefinitionService;
@@ -52,7 +54,8 @@ public class ViewDashboardJSPSectionFragmentRenderer
 		HttpServletRequest httpServletRequest) {
 
 		return new ViewDashboardDisplayContext(
-			_analyticsSettingsManager, _dlConfiguration, groupLocalService,
+			_analyticsSettingsManager, _depotEntryLocalService,
+			_depotEntryService, _dlConfiguration, groupLocalService,
 			httpServletRequest, _objectDefinitionService, _roleLocalService,
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY),
@@ -66,6 +69,12 @@ public class ViewDashboardJSPSectionFragmentRenderer
 
 	@Reference
 	private AnalyticsSettingsManager _analyticsSettingsManager;
+
+	@Reference
+	private DepotEntryLocalService _depotEntryLocalService;
+
+	@Reference
+	private DepotEntryService _depotEntryService;
 
 	private volatile DLConfiguration _dlConfiguration;
 

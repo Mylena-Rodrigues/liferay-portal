@@ -10,7 +10,6 @@ import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFacto
 import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -59,6 +58,42 @@ public class DBResourceUtil {
 		_cacheEnabled = true;
 	}
 
+	public static Map<String, String>
+			getHistoricalServiceComponentTablesServletContextNames(
+				Connection connection)
+		throws Exception {
+
+		Map<String, String>
+			historicalServiceComponentTablesServletContextNames = new TreeMap<>(
+				String.CASE_INSENSITIVE_ORDER);
+
+		Map<String, String> tablesServletContextNames =
+			getTablesServletContextNames();
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				_SQL_HISTORICAL_SERVICE_COMPONENT);
+
+			ResultSet resultSet = preparedStatement.executeQuery()) {
+
+			while (resultSet.next()) {
+				String buildNamespace = resultSet.getString(1);
+
+				for (String tableName :
+						parseCreateTableSQL(resultSet.getString(2))) {
+
+					if (tablesServletContextNames.containsKey(tableName)) {
+						continue;
+					}
+
+					historicalServiceComponentTablesServletContextNames.put(
+						tableName, buildNamespace);
+				}
+			}
+		}
+
+		return historicalServiceComponentTablesServletContextNames;
+	}
+
 	public static Set<String> getLiferayTableNames(Connection connection)
 		throws Exception {
 
@@ -73,6 +108,12 @@ public class DBResourceUtil {
 			getServiceComponentPortalTableNames(connection));
 
 		return liferayTableNames;
+	}
+
+	public static Map<String, List<String>> getModuleColumnDefinitionsMap(
+		Bundle bundle) {
+
+		return _parseColumnDefinitionsMap(getModuleTablesSQL(bundle));
 	}
 
 	public static String getModuleIndexesSQL(Bundle bundle) {
@@ -148,6 +189,10 @@ public class DBResourceUtil {
 		return nonserviceBuildTableNames;
 	}
 
+	public static Map<String, List<String>> getPortalColumnDefinitionsMap() {
+		return _parseColumnDefinitionsMap(getPortalTablesSQL());
+	}
+
 	public static String getPortalIndexesSQL() {
 		return StringUtil.read(
 			DBResourceUtil.class,
@@ -209,6 +254,37 @@ public class DBResourceUtil {
 			connection,
 			"buildNamespace = '" +
 				ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME + "'");
+	}
+
+	public static Map<String, String> getTablesServletContextNames() {
+		Map<String, String> tablesServletContextNames = new TreeMap<>(
+			String.CASE_INSENSITIVE_ORDER);
+
+		for (String portalTableName : getPortalTableNames()) {
+			tablesServletContextNames.put(
+				portalTableName, ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME);
+		}
+
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		for (Bundle bundle : bundleContext.getBundles()) {
+			String symbolicName = bundle.getSymbolicName();
+
+			if (!symbolicName.startsWith("com.liferay") ||
+				(!BundleUtil.isLiferayRequireSchemaVersionBundle(bundle) &&
+				 !BundleUtil.isLiferayServiceBundle(bundle))) {
+
+				continue;
+			}
+
+			for (String tableName :
+					parseCreateTableSQL(getModuleTablesSQL(bundle))) {
+
+				tablesServletContextNames.put(tableName, symbolicName);
+			}
+		}
+
+		return tablesServletContextNames;
 	}
 
 	public static Set<String> parseCreateTableSQL(String createTableSQL) {
@@ -334,40 +410,41 @@ public class DBResourceUtil {
 			return columnDefinitionsMap;
 		}
 
-		String tableName = null;
+		Matcher matcher = _createTableColumnsPattern.matcher(sql);
 
-		for (String line : StringUtil.splitLines(sql)) {
-			line = line.trim();
+		while (matcher.find()) {
+			List<String> columnDefinitions = new ArrayList<>();
 
-			if (line.contains("create table ")) {
-				String createTableSQL = line.substring(
-					line.indexOf("create table "));
+			for (String columnDefinition :
+					_columnDefinitionSeparatorPattern.split(matcher.group(2))) {
 
-				tableName =
-					StringUtil.split(createTableSQL, StringPool.SPACE)[2];
+				columnDefinition = columnDefinition.trim();
 
-				columnDefinitionsMap.put(tableName, new ArrayList<>());
+				if (columnDefinition.isEmpty() ||
+					columnDefinition.startsWith("primary key")) {
 
-				continue;
+					continue;
+				}
+
+				columnDefinition = StringUtil.removeSubstring(
+					columnDefinition, "primary key");
+
+				columnDefinitions.add(columnDefinition.trim());
 			}
 
-			if (line.isEmpty() || line.startsWith(")") ||
-				line.startsWith(";") || line.startsWith("<") ||
-				line.startsWith("]]>") || line.startsWith("create ") ||
-				line.startsWith("primary key")) {
+			columnDefinitionsMap.put(matcher.group(1), columnDefinitions);
+		}
 
-				continue;
+		if (_log.isWarnEnabled()) {
+			Set<String> unparsedTableNames = parseCreateTableSQL(sql);
+
+			unparsedTableNames.removeAll(columnDefinitionsMap.keySet());
+
+			if (!unparsedTableNames.isEmpty()) {
+				_log.warn(
+					"Unable to parse the column definitions of " +
+						unparsedTableNames);
 			}
-
-			line = StringUtil.replaceLast(
-				line, CharPool.COMMA, StringPool.BLANK);
-			line = StringUtil.removeSubstring(line, "primary key");
-
-			columnDefinitionsMap.get(
-				tableName
-			).add(
-				line.trim()
-			);
 		}
 
 		return columnDefinitionsMap;
@@ -394,6 +471,13 @@ public class DBResourceUtil {
 		}
 	}
 
+	private static final String _SQL_HISTORICAL_SERVICE_COMPONENT =
+		StringBundler.concat(
+			"select buildNamespace, data_ from ServiceComponent where ",
+			"buildNamespace like 'com.liferay%' or buildNamespace = '",
+			ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME,
+			"' order by serviceComponentId");
+
 	private static final String _SQL_SERVICE_COMPONENT = StringBundler.concat(
 		"select data_ from ServiceComponent where buildNumber = (select ",
 		"max(buildNumber) from ServiceComponent ServiceComponent2 where ",
@@ -403,11 +487,15 @@ public class DBResourceUtil {
 	private static final Log _log = LogFactoryUtil.getLog(DBResourceUtil.class);
 
 	private static volatile boolean _cacheEnabled;
+	private static final Pattern _columnDefinitionSeparatorPattern =
+		Pattern.compile(",(?![^(]*\\))");
 	private static final Pattern _composedPrimaryKeyPattern = Pattern.compile(
 		"create table\\s+(\\w+)\\s*\\((?:[^;]*?)?primary key\\s*\\(([^)]+)\\)",
 		Pattern.DOTALL);
+	private static final Pattern _createTableColumnsPattern = Pattern.compile(
+		"create table (\\S+) \\(([^;<]*)\\);");
 	private static final Pattern _createTablePattern = Pattern.compile(
-		"create table (\\S*) \\(");
+		"create table (\\S+) \\(");
 	private static final Pattern _inlinedPrimaryKeyPattern = Pattern.compile(
 		"create table\\s+(\\w+)\\s*\\([^;]*?(\\w+)\\s+\\w+(?:\\([^)]*\\))?" +
 			"(?:\\s+\\w+)*\\s+primary key\\b",

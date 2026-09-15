@@ -15,10 +15,9 @@ import com.liferay.portal.kernel.util.Validator;
  */
 public class CommerceCurrencyUtil {
 
-	public static CommerceCurrency getCommerceCurrency(
-			long companyId, String currencyCode,
-			String currencyExternalReferenceCode, long currencyId)
-		throws NoSuchCurrencyException {
+	public static CommerceCurrency fetchCommerceCurrency(
+		long companyId, String currencyCode,
+		String currencyExternalReferenceCode, long currencyId) {
 
 		CommerceCurrency commerceCurrency = null;
 
@@ -37,7 +36,9 @@ public class CommerceCurrencyUtil {
 				CommerceCurrencyLocalServiceUtil.fetchCommerceCurrency(
 					currencyId);
 
-			if (commerceCurrency != null) {
+			if ((commerceCurrency != null) &&
+				(companyId == commerceCurrency.getCompanyId())) {
+
 				return commerceCurrency;
 			}
 		}
@@ -53,7 +54,22 @@ public class CommerceCurrencyUtil {
 			}
 		}
 
-		throw new NoSuchCurrencyException();
+		return null;
+	}
+
+	public static CommerceCurrency getCommerceCurrency(
+			long companyId, String currencyCode,
+			String currencyExternalReferenceCode, long currencyId)
+		throws NoSuchCurrencyException {
+
+		CommerceCurrency commerceCurrency = fetchCommerceCurrency(
+			companyId, currencyCode, currencyExternalReferenceCode, currencyId);
+
+		if (commerceCurrency == null) {
+			throw new NoSuchCurrencyException();
+		}
+
+		return commerceCurrency;
 	}
 
 }

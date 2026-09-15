@@ -73,6 +73,7 @@ gitops:
         usernameProperty: git_machine_user_id
 infrastructure:
     enabled: true
+    parameters: []
     path: ""
     repoURL: ""
     targetRevision: ""
@@ -92,7 +93,7 @@ observability:
     namespace: observability
     parameters: []
     repoURL: oci://us-central1-docker.pkg.dev/external-assets-prd/liferay-helm-chart/observability
-    targetRevision: 1.1.0
+    targetRevision: 1.1.1
 operatorApplications:
     ackPrometheusService:
         enabled: false
@@ -253,12 +254,13 @@ operatorApplications:
         namespaceLabels:
             pod-security.kubernetes.io/enforce: restricted
         repoURL: oci://us-central1-docker.pkg.dev/external-assets-prd/liferay-helm-chart/liferay-dxp-operator
-        targetRevision: 0.1.0
+        targetRevision: 0.1.2
         values:
             fullnameOverride: dxp-operator
     eckOperator:
         chart: eck-operator
         enabled: true
+        masterIpv4CidrBlock: 172.16.0.0/28
         name: eck-operator
         namespace: elastic-system
         namespaceLabels:

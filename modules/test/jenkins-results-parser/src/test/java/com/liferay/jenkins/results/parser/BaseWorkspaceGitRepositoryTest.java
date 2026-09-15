@@ -84,6 +84,13 @@ public class BaseWorkspaceGitRepositoryTest
 	}
 
 	@Test
+	public void testGetLocalGitBranch() throws Exception {
+		_testGetLocalGitBranch(false, false);
+		_testGetLocalGitBranch(false, true);
+		_testGetLocalGitBranch(true, true);
+	}
+
+	@Test
 	public void testGetProperties() throws Exception {
 		_testGetProperties("7.4.x", "7.4.x");
 		_testGetProperties("base", RandomTestUtil.randomString());
@@ -289,9 +296,11 @@ public class BaseWorkspaceGitRepositoryTest
 
 	@Test
 	public void testValidateSHAInRemoteGitRef() throws Exception {
-		_testValidateSHAInRemoteGitRef(false, true, true);
-		_testValidateSHAInRemoteGitRef(true, false, true);
-		_testValidateSHAInRemoteGitRef(true, true, false);
+		_testValidateSHAInRemoteGitRef(false, false, true, true);
+		_testValidateSHAInRemoteGitRef(false, true, false, false);
+		_testValidateSHAInRemoteGitRef(true, false, false, false);
+		_testValidateSHAInRemoteGitRef(true, false, false, true);
+		_testValidateSHAInRemoteGitRef(true, true, false, true);
 	}
 
 	private String _getBranchName(
@@ -464,6 +473,13 @@ public class BaseWorkspaceGitRepositoryTest
 	private DefaultWorkspaceGitRepository _newDefaultWorkspaceGitRepository()
 		throws Exception {
 
+		return _newDefaultWorkspaceGitRepository(false);
+	}
+
+	private DefaultWorkspaceGitRepository _newDefaultWorkspaceGitRepository(
+			boolean pullRequest)
+		throws Exception {
+
 		File workingDirectory = File.createTempFile("workspace-", null);
 
 		workingDirectory.delete();
@@ -477,6 +493,13 @@ public class BaseWorkspaceGitRepositoryTest
 		String repositoryName = RandomTestUtil.randomString();
 		String senderBranchSHA = RandomTestUtil.randomSHA();
 
+		String gitHubURL = JenkinsResultsParserUtil.combine(
+			"https://github.com/", baseBranchUsername, "/", repositoryName);
+
+		if (pullRequest) {
+			gitHubURL = gitHubURL + "/pull/1";
+		}
+
 		jsonObject.put(
 			"base_branch_head_sha", baseBranchSHA
 		).put(
@@ -489,9 +512,7 @@ public class BaseWorkspaceGitRepositoryTest
 		).put(
 			"directory_name", repositoryName
 		).put(
-			"git_hub_url",
-			JenkinsResultsParserUtil.combine(
-				"https://github.com/", baseBranchUsername, "/", repositoryName)
+			"git_hub_url", gitHubURL
 		).put(
 			"name", repositoryName
 		).put(
@@ -657,6 +678,100 @@ public class BaseWorkspaceGitRepositoryTest
 		testSame(
 			gitWorkingDirectory,
 			defaultWorkspaceGitRepository.getGitWorkingDirectory());
+	}
+
+	private void _testGetLocalGitBranch(
+			boolean pullRequest, boolean senderBranchSHAExists)
+		throws Exception {
+
+		Shell shell = mockShell();
+
+		setShellCommandOutput("git ls-remote", shell, "");
+
+		DefaultWorkspaceGitRepository defaultWorkspaceGitRepository =
+			_newDefaultWorkspaceGitRepository(pullRequest);
+		GitWorkingDirectory gitWorkingDirectory = Mockito.mock(
+			GitWorkingDirectory.class);
+
+		Mockito.doReturn(
+			gitWorkingDirectory
+		).when(
+			defaultWorkspaceGitRepository
+		).getGitWorkingDirectory();
+
+		Mockito.doReturn(
+			"liferay-portal"
+		).when(
+			gitWorkingDirectory
+		).getGitRepositoryName();
+
+		Mockito.doReturn(
+			"master"
+		).when(
+			gitWorkingDirectory
+		).getUpstreamBranchName();
+
+		String senderBranchSHA =
+			defaultWorkspaceGitRepository.getSenderBranchSHA();
+
+		Mockito.doReturn(
+			senderBranchSHAExists
+		).when(
+			gitWorkingDirectory
+		).localSHAExists(
+			senderBranchSHA
+		);
+
+		if (pullRequest) {
+			try {
+				defaultWorkspaceGitRepository.getLocalGitBranch();
+
+				Assert.fail();
+			}
+			catch (RuntimeException runtimeException) {
+				String message = runtimeException.getMessage();
+
+				Assert.assertTrue(
+					message.contains(
+						defaultWorkspaceGitRepository.getUpstreamBranchName()));
+			}
+
+			Mockito.verify(
+				defaultWorkspaceGitRepository, Mockito.never()
+			).validateSHAInRemoteGitRef(
+				Mockito.anyString(), Mockito.nullable(RemoteGitRef.class),
+				Mockito.anyString()
+			);
+
+			return;
+		}
+
+		if (senderBranchSHAExists) {
+			defaultWorkspaceGitRepository.getLocalGitBranch();
+
+			Mockito.verify(
+				defaultWorkspaceGitRepository, Mockito.never()
+			).validateSHAInRemoteGitRef(
+				Mockito.anyString(), Mockito.nullable(RemoteGitRef.class),
+				Mockito.anyString()
+			);
+
+			return;
+		}
+
+		try {
+			defaultWorkspaceGitRepository.getLocalGitBranch();
+
+			Assert.fail();
+		}
+		catch (RuntimeException runtimeException) {
+			String message = runtimeException.getMessage();
+
+			Assert.assertTrue(
+				message.contains(
+					defaultWorkspaceGitRepository.getSenderBranchName()));
+			Assert.assertTrue(message.contains(senderBranchSHA));
+		}
 	}
 
 	private void _testGetProperties(
@@ -924,41 +1039,45 @@ public class BaseWorkspaceGitRepositoryTest
 	}
 
 	private void _testValidateSHAInRemoteGitRef(
-			boolean exceptionThrown, boolean localGitBranchFetched,
-			boolean refContainsSHA)
+			boolean exceptionThrown, boolean localSHAExists,
+			boolean refContainsSHA, boolean remoteGitRefFound)
 		throws Exception {
 
 		GitWorkingDirectory gitWorkingDirectory = Mockito.mock(
 			GitWorkingDirectory.class);
-
-		RemoteGitRef remoteGitRef = Mockito.mock(RemoteGitRef.class);
-
 		LocalGitBranch localGitBranch = null;
+		RemoteGitRef remoteGitRef = null;
+		String remoteURL = RandomTestUtil.randomString();
 
-		if (localGitBranchFetched) {
+		if (remoteGitRefFound) {
 			localGitBranch = Mockito.mock(LocalGitBranch.class);
+			remoteGitRef = Mockito.mock(RemoteGitRef.class);
+
+			Mockito.when(
+				gitWorkingDirectory.fetch(remoteGitRef)
+			).thenReturn(
+				localGitBranch
+			);
+
+			Mockito.when(
+				remoteGitRef.getRemoteURL()
+			).thenReturn(
+				remoteURL
+			);
 		}
 
-		Mockito.when(
-			gitWorkingDirectory.fetch(remoteGitRef)
-		).thenReturn(
-			localGitBranch
-		);
-
 		String sha = RandomTestUtil.randomSHA();
+
+		Mockito.when(
+			gitWorkingDirectory.localSHAExists(sha)
+		).thenReturn(
+			localSHAExists
+		);
 
 		Mockito.when(
 			gitWorkingDirectory.refContainsSHA(localGitBranch, sha)
 		).thenReturn(
 			refContainsSHA
-		);
-
-		String remoteURL = RandomTestUtil.randomString();
-
-		Mockito.when(
-			remoteGitRef.getRemoteURL()
-		).thenReturn(
-			remoteURL
 		);
 
 		DefaultWorkspaceGitRepository defaultWorkspaceGitRepository =
@@ -984,25 +1103,42 @@ public class BaseWorkspaceGitRepositoryTest
 			String message = runtimeException.getMessage();
 
 			Assert.assertTrue(message.contains(branchName));
-			Assert.assertTrue(message.contains(remoteURL));
 			Assert.assertTrue(message.contains(sha));
+
+			if (remoteGitRefFound) {
+				Assert.assertTrue(message.contains(remoteURL));
+			}
 		}
 
 		InOrder inOrder = Mockito.inOrder(gitWorkingDirectory);
 
-		inOrder.verify(
-			gitWorkingDirectory
-		).fetch(
-			remoteGitRef
-		);
+		if (remoteGitRefFound) {
+			inOrder.verify(
+				gitWorkingDirectory
+			).fetch(
+				remoteGitRef
+			);
 
-		if (localGitBranchFetched) {
 			inOrder.verify(
 				gitWorkingDirectory
 			).refContainsSHA(
 				localGitBranch, sha
 			);
+
+			return;
 		}
+
+		Mockito.verify(
+			gitWorkingDirectory, Mockito.never()
+		).fetch(
+			Mockito.nullable(RemoteGitRef.class)
+		);
+
+		inOrder.verify(
+			gitWorkingDirectory
+		).localSHAExists(
+			sha
+		);
 	}
 
 }

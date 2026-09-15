@@ -1110,10 +1110,7 @@ public class TaxonomyCategoryResourceImpl
 				taxonomyCategory.getDescription(),
 				taxonomyCategory.getDescription_i18n()),
 			assetVocabularyId,
-			_merge(
-				_assetCategoryPropertyLocalService.getCategoryProperties(
-					persistedAssetCategory.getCategoryId()),
-				taxonomyCategory.getTaxonomyCategoryProperties()),
+			_toStringArray(taxonomyCategory.getTaxonomyCategoryProperties()),
 			ServiceContextBuilder.create(
 				persistedAssetCategory.getGroupId(), contextHttpServletRequest,
 				taxonomyCategory.getViewableByAsString()
@@ -1258,7 +1255,7 @@ public class TaxonomyCategoryResourceImpl
 				languageId,
 				_friendlyURLEntryLocalService.getUniqueUrlTitle(
 					assetCategory.getGroupId(), classNameId, parentClassPK,
-					assetCategory.getCategoryId(), urlTitle, languageId));
+					assetCategory.getCategoryId(), urlTitle));
 		}
 
 		_friendlyURLEntryLocalService.addFriendlyURLEntry(

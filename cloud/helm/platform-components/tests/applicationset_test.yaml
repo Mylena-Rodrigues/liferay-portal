@@ -97,6 +97,26 @@ tests:
                 repoURL: oci://example-registry/liferay-azure
     -   asserts:
             -   equal:
+                    path: spec.template.spec.syncPolicy.managedNamespaceMetadata.labels
+                    value:
+                        licensing.liferay.com/environment: "true"
+                        liferay.com/observable: "true"
+                        pod-security.kubernetes.io/enforce: restricted
+                template: templates/applicationset-infrastructure.yaml
+            -   equal:
+                    path: spec.template.spec.syncPolicy.managedNamespaceMetadata.labels
+                    value:
+                        licensing.liferay.com/environment: "true"
+                        liferay.com/observable: "true"
+                        pod-security.kubernetes.io/enforce: restricted
+                template: templates/applicationset-liferay.yaml
+        it: Labels the environment namespace identically from the infrastructure and Liferay ApplicationSets
+        set:
+            gitops:
+                repository:
+                    url: https://github.com/example/liferay-gitops.git
+    -   asserts:
+            -   equal:
                     path: spec.template.spec.sources[0].helm.valueFiles
                     value:
                         -   $values/liferay/projects/{{path[2]}}/base/infrastructure.yaml
@@ -156,6 +176,26 @@ tests:
                     path: spec.sourceRepos
                 template: templates/appproject-infrastructure.yaml
         it: Omits the unset repository URLs from the AppProject source repositories
+    -   asserts:
+            -   contains:
+                    content:
+                        name: persistence.storageClassName
+                        value: managed-csi-premium-v2
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-infrastructure.yaml
+            -   equal:
+                    path: spec.template.spec.sources[0].helm.parameters[6]
+                    value:
+                        name: persistence.storageClassName
+                        value: managed-csi-premium-v2
+                template: templates/applicationset-infrastructure.yaml
+        it: Passes the configured infrastructure parameters to the infrastructure ApplicationSet
+        set:
+            infrastructure:
+                parameters:
+                    -   name: persistence.storageClassName
+                        value: managed-csi-premium-v2
+                repoURL: oci://example-registry/liferay-azure-infrastructure
     -   asserts:
             -   contains:
                     content:

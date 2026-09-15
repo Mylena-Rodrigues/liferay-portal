@@ -76,6 +76,9 @@ public interface Rels {
 	public static final String ASSET_SUMMARY_CATEGORIES =
 		"asset-summary-categories";
 
+	public static final String ASSET_SUMMARY_CMP_PROJECTS =
+		"asset-summary-cmp-projects";
+
 	public static final String ASSET_SUMMARY_MIME_TYPES =
 		"asset-summary-mime-types";
 
@@ -96,7 +99,11 @@ public interface Rels {
 
 	public static final String CAMPAIGN = "campaign";
 
+	public static final String CAMPAIGN_ACCOUNTS = "campaign-accounts";
+
 	public static final String CAMPAIGNS = "campaigns";
+
+	public static final String CAMPAIGNS_METRICS = "campaigns-metrics";
 
 	public static final String CATALOG_FIELDS = "catalog-fields";
 
@@ -283,8 +290,8 @@ public interface Rels {
 	public static final String REPORTS_EXPORT_CSV_COUNT =
 		"reports-export-csv-count";
 
-	public static final String SESSION_ACQUISITION_PARAMETERS =
-		"session-acquisition-parameters";
+	public static final String SESSION_ACQUISITION_PROPERTIES =
+		"session-acquisition-properties";
 
 	public static final String SESSION_VALUES = "session-values";
 

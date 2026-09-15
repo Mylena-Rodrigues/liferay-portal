@@ -49,6 +49,9 @@ spec:
                                 value: {{ $layout.projectId | quote }}
                             -   name: region
                                 value: {{ .Values.deploymentContext.region | quote }}
+                            {{- with .Values.infrastructure.parameters }}
+                            {{- toYaml . | nindent 28 }}
+                            {{- end }}
                         valueFiles:
                             -   $values/{{ $layout.base }}/{{ $layout.infrastructureValuesFilename }}
                             -   $values/{{ `{{path}}` }}/{{ $layout.infrastructureValuesFilename }}
@@ -61,7 +64,7 @@ spec:
                     selfHeal: true
                 managedNamespaceMetadata:
                     labels:
-                        pod-security.kubernetes.io/enforce: restricted
+                        {{- include "liferay-platform.environmentNamespaceLabels" . | nindent 24 }}
                 retry:
                     backoff:
                         duration: 30s

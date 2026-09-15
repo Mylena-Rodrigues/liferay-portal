@@ -22,6 +22,8 @@
 	import {MultipartTestEntity} from '../models/MultipartTestEntity';
 	import {NestedArrayItemsTestEntity} from '../models/NestedArrayItemsTestEntity';
 	import {NestedTestEntity} from '../models/NestedTestEntity';
+	import {ObjectArrayPropertyTestEntity} from '../models/ObjectArrayPropertyTestEntity';
+	import {OneOfPropertyTestEntity} from '../models/OneOfPropertyTestEntity';
 	import {PageAssetLibraryTestEntity} from '../models/PageAssetLibraryTestEntity';
 	import {PageBatchTestEntity} from '../models/PageBatchTestEntity';
 	import {PageCompanyTestEntity} from '../models/PageCompanyTestEntity';
@@ -38,6 +40,7 @@
 	import {PageSort} from '../models/PageSort';
 	import {PageTestEntity} from '../models/PageTestEntity';
 	import {Permission} from '../models/Permission';
+	import {ReferencingTestEntity} from '../models/ReferencingTestEntity';
 	import {Schema} from '../models/Schema';
 	import {ScopedTestEntity} from '../models/ScopedTestEntity';
 	import {SharedInternalModelBatchTestEntity} from '../models/SharedInternalModelBatchTestEntity';
@@ -100,6 +103,8 @@ const typeMap: {[index: string]: any} = {
 	MultipartTestEntity,
 	NestedArrayItemsTestEntity,
 	NestedTestEntity,
+	ObjectArrayPropertyTestEntity,
+	OneOfPropertyTestEntity,
 	PageAssetLibraryTestEntity,
 	PageBatchTestEntity,
 	PageCompanyTestEntity,
@@ -116,6 +121,7 @@ const typeMap: {[index: string]: any} = {
 	PageSort,
 	PageTestEntity,
 	Permission,
+	ReferencingTestEntity,
 	Schema,
 	ScopedTestEntity,
 	SharedInternalModelBatchTestEntity,
