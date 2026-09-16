@@ -32,6 +32,53 @@ describe('editorReducer', () => {
 		expect(rotatedSize(present)).toEqual({height: HEIGHT, width: WIDTH});
 	});
 
+	it('commits an adjustment and skips a value that does not change', () => {
+		let state = editorReducer(history(), {
+			key: 'brightness',
+			type: 'set-adjustment',
+			value: 40,
+		});
+
+		expect(state.present.adjustments.brightness).toBe(40);
+		expect(undoLabel(state)).toBe('adjustments');
+
+		const unchanged = editorReducer(state, {
+			key: 'brightness',
+			type: 'set-adjustment',
+			value: 40,
+		});
+
+		expect(unchanged).toBe(state);
+
+		state = editorReducer(state, {type: 'undo'});
+
+		expect(state.present.adjustments.brightness).toBe(0);
+	});
+
+	it('resets every adjustment at once', () => {
+		let state = editorReducer(history(), {
+			key: 'brightness',
+			type: 'set-adjustment',
+			value: 40,
+		});
+
+		state = editorReducer(state, {
+			key: 'shadows',
+			type: 'set-adjustment',
+			value: -20,
+		});
+
+		state = editorReducer(state, {type: 'reset-adjustments'});
+
+		expect(state.present.adjustments.brightness).toBe(0);
+		expect(state.present.adjustments.shadows).toBe(0);
+
+		state = editorReducer(state, {type: 'undo'});
+
+		expect(state.present.adjustments.brightness).toBe(40);
+		expect(state.present.adjustments.shadows).toBe(-20);
+	});
+
 	it('swaps dimensions on rotation', () => {
 		const next = editorReducer(history(), {type: 'rotate-90'});
 

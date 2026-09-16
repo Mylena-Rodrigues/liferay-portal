@@ -7,8 +7,42 @@ import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 
 import {EditState} from '../state/types';
+import {FilterDefs, isIdentityFilter} from './FilterDefs';
 import {imageTransform} from './geometry';
 import {LoadedImage} from './loadImage';
+
+export function editedImageMarkup(state: EditState, dataUrl: string): string {
+	const {crop} = state;
+
+	return renderToStaticMarkup(
+		<svg
+			height={crop.height}
+			viewBox={`${crop.x} ${crop.y} ${crop.width} ${crop.height}`}
+			width={crop.width}
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<defs>
+				<FilterDefs
+					adjustments={state.adjustments}
+					id="export-filter"
+				/>
+			</defs>
+
+			<g transform={imageTransform(state)}>
+				<image
+					filter={
+						isIdentityFilter(state.adjustments)
+							? undefined
+							: 'url(#export-filter)'
+					}
+					height={state.sourceHeight}
+					href={dataUrl}
+					width={state.sourceWidth}
+				/>
+			</g>
+		</svg>
+	);
+}
 
 export async function exportEditedImage(
 	image: LoadedImage,
@@ -18,22 +52,7 @@ export async function exportEditedImage(
 
 	const {crop} = state;
 
-	const markup = renderToStaticMarkup(
-		<svg
-			height={crop.height}
-			viewBox={`${crop.x} ${crop.y} ${crop.width} ${crop.height}`}
-			width={crop.width}
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<g transform={imageTransform(state)}>
-				<image
-					height={state.sourceHeight}
-					href={dataUrl}
-					width={state.sourceWidth}
-				/>
-			</g>
-		</svg>
-	);
+	const markup = editedImageMarkup(state, dataUrl);
 
 	const rendered = await loadIntoImage(
 		`data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`

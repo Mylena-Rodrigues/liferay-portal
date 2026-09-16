@@ -3,7 +3,15 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {RatioPreset} from './state/types';
+import {AdjustmentKey, RatioPreset} from './state/types';
+
+export const ADJUSTMENT_KEYS: AdjustmentKey[] = [
+	'brightness',
+	'contrast',
+	'saturation',
+	'shadows',
+	'highlights',
+];
 
 export const RATIO_PRESETS: RatioPreset[] = [
 	'custom',
@@ -16,6 +24,8 @@ export const RATIO_PRESETS: RatioPreset[] = [
 ];
 
 export interface EditorConfig {
+	adjustments?: false | {sliders?: AdjustmentKey[]};
+
 	crop?:
 		| false
 		| {
@@ -26,6 +36,7 @@ export interface EditorConfig {
 }
 
 interface ResolvedEditorConfig {
+	adjustments: AdjustmentKey[];
 	crop: {
 		enabled: boolean;
 		ratios: RatioPreset[];
@@ -38,6 +49,10 @@ export function resolveConfig(config: EditorConfig = {}): ResolvedEditorConfig {
 	const crop = config.crop;
 
 	return {
+		adjustments:
+			config.adjustments === false
+				? []
+				: pick(ADJUSTMENT_KEYS, config.adjustments?.sliders),
 		crop:
 			crop === false
 				? {enabled: false, ratios: [], rotate: false, straighten: false}

@@ -7,9 +7,10 @@ import '../../css/Panels.scss';
 
 import React from 'react';
 
+import {AdjustPanel} from '../panels/AdjustPanel';
 import {CropPanel} from '../panels/CropPanel';
 import {EditorAction} from '../state/editorReducer';
-import {EditState, rotatedSize} from '../state/types';
+import {AdjustmentKey, EditState, rotatedSize} from '../state/types';
 
 interface Props {
 	aspectLocked: boolean;
@@ -17,7 +18,9 @@ interface Props {
 	dispatch: (action: EditorAction) => void;
 	onAnnounce: (message: string) => void;
 	onAspectLockedChange: (locked: boolean) => void;
+	showCrop: boolean;
 	showStraighten: boolean;
+	sliders: AdjustmentKey[];
 	state: EditState;
 }
 
@@ -26,7 +29,9 @@ export function EditorSidebar({
 	dispatch,
 	onAnnounce,
 	onAspectLockedChange,
+	showCrop,
 	showStraighten,
+	sliders,
 	state,
 }: Props) {
 	return (
@@ -34,16 +39,27 @@ export function EditorSidebar({
 			aria-label={Liferay.Language.get('edit-controls')}
 			className="editor-sidebar"
 		>
-			<CropPanel
-				angle={state.angle}
-				aspectLocked={aspectLocked}
-				bounds={rotatedSize(state)}
-				crop={state.crop}
-				dispatch={dispatch}
-				onAnnounce={onAnnounce}
-				onAspectLockedChange={onAspectLockedChange}
-				showStraighten={showStraighten}
-			/>
+			{showCrop && (
+				<CropPanel
+					angle={state.angle}
+					aspectLocked={aspectLocked}
+					bounds={rotatedSize(state)}
+					crop={state.crop}
+					dispatch={dispatch}
+					onAnnounce={onAnnounce}
+					onAspectLockedChange={onAspectLockedChange}
+					showStraighten={showStraighten}
+				/>
+			)}
+
+			{!!sliders.length && (
+				<AdjustPanel
+					adjustments={state.adjustments}
+					dispatch={dispatch}
+					onAnnounce={onAnnounce}
+					sliders={sliders}
+				/>
+			)}
 		</aside>
 	);
 }
