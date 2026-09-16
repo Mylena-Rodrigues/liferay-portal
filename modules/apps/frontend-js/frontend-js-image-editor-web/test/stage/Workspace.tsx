@@ -13,11 +13,15 @@ import {BottomBar} from '../../src/main/resources/META-INF/resources/js/chrome/B
 import {EditorInstanceProvider} from '../../src/main/resources/META-INF/resources/js/chrome/instance';
 import {
 	ADJUSTMENT_KEYS,
+	FILTER_PRESETS,
+	FRAME_KINDS,
 	RATIO_PRESETS,
 } from '../../src/main/resources/META-INF/resources/js/editorConfig';
 import {LoadedImage} from '../../src/main/resources/META-INF/resources/js/imaging/loadImage';
 import {AdjustPanel} from '../../src/main/resources/META-INF/resources/js/panels/AdjustPanel';
 import {CropPanel} from '../../src/main/resources/META-INF/resources/js/panels/CropPanel';
+import {FilterGallery} from '../../src/main/resources/META-INF/resources/js/panels/FilterGallery';
+import {FramePanel} from '../../src/main/resources/META-INF/resources/js/panels/FramePanel';
 import {Workspace} from '../../src/main/resources/META-INF/resources/js/stage/Workspace';
 import {
 	editorReducer,
@@ -33,6 +37,7 @@ const IMAGE: LoadedImage = {
 	fileName: 'test.jpg',
 	height: 800,
 	previewUrl: 'test.jpg',
+	thumbUrl: 'thumb.jpg',
 	type: 'image/jpeg',
 	width: 1200,
 };
@@ -82,6 +87,22 @@ function EditorHarness() {
 					dispatch={dispatch}
 					onAnnounce={() => {}}
 					sliders={ADJUSTMENT_KEYS}
+				/>
+
+				<FilterGallery
+					dispatch={dispatch}
+					filter={history.present.filter}
+					image={IMAGE}
+					onAnnounce={() => {}}
+					presets={FILTER_PRESETS}
+				/>
+
+				<FramePanel
+					dispatch={dispatch}
+					frame={history.present.frame}
+					image={IMAGE}
+					onAnnounce={() => {}}
+					presets={FRAME_KINDS}
 				/>
 
 				<BottomBar
@@ -190,6 +211,79 @@ describe('Editor workspace composition', () => {
 		expect(slider).toHaveValue('0');
 		expect(container.querySelector('image')).not.toHaveAttribute('filter');
 		expect(screen.getByRole('button', {name: 'undo'})).toBeDisabled();
+	});
+
+	it('applies a preset picked from the filter gallery', () => {
+		const {container} = render(<EditorHarness />);
+
+		expect(container.querySelector('image')).not.toHaveAttribute('filter');
+
+		fireEvent.click(screen.getByLabelText('sepia'));
+
+		expect(screen.getByLabelText('sepia')).toBeChecked();
+		expect(container.querySelector('.editor-stage image')).toHaveAttribute(
+			'filter',
+			'url(#aie-preview-filter)'
+		);
+		expect(
+			container.querySelector(
+				'#aie-preview-filter feColorMatrix[type="matrix"]'
+			)
+		).not.toBeNull();
+	});
+
+	it('draws the picked frame over the crop area and sizes it from there', () => {
+		const {container} = render(<EditorHarness />);
+
+		expect(
+			container.querySelector('.editor-stage .editor-frame')
+		).toBeNull();
+		expect(screen.queryByLabelText('frame-size')).toBeNull();
+
+		fireEvent.click(screen.getByLabelText('mat'));
+
+		expect(screen.getByLabelText('mat')).toBeChecked();
+
+		const frame = container.querySelector(
+			'.editor-stage .editor-frame rect'
+		);
+
+		expect(frame).toHaveAttribute('stroke-width', '32');
+		expect(frame).toHaveAttribute('x', '16');
+		expect(frame).toHaveAttribute('width', '1168');
+
+		const size = screen.getByLabelText('frame-size');
+
+		fireEvent.change(size, {target: {value: '10'}});
+		fireEvent.keyUp(size, {key: 'ArrowRight'});
+
+		expect(
+			container.querySelector('.editor-stage .editor-frame rect')
+		).toHaveAttribute('stroke-width', '80');
+	});
+
+	it('recolors the frame while the picker moves and commits it once', () => {
+		const {container} = render(<EditorHarness />);
+
+		fireEvent.click(screen.getByLabelText('mat'));
+
+		const frame = () =>
+			container.querySelector('.editor-stage .editor-frame rect');
+
+		expect(frame()).toHaveAttribute('stroke', '#ffffff');
+
+		const picker = screen.getByLabelText('frame-color');
+
+		fireEvent.change(picker, {target: {value: '#ff0000'}});
+
+		expect(frame()).toHaveAttribute('stroke', '#ff0000');
+
+		fireEvent.blur(picker);
+
+		fireEvent.click(screen.getByRole('button', {name: 'undo'}));
+
+		expect(frame()).toHaveAttribute('stroke', '#ffffff');
+		expect(screen.getByLabelText('mat')).toBeChecked();
 	});
 
 	it('lays the adjustment sliders out in the configured order', () => {

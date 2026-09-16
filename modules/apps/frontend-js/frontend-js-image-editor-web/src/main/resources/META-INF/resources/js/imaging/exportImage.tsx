@@ -8,6 +8,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 
 import {EditState} from '../state/types';
 import {FilterDefs, isIdentityFilter} from './FilterDefs';
+import {FrameShape} from './frameShapes';
 import {imageTransform} from './geometry';
 import {LoadedImage} from './loadImage';
 
@@ -24,6 +25,7 @@ export function editedImageMarkup(state: EditState, dataUrl: string): string {
 			<defs>
 				<FilterDefs
 					adjustments={state.adjustments}
+					filter={state.filter}
 					id="export-filter"
 				/>
 			</defs>
@@ -31,7 +33,7 @@ export function editedImageMarkup(state: EditState, dataUrl: string): string {
 			<g transform={imageTransform(state)}>
 				<image
 					filter={
-						isIdentityFilter(state.adjustments)
+						isIdentityFilter(state.adjustments, state.filter)
 							? undefined
 							: 'url(#export-filter)'
 					}
@@ -40,6 +42,8 @@ export function editedImageMarkup(state: EditState, dataUrl: string): string {
 					width={state.sourceWidth}
 				/>
 			</g>
+
+			<FrameShape crop={crop} frame={state.frame} />
 		</svg>
 	);
 }

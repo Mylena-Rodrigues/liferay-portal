@@ -79,6 +79,20 @@ describe('editorReducer', () => {
 		expect(state.present.adjustments.shadows).toBe(-20);
 	});
 
+	it('applies a filter preset as one undoable step', () => {
+		let state = editorReducer(history(), {
+			filter: 'sepia',
+			type: 'set-filter',
+		});
+
+		expect(state.present.filter).toBe('sepia');
+		expect(undoLabel(state)).toBe('filter');
+
+		state = editorReducer(state, {type: 'undo'});
+
+		expect(state.present.filter).toBe('none');
+	});
+
 	it('swaps dimensions on rotation', () => {
 		const next = editorReducer(history(), {type: 'rotate-90'});
 
@@ -331,6 +345,77 @@ describe('set-angle', () => {
 		expect(editorReducer(initial, {angle: 0, type: 'set-angle'})).toBe(
 			initial
 		);
+	});
+});
+
+describe('set-frame', () => {
+	it('merges what changed and leaves the rest of the frame alone', () => {
+		const framed = editorReducer(history(), {
+			frame: {kind: 'mat'},
+			type: 'set-frame',
+		});
+
+		const sized = editorReducer(framed, {
+			frame: {size: 10},
+			type: 'set-frame',
+		});
+
+		expect(sized.present.frame).toEqual({
+			color: '#ffffff',
+			kind: 'mat',
+			offset: 0,
+			size: 10,
+		});
+	});
+
+	it('ignores a change that changes nothing', () => {
+		const framed = editorReducer(history(), {
+			frame: {kind: 'mat'},
+			type: 'set-frame',
+		});
+
+		expect(
+			editorReducer(framed, {frame: {kind: 'mat'}, type: 'set-frame'})
+		).toBe(framed);
+	});
+
+	it('is undoable, and a slider drag is a single step', () => {
+		let state = editorReducer(history(), {
+			frame: {kind: 'mat'},
+			type: 'set-frame',
+		});
+
+		for (const size of [5, 6, 7, 8]) {
+			state = editorReducer(state, {
+				frame: {size},
+				transient: true,
+				type: 'set-frame',
+			});
+		}
+
+		state = editorReducer(state, {frame: {size: 8}, type: 'set-frame'});
+
+		expect(state.present.frame.size).toBe(8);
+		expect(undoLabel(state)).toBe('frame');
+
+		const undone = editorReducer(state, {type: 'undo'});
+
+		expect(undone.present.frame.size).toBe(4);
+		expect(undone.present.frame.kind).toBe('mat');
+	});
+
+	it('survives a crop, because it is intent rather than geometry', () => {
+		const framed = editorReducer(history(), {
+			frame: {kind: 'polaroid'},
+			type: 'set-frame',
+		});
+
+		const cropped = editorReducer(framed, {
+			crop: {height: 400, width: 400, x: 100, y: 100},
+			type: 'set-crop',
+		});
+
+		expect(cropped.present.frame.kind).toBe('polaroid');
 	});
 });
 

@@ -7,6 +7,8 @@ import '@testing-library/jest-dom';
 
 import {
 	ADJUSTMENT_KEYS,
+	FILTER_PRESETS,
+	FRAME_KINDS,
 	RATIO_PRESETS,
 	resolveConfig,
 } from '../src/main/resources/META-INF/resources/js/editorConfig';
@@ -25,6 +27,34 @@ describe('resolveConfig', () => {
 			resolveConfig({adjustments: {sliders: ['shadows', 'contrast']}})
 				.adjustments
 		).toEqual(['contrast', 'shadows']);
+	});
+
+	it('exposes every filter preset by default', () => {
+		expect(resolveConfig().filters).toEqual(FILTER_PRESETS);
+	});
+
+	it('switches the filter gallery off with false', () => {
+		expect(resolveConfig({filters: false}).filters).toEqual([]);
+	});
+
+	it('narrows the filter presets to a subset in gallery order', () => {
+		expect(
+			resolveConfig({filters: {presets: ['sepia', 'none']}}).filters
+		).toEqual(['none', 'sepia']);
+	});
+
+	it('exposes every frame kind by default', () => {
+		expect(resolveConfig().frames).toEqual(FRAME_KINDS);
+	});
+
+	it('switches the frame gallery off with false', () => {
+		expect(resolveConfig({frames: false}).frames).toEqual([]);
+	});
+
+	it('narrows the frame kinds to a subset in gallery order', () => {
+		expect(
+			resolveConfig({frames: {presets: ['line', 'none']}}).frames
+		).toEqual(['none', 'line']);
 	});
 
 	it('exposes everything by default', () => {

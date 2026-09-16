@@ -7,8 +7,11 @@ import {
 	AdjustmentKey,
 	CropRect,
 	DEFAULT_ADJUSTMENTS,
+	DEFAULT_FRAME,
 	EditState,
 	EditorHistory,
+	FilterPreset,
+	Frame,
 	MIN_CROP_SIZE,
 	RATIO_VALUES,
 	RatioPreset,
@@ -29,6 +32,8 @@ export type EditorAction =
 	  }
 	| {angle: number; transient?: boolean; type: 'set-angle'}
 	| {crop: CropRect; transient?: boolean; type: 'set-crop'}
+	| {filter: FilterPreset; type: 'set-filter'}
+	| {frame: Partial<Frame>; transient?: boolean; type: 'set-frame'}
 	| {ratio: RatioPreset; type: 'set-ratio'}
 	| {type: 'undo'};
 
@@ -132,6 +137,36 @@ export function editorReducer(
 						: 'custom',
 				},
 				Liferay.Language.get('crop'),
+				action.transient
+			);
+		}
+
+		case 'set-filter': {
+			return applyEdit(
+				history,
+				{...present, filter: action.filter},
+				Liferay.Language.get('filter')
+			);
+		}
+
+		case 'set-frame': {
+			const frame = {...present.frame, ...action.frame};
+
+			if (
+				!action.transient &&
+				!history.pendingBase &&
+				frame.color === present.frame.color &&
+				frame.kind === present.frame.kind &&
+				frame.offset === present.frame.offset &&
+				frame.size === present.frame.size
+			) {
+				return history;
+			}
+
+			return applyEdit(
+				history,
+				{...present, frame},
+				Liferay.Language.get('frame'),
 				action.transient
 			);
 		}
@@ -274,7 +309,9 @@ export function initialEditState(
 		adjustments: {...DEFAULT_ADJUSTMENTS},
 		angle: 0,
 		crop: {height: sourceHeight, width: sourceWidth, x: 0, y: 0},
+		filter: 'none',
 		flipHorizontal: false,
+		frame: {...DEFAULT_FRAME},
 		ratio,
 		rotation: 0,
 		sourceHeight,
