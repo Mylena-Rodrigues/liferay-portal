@@ -128,6 +128,7 @@ customInitContainers:
                                 /temp/liferay/reports \
                                 /temp/liferay/routes \
                                 /temp/liferay/work \
+                                /temp/mnt/liferay/patching \
                                 /temp/osgi/client-extensions \
                                 /temp/osgi/configs \
                                 /temp/osgi/modules \
@@ -158,6 +159,11 @@ customInitContainers:
                                 mkdir --parents /temp/osgi/marketplace
 
                                 cp --force --recursive --verbose /opt/liferay/osgi/marketplace/. /temp/osgi/marketplace
+                            fi
+
+                            if [ -z "$(ls --almost-all /temp/osgi/modules)" ]
+                            then
+                                cp --force --recursive --verbose /opt/liferay/osgi/modules/. /temp/osgi/modules
                             fi
 
                             mkdir --parents /temp/tomcat/conf
@@ -533,6 +539,9 @@ volumeClaimTemplates:
                 requests:
                     storage: 1Gi
 volumeMounts:
+    -   mountPath: /mnt/liferay/patching
+        name: liferay-persistent-volume
+        subPath: mnt/liferay/patching
     -   mountPath: /opt/liferay/data
         name: liferay-persistent-volume
         subPath: liferay/data
