@@ -39,7 +39,7 @@ export default function addRepeatableGroup({
 
 		// Insert the child. If it's a repeatable group, build it with recursive call
 
-		if (child.type === 'repeatable-group') {
+		if (child.type === 'group') {
 			const group: RepeatableGroup = {
 				...child,
 				children: addRepeatableGroup({
@@ -68,12 +68,13 @@ export default function addRepeatableGroup({
 				])
 			),
 			erc: getRandomId(),
+			isRepeatable: true,
 			label: buildLocalizedValue('repeatable-group'),
 			name: getRandomName({capitalize: true}),
 			parent: groupParent,
 			relationshipERC: getRandomId(),
 			relationshipName: getRandomName(),
-			type: 'repeatable-group',
+			type: 'group',
 			uuid: groupUuid,
 		};
 

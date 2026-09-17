@@ -17,6 +17,7 @@ import {Space} from '../../common/types/Space';
 import {Workflow} from '../../common/types/Workflow';
 import getLocalizedValue from '../../common/utils/getLocalizedValue';
 import {
+	Group,
 	ReferencedStructure,
 	RelatedContent,
 	RepeatableGroup,
@@ -40,7 +41,7 @@ import deleteChildren from '../utils/state/deleteChildren';
 import moveChildren from '../utils/state/moveChildren';
 import refreshReferencedStructures from '../utils/state/refreshReferencedStructures';
 import sortChildren from '../utils/state/sortChildren';
-import ungroup from '../utils/state/ungroupRepeatableGroup';
+import ungroup from '../utils/state/ungroup';
 import updateChild from '../utils/state/updateChild';
 import updateHistory from '../utils/state/updateHistory';
 import {
@@ -291,12 +292,12 @@ function reducer(state: State, action: Action): State {
 
 			const {structure} = state;
 
-			let parent: Structure | RepeatableGroup = structure;
+			let parent: Structure | Group = structure;
 
 			if (field.parent !== structure.uuid) {
 				const item = findChild({root: structure, uuid: field.parent});
 
-				if (item?.type === 'repeatable-group') {
+				if (item?.type === 'group') {
 					parent = item;
 				}
 			}
@@ -530,7 +531,7 @@ function reducer(state: State, action: Action): State {
 				const parent = (findChild({
 					root: nextStructure,
 					uuid: child.parent,
-				}) || nextStructure) as Structure | RepeatableGroup;
+				}) || nextStructure) as Structure | Group;
 
 				const copy = cloneChild({
 					child,
@@ -941,7 +942,7 @@ function reducer(state: State, action: Action): State {
 
 			const {structure} = state;
 
-			const group = findChild({root: structure, uuid}) as RepeatableGroup;
+			const group = findChild({root: structure, uuid}) as Group;
 
 			if (!group) {
 				return state;
@@ -1256,8 +1257,7 @@ function getTargetChildren({
 
 	if (
 		target &&
-		(target.type === 'repeatable-group' ||
-			target.type === 'referenced-structure')
+		(target.type === 'group' || target.type === 'referenced-structure')
 	) {
 		return target.children;
 	}

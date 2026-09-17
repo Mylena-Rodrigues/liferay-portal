@@ -15,7 +15,7 @@ import handleDeleteChildren from '../utils/handleDeleteChildren';
 import handlePaste from '../utils/handlePaste';
 import handlePublishStructure from '../utils/handlePublishStructure';
 import handleSaveStructure from '../utils/handleSaveStructure';
-import handleUngroupRepeatableGroup from '../utils/handleUngroupRepeatableGroup';
+import handleUngroup from '../utils/handleUngroup';
 import isCopyable from '../utils/isCopyable';
 import isLocked from '../utils/isLocked';
 import isReferenced from '../utils/isReferenced';
@@ -178,7 +178,7 @@ export default function ShortcutManager() {
 
 				if (
 					isReferenced({root: structure, uuid}) ||
-					item.type !== 'repeatable-group'
+					item.type !== 'group'
 				) {
 					return false;
 				}
@@ -186,7 +186,7 @@ export default function ShortcutManager() {
 				return true;
 			},
 			handler: () =>
-				handleUngroupRepeatableGroup({
+				handleUngroup({
 					dispatch,
 					publishedChildren,
 					uuid: selection[0],

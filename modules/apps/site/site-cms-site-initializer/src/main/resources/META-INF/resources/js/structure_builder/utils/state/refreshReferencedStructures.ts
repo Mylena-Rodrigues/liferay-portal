@@ -7,11 +7,7 @@ import {
 	ObjectDefinition,
 	ObjectDefinitions,
 } from '../../../common/types/ObjectDefinition';
-import {
-	ReferencedStructure,
-	RepeatableGroup,
-	Structure,
-} from '../../types/Structure';
+import {Group, ReferencedStructure, Structure} from '../../types/Structure';
 import {
 	buildField,
 	buildReferencedStructure,
@@ -30,7 +26,7 @@ export default function refreshReferencedStructures({
 	ancestors?: Array<ObjectDefinition['externalReferenceCode']>;
 	objectDefinition?: ObjectDefinition;
 	objectDefinitions: ObjectDefinitions;
-	root: ReferencedStructure | RepeatableGroup | Structure;
+	root: ReferencedStructure | Group | Structure;
 }) {
 	const children = new Map();
 
@@ -75,7 +71,7 @@ export default function refreshReferencedStructures({
 
 		// It's repeatable group
 
-		else if (child.type === 'repeatable-group') {
+		else if (child.type === 'group') {
 
 			// Ignore it if it's not in the new objectDefinition
 
@@ -99,7 +95,7 @@ export default function refreshReferencedStructures({
 				continue;
 			}
 
-			const repeatableGroup: RepeatableGroup = {
+			const repeatableGroup: Group = {
 				...child,
 				children: refreshReferencedStructures({
 					ancestors: [...ancestors, root.erc],

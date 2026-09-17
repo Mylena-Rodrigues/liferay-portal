@@ -7,6 +7,7 @@ import {State} from '../../contexts/StateContext';
 import {Structure} from '../../types/Structure';
 import {Uuid} from '../../types/Uuid';
 import findChild from '../findChild';
+import isRepeatableGroup from '../isRepeatableGroup';
 
 export default function updateHistory({
 	deletedChildrenUuids,
@@ -38,7 +39,7 @@ export default function updateHistory({
 			};
 
 			if (
-				child.type === 'repeatable-group' ||
+				child.type === 'group' ||
 				child.type === 'related-content' ||
 				child.type === 'referenced-structure'
 			) {
@@ -69,7 +70,7 @@ export default function updateHistory({
 				};
 			}
 
-			if (child.type === 'repeatable-group') {
+			if (isRepeatableGroup(child)) {
 				nextHistory = {
 					...nextHistory,
 					deletedGroupERCs: [
