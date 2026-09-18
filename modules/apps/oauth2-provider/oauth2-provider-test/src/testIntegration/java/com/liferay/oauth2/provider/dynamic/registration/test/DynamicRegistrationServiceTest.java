@@ -785,6 +785,17 @@ public class DynamicRegistrationServiceTest extends BaseClientTestCase {
 	}
 
 	@Test
+	public void testRegisterWithInvalidRedirectURI() throws Exception {
+		_testRegisterWithInvalidRedirectURI(StringPool.BLANK);
+		_testRegisterWithInvalidRedirectURI(
+			"com.example.app:/" + RandomTestUtil.randomString());
+		_testRegisterWithInvalidRedirectURI(
+			"ht tp://" + RandomTestUtil.randomString() + ".com/callback");
+		_testRegisterWithInvalidRedirectURI(
+			"myapp://" + RandomTestUtil.randomString() + ".com/callback");
+	}
+
+	@Test
 	public void testUpdateClientRegistration() throws Exception {
 		OAuth2Application oAuth2Application =
 			_oAuth2ApplicationLocalService.fetchOAuth2Application(
@@ -1090,6 +1101,35 @@ public class DynamicRegistrationServiceTest extends BaseClientTestCase {
 				Assert.assertEquals(expectedError, parseError(response));
 			}
 		}
+	}
+
+	private void _testRegisterWithInvalidRedirectURI(String redirectURI)
+		throws Exception {
+
+		WebTarget registerWebTarget = getRegisterWebTarget();
+
+		Invocation.Builder invocationBuilder = authorize(
+			registerWebTarget.request(),
+			_getToken(_getDynamicRegistratorOAuth2Application()));
+
+		Response response = invocationBuilder.method(
+			"post",
+			Entity.json(
+				JSONUtil.put(
+					"client_name", RandomTestUtil.randomString()
+				).put(
+					"grant_types",
+					new String[] {OAuthConstants.AUTHORIZATION_CODE_GRANT}
+				).put(
+					"redirect_uris", new String[] {redirectURI}
+				).put(
+					"response_types",
+					new String[] {OAuthConstants.CODE_RESPONSE_TYPE}
+				).toString()));
+
+		Assert.assertEquals(400, response.getStatus());
+
+		Assert.assertEquals("invalid_redirect_uri", parseError(response));
 	}
 
 	private List<AuditMessage> _auditMessages;
