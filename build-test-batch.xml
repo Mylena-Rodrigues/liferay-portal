@@ -9874,8 +9874,16 @@ ${output.content}</echo>
 		<run-playwright-js-test app.server.type="wildfly" database.type="mariadb" />
 	</target>
 
+	<target name="playwright-js-tomcat101-db2111">
+		<run-playwright-js-test database.type="db2" />
+	</target>
+
 	<target name="playwright-js-tomcat101-hypersonic20">
 		<run-playwright-js-test database.type="hypersonic" />
+	</target>
+
+	<target name="playwright-js-tomcat101-mariadb106">
+		<run-playwright-js-test database.type="mariadb" />
 	</target>
 
 	<target name="playwright-js-tomcat101-mysql84">
@@ -9890,6 +9898,10 @@ ${output.content}</echo>
 		<antcall target="playwright-js-tomcat101-mysql84" />
 	</target>
 
+	<target name="playwright-js-tomcat101-oracle193">
+		<run-playwright-js-test database.type="oracle" />
+	</target>
+
 	<target name="playwright-js-tomcat101-postgresql163">
 		<run-playwright-js-test database.type="postgresql" />
 	</target>
@@ -9900,6 +9912,10 @@ ${output.content}</echo>
 
 	<target name="playwright-js-tomcat101-postgresql163_stable">
 		<antcall target="playwright-js-tomcat101-postgresql163" />
+	</target>
+
+	<target name="playwright-js-tomcat101-sqlserver2022">
+		<run-playwright-js-test database.type="sqlserver" />
 	</target>
 
 	<target name="plugins-compile">
@@ -10998,7 +11014,7 @@ junit.jvm.override.version=21</echo>
 								<execute-gradle-task gradle.task.module.dir="${workspace.dir}" gradle.task.name="build">
 									<action>
 										<exec dir="${workspace.dir}" executable="${project.dir}/${workspace.dir}/gradlew" failonerror="true">
-											<arg value="build" />
+											<arg value="assemble" />
 											<env key="GRADLE_USER_HOME" value="${project.dir}/workspaces/.gradle" />
 											<env key="YARN_YARN_OFFLINE_MIRROR_PRUNING" value="false" />
 										</exec>

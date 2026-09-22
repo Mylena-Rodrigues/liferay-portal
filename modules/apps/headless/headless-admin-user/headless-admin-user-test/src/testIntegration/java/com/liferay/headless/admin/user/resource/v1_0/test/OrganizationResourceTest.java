@@ -1132,79 +1132,6 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 			String.valueOf(serviceBuilderOrganization.getOrganizationId()));
 	}
 
-	private void _testGetOrganizationsPageWithFilter() throws Exception {
-		Page<Organization> page = organizationResource.getOrganizationsPage(
-			null, null, null, Pagination.of(1, 10), null);
-
-		long totalCount = page.getTotalCount();
-
-		// Sleep for 1 second to ensure that organization 1 and existing
-		// organizations are created 1 second apart
-
-		Thread.sleep(1000);
-
-		Organization organization1 = testGetOrganizationsPage_addOrganization(
-			randomOrganization());
-
-		// Sleep for 1 second to ensure that organization 1 and organization 2
-		// are created 1 second apart
-
-		Thread.sleep(1000);
-
-		Organization organization2 = testGetOrganizationsPage_addOrganization(
-			randomOrganization());
-
-		DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
-			"yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-		page = organizationResource.getOrganizationsPage(
-			null, null,
-			"dateCreated lt " +
-				dateFormat.format(organization1.getDateCreated()),
-			Pagination.of(1, 2), null);
-
-		Assert.assertEquals(totalCount, page.getTotalCount());
-
-		page = organizationResource.getOrganizationsPage(
-			null, null,
-			"dateCreated ge " +
-				dateFormat.format(organization1.getDateModified()),
-			Pagination.of(1, 2), null);
-
-		Assert.assertEquals(2, page.getTotalCount());
-
-		// Sleep for 1 second to ensure that organization 1 and organization 2
-		// are modified 1 second apart
-
-		Thread.sleep(1000);
-
-		organization1.setName(
-			StringUtil.toLowerCase(RandomTestUtil.randomString()));
-
-		organization1 = organizationResource.patchOrganization(
-			organization1.getId(), organization1);
-
-		page = organizationResource.getOrganizationsPage(
-			null, null,
-			"dateModified ge " +
-				dateFormat.format(organization1.getDateModified()),
-			Pagination.of(1, 2), null);
-
-		Assert.assertEquals(1, page.getTotalCount());
-
-		assertContains(organization1, (List<Organization>)page.getItems());
-
-		page = organizationResource.getOrganizationsPage(
-			null, null,
-			"dateModified lt " +
-				dateFormat.format(organization1.getDateModified()),
-			Pagination.of(1, 2), null);
-
-		Assert.assertEquals(totalCount + 1, page.getTotalCount());
-
-		assertContains(organization2, (List<Organization>)page.getItems());
-	}
-
 	private void _testGetOrganizationWithNestedFields() throws Exception {
 		Organization postOrganization = randomOrganization();
 
@@ -1286,6 +1213,9 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 			OrganizationResource.builder(
 			).authentication(
 				"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD
+			).endpoint(
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).parameters(
@@ -1358,6 +1288,79 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 				getOrganization.getUserAccountBriefs(),
 				userAccountBrief ->
 					userAccountBrief.getId() == user2.getUserId()));
+	}
+
+	private void _testGetOrganizationsPageWithFilter() throws Exception {
+		Page<Organization> page = organizationResource.getOrganizationsPage(
+			null, null, null, Pagination.of(1, 10), null);
+
+		long totalCount = page.getTotalCount();
+
+		// Sleep for 1 second to ensure that organization 1 and existing
+		// organizations are created 1 second apart
+
+		Thread.sleep(1000);
+
+		Organization organization1 = testGetOrganizationsPage_addOrganization(
+			randomOrganization());
+
+		// Sleep for 1 second to ensure that organization 1 and organization 2
+		// are created 1 second apart
+
+		Thread.sleep(1000);
+
+		Organization organization2 = testGetOrganizationsPage_addOrganization(
+			randomOrganization());
+
+		DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
+			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		page = organizationResource.getOrganizationsPage(
+			null, null,
+			"dateCreated lt " +
+				dateFormat.format(organization1.getDateCreated()),
+			Pagination.of(1, 2), null);
+
+		Assert.assertEquals(totalCount, page.getTotalCount());
+
+		page = organizationResource.getOrganizationsPage(
+			null, null,
+			"dateCreated ge " +
+				dateFormat.format(organization1.getDateModified()),
+			Pagination.of(1, 2), null);
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		// Sleep for 1 second to ensure that organization 1 and organization 2
+		// are modified 1 second apart
+
+		Thread.sleep(1000);
+
+		organization1.setName(
+			StringUtil.toLowerCase(RandomTestUtil.randomString()));
+
+		organization1 = organizationResource.patchOrganization(
+			organization1.getId(), organization1);
+
+		page = organizationResource.getOrganizationsPage(
+			null, null,
+			"dateModified ge " +
+				dateFormat.format(organization1.getDateModified()),
+			Pagination.of(1, 2), null);
+
+		Assert.assertEquals(1, page.getTotalCount());
+
+		assertContains(organization1, (List<Organization>)page.getItems());
+
+		page = organizationResource.getOrganizationsPage(
+			null, null,
+			"dateModified lt " +
+				dateFormat.format(organization1.getDateModified()),
+			Pagination.of(1, 2), null);
+
+		Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+		assertContains(organization2, (List<Organization>)page.getItems());
 	}
 
 	private void _testPatchOrganizationByExternalReferenceCodeWithImageExternalReferenceCode()

@@ -97,6 +97,7 @@ import com.liferay.object.service.ObjectDefinitionSettingLocalService;
 import com.liferay.object.service.ObjectEntryFolderLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectEntryService;
+import com.liferay.object.service.ObjectEntryServiceWrapper;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectFieldLocalServiceUtil;
 import com.liferay.object.service.ObjectRelationshipLocalService;
@@ -125,6 +126,7 @@ import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.comment.WorkflowableComment;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.ModelListenerException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -145,6 +147,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -163,6 +166,7 @@ import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
@@ -1270,29 +1274,6 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
-	public void testCustomizeNestedFieldsContextWithoutRootModelHierarchy()
-		throws Exception {
-
-		String nestedField1 = RandomTestUtil.randomString();
-		String nestedField2 = RandomTestUtil.randomString();
-		String nestedField3 = RandomTestUtil.randomString();
-
-		NestedFieldsContextResource nestedFieldsContextResource =
-			(NestedFieldsContextResource)_getObjectEntryResource(
-				_objectDefinition1, TestPropsValues.getUser());
-
-		NestedFieldsContext nestedFieldsContext =
-			nestedFieldsContextResource.customizeNestedFieldsContext(
-				new NestedFieldsContext(
-					1,
-					Arrays.asList(nestedField1, nestedField2, nestedField3)));
-
-		Assert.assertEquals(
-			SetUtil.fromArray(nestedField1, nestedField2, nestedField3),
-			new HashSet<>(nestedFieldsContext.getNestedFields()));
-	}
-
-	@Test
 	public void testCustomizeNestedFieldsContextWithRootModelHierarchy()
 		throws Exception {
 
@@ -1368,6 +1349,29 @@ public class ObjectEntryResourceTest {
 		Assert.assertEquals(
 			SetUtil.fromArray(
 				nestedField1, nestedField2, nestedField3, "rootModelHierarchy"),
+			new HashSet<>(nestedFieldsContext.getNestedFields()));
+	}
+
+	@Test
+	public void testCustomizeNestedFieldsContextWithoutRootModelHierarchy()
+		throws Exception {
+
+		String nestedField1 = RandomTestUtil.randomString();
+		String nestedField2 = RandomTestUtil.randomString();
+		String nestedField3 = RandomTestUtil.randomString();
+
+		NestedFieldsContextResource nestedFieldsContextResource =
+			(NestedFieldsContextResource)_getObjectEntryResource(
+				_objectDefinition1, TestPropsValues.getUser());
+
+		NestedFieldsContext nestedFieldsContext =
+			nestedFieldsContextResource.customizeNestedFieldsContext(
+				new NestedFieldsContext(
+					1,
+					Arrays.asList(nestedField1, nestedField2, nestedField3)));
+
+		Assert.assertEquals(
+			SetUtil.fromArray(nestedField1, nestedField2, nestedField3),
 			new HashSet<>(nestedFieldsContext.getNestedFields()));
 	}
 
@@ -5849,80 +5853,6 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
-	@TestInfo("LPD-71250")
-	public void testGetNestedFieldDetailsInRelationshipsWithoutPermission()
-		throws Exception {
-
-		// Many to many relationship, custom and system object definitions
-
-		_objectEntry1 = ObjectEntryTestUtil.addObjectEntry(
-			_objectDefinition1, _OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1);
-		_userAccountJSONObject = UserAccountTestUtil.addUserAccountJSONObject(
-			_systemObjectDefinitionManager, Collections.emptyMap());
-
-		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
-			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
-			_userSystemObjectDefinition, _objectDefinition1,
-			_userAccountJSONObject.getLong("id"), _objectEntry1.getPrimaryKey(),
-			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
-
-		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
-
-		// Many to many relationship, custom object definitions
-
-		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
-			_objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
-
-		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
-			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
-			_objectDefinition1, _objectDefinition2,
-			_objectEntry1.getPrimaryKey(), _objectEntry2.getPrimaryKey(),
-			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
-
-		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
-
-		// Many to one relationship, custom and system object definitions
-
-		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
-			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
-			_userSystemObjectDefinition, _objectDefinition1,
-			_userAccountJSONObject.getLong("id"), _objectEntry1.getPrimaryKey(),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
-
-		// Many to one relationship, custom object definitions
-
-		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
-			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
-			_objectDefinition2, _objectDefinition1,
-			_objectEntry2.getPrimaryKey(), _objectEntry1.getPrimaryKey(),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
-
-		// One to many relationship, custom and system object definitions
-
-		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
-			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
-			_objectDefinition1, _userSystemObjectDefinition,
-			_objectEntry1.getPrimaryKey(), _userAccountJSONObject.getLong("id"),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
-
-		// One to many relationship, custom object definitions
-
-		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
-			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
-			_objectDefinition1, _objectDefinition2,
-			_objectEntry1.getPrimaryKey(), _objectEntry2.getPrimaryKey(),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
-	}
-
-	@Test
 	public void testGetNestedFieldDetailsInRelationshipsWithSystemObjectDefinition()
 		throws Exception {
 
@@ -6134,6 +6064,80 @@ public class ObjectEntryResourceTest {
 				(JSONArray)_userAccountJSONObject.get("permissions")
 			},
 			Type.MANY_TO_MANY);
+	}
+
+	@Test
+	@TestInfo("LPD-71250")
+	public void testGetNestedFieldDetailsInRelationshipsWithoutPermission()
+		throws Exception {
+
+		// Many to many relationship, custom and system object definitions
+
+		_objectEntry1 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition1, _OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1);
+		_userAccountJSONObject = UserAccountTestUtil.addUserAccountJSONObject(
+			_systemObjectDefinitionManager, Collections.emptyMap());
+
+		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
+			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
+			_userSystemObjectDefinition, _objectDefinition1,
+			_userAccountJSONObject.getLong("id"), _objectEntry1.getPrimaryKey(),
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
+
+		// Many to many relationship, custom object definitions
+
+		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
+
+		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
+			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
+			_objectDefinition1, _objectDefinition2,
+			_objectEntry1.getPrimaryKey(), _objectEntry2.getPrimaryKey(),
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
+
+		// Many to one relationship, custom and system object definitions
+
+		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
+			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
+			_userSystemObjectDefinition, _objectDefinition1,
+			_userAccountJSONObject.getLong("id"), _objectEntry1.getPrimaryKey(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
+
+		// Many to one relationship, custom object definitions
+
+		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
+			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
+			_objectDefinition2, _objectDefinition1,
+			_objectEntry2.getPrimaryKey(), _objectEntry1.getPrimaryKey(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
+
+		// One to many relationship, custom and system object definitions
+
+		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
+			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
+			_objectDefinition1, _userSystemObjectDefinition,
+			_objectEntry1.getPrimaryKey(), _userAccountJSONObject.getLong("id"),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
+
+		// One to many relationship, custom object definitions
+
+		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
+			ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE,
+			_objectDefinition1, _objectDefinition2,
+			_objectEntry1.getPrimaryKey(), _objectEntry2.getPrimaryKey(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		_testGetNestedFieldDetailsInRelationshipsWithoutPermission();
 	}
 
 	@Test
@@ -8343,6 +8347,89 @@ public class ObjectEntryResourceTest {
 				Http.Method.GET
 			).toString(),
 			JSONCompareMode.LENIENT);
+	}
+
+	@Test
+	public void testGetObjectEntryWithExcludedNestedFields() throws Exception {
+		_objectEntry1 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition1, _OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1);
+		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition2, _OBJECT_FIELD_NAME_TEXT,
+			RandomTestUtil.randomString());
+		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		AtomicInteger atomicInteger = new AtomicInteger();
+
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		ServiceRegistration<?> serviceRegistration =
+			bundleContext.registerService(
+				ServiceWrapper.class,
+				new ObjectEntryServiceWrapper(_objectEntryService) {
+
+					@Override
+					public List<ObjectEntry> getManyToManyObjectEntries(
+							long groupId, long objectRelationshipId,
+							long primaryKey, boolean related, boolean reverse,
+							String search, int start, int end)
+						throws PortalException {
+
+						atomicInteger.incrementAndGet();
+
+						return super.getManyToManyObjectEntries(
+							groupId, objectRelationshipId, primaryKey, related,
+							reverse, search, start, end);
+					}
+
+				},
+				HashMapDictionaryBuilder.<String, Object>put(
+					"service.ranking", Integer.MAX_VALUE
+				).put(
+					"service.wrapper.class", ObjectEntryService.class.getName()
+				).build());
+
+		try {
+			String endpoint = _getEndpoint(
+				_objectEntry1.getObjectEntryId(), _objectRelationship1,
+				_objectDefinition1);
+
+			// Nested field excluded by fields
+
+			JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+				null, endpoint + "&fields=" + _OBJECT_FIELD_NAME_1,
+				Http.Method.GET);
+
+			Assert.assertFalse(jsonObject.has(_objectRelationship1.getName()));
+
+			Assert.assertEquals(0, atomicInteger.get());
+
+			// Nested field excluded by restrictFields
+
+			jsonObject = HTTPTestUtil.invokeToJSONObject(
+				null,
+				endpoint + "&restrictFields=" + _objectRelationship1.getName(),
+				Http.Method.GET);
+
+			Assert.assertFalse(jsonObject.has(_objectRelationship1.getName()));
+
+			Assert.assertEquals(0, atomicInteger.get());
+
+			// Nested field included
+
+			jsonObject = HTTPTestUtil.invokeToJSONObject(
+				null, endpoint, Http.Method.GET);
+
+			JSONArray jsonArray = jsonObject.getJSONArray(
+				_objectRelationship1.getName());
+
+			Assert.assertEquals(1, jsonArray.length());
+
+			Assert.assertEquals(1, atomicInteger.get());
+		}
+		finally {
+			serviceRegistration.unregister();
+		}
 	}
 
 	@Test
@@ -15816,6 +15903,22 @@ public class ObjectEntryResourceTest {
 			"siteId");
 	}
 
+	private DLFileEntry _addDLFileEntry(byte[] content, long folderId)
+		throws Exception {
+
+		FileEntry fileEntry = _dlAppLocalService.addFileEntry(
+			null, TestPropsValues.getUserId(), _group.getGroupId(), folderId,
+			TempFileEntryUtil.getTempFileName(
+				RandomTestUtil.randomString() + ".txt"),
+			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			new ByteArrayInputStream(content), 0, null, null, null,
+			ServiceContextTestUtil.getServiceContext());
+
+		return _dlFileEntryLocalService.getFileEntry(
+			fileEntry.getFileEntryId());
+	}
+
 	private ObjectDefinition _addDepotScopedObjectDefinition()
 		throws Exception {
 
@@ -15837,22 +15940,6 @@ public class ObjectEntryResourceTest {
 			StringPool.TRUE);
 
 		return objectDefinition;
-	}
-
-	private DLFileEntry _addDLFileEntry(byte[] content, long folderId)
-		throws Exception {
-
-		FileEntry fileEntry = _dlAppLocalService.addFileEntry(
-			null, TestPropsValues.getUserId(), _group.getGroupId(), folderId,
-			TempFileEntryUtil.getTempFileName(
-				RandomTestUtil.randomString() + ".txt"),
-			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			new ByteArrayInputStream(content), 0, null, null, null,
-			ServiceContextTestUtil.getServiceContext());
-
-		return _dlFileEntryLocalService.getFileEntry(
-			fileEntry.getFileEntryId());
 	}
 
 	private FileEntry _addFileEntry(
@@ -16164,21 +16251,6 @@ public class ObjectEntryResourceTest {
 			nestedObjectEntriesJSONArray.toString(), JSONCompareMode.LENIENT);
 	}
 
-	private void _assertFilteredObjectEntries(
-			int expectedObjectEntryCount, String filterString)
-		throws Exception {
-
-		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
-			null,
-			_objectDefinition1.getRESTContextPath() + "?filter=" +
-				URLCodec.encodeURL(filterString),
-			Http.Method.GET);
-
-		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
-
-		Assert.assertEquals(expectedObjectEntryCount, itemsJSONArray.length());
-	}
-
 	private void _assertFilterString(
 			String expectedObjectFieldName,
 			Serializable expectedObjectFieldValue, String filterString,
@@ -16202,6 +16274,21 @@ public class ObjectEntryResourceTest {
 		Assert.assertEquals(
 			String.valueOf(expectedObjectFieldValue),
 			String.valueOf(itemJSONObject.get(expectedObjectFieldName)));
+	}
+
+	private void _assertFilteredObjectEntries(
+			int expectedObjectEntryCount, String filterString)
+		throws Exception {
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			null,
+			_objectDefinition1.getRESTContextPath() + "?filter=" +
+				URLCodec.encodeURL(filterString),
+			Http.Method.GET);
+
+		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
+
+		Assert.assertEquals(expectedObjectEntryCount, itemsJSONArray.length());
 	}
 
 	private void _assertGetObjectEntryWithFriendlyURL(
@@ -16594,6 +16681,14 @@ public class ObjectEntryResourceTest {
 		return URLCodec.encodeURL(string);
 	}
 
+	private Map<String, String> _getActionValue(String href, String method) {
+		return HashMapBuilder.put(
+			"href", href
+		).put(
+			"method", method
+		).build();
+	}
+
 	private JSONObject _getActionsJSONObject(ObjectDefinition objectDefinition)
 		throws Exception {
 
@@ -16635,14 +16730,6 @@ public class ObjectEntryResourceTest {
 		return atomicReference.get();
 	}
 
-	private Map<String, String> _getActionValue(String href, String method) {
-		return HashMapBuilder.put(
-			"href", href
-		).put(
-			"method", method
-		).build();
-	}
-
 	private Node _getChildNode(int index, Node node) {
 		List<Node> childNodes = node.getChildNodes();
 
@@ -16673,26 +16760,6 @@ public class ObjectEntryResourceTest {
 			"systemProperties");
 
 		return systemPropertiesJSONObject.getJSONArray("comments");
-	}
-
-	private String _getDeletePatchPutEndpoint(
-		long groupId, ObjectDefinition objectDefinition,
-		JSONObject objectEntryJSONObject) {
-
-		String endpoint = _getEndpoint(objectDefinition, groupId);
-
-		ObjectScopeProvider objectScopeProvider =
-			_objectScopeProviderRegistry.getObjectScopeProvider(
-				objectDefinition.getScope());
-
-		if (objectScopeProvider.isGroupAware() && (groupId != 0)) {
-			return StringBundler.concat(
-				endpoint, "/by-external-reference-code/",
-				objectEntryJSONObject.getString("externalReferenceCode"));
-		}
-
-		return StringBundler.concat(
-			endpoint, StringPool.SLASH, objectEntryJSONObject.getLong("id"));
 	}
 
 	private DLFolder _getDLFolder(
@@ -16734,6 +16801,26 @@ public class ObjectEntryResourceTest {
 		}
 
 		return _getDLFolder(groupId, objectDefinition);
+	}
+
+	private String _getDeletePatchPutEndpoint(
+		long groupId, ObjectDefinition objectDefinition,
+		JSONObject objectEntryJSONObject) {
+
+		String endpoint = _getEndpoint(objectDefinition, groupId);
+
+		ObjectScopeProvider objectScopeProvider =
+			_objectScopeProviderRegistry.getObjectScopeProvider(
+				objectDefinition.getScope());
+
+		if (objectScopeProvider.isGroupAware() && (groupId != 0)) {
+			return StringBundler.concat(
+				endpoint, "/by-external-reference-code/",
+				objectEntryJSONObject.getString("externalReferenceCode"));
+		}
+
+		return StringBundler.concat(
+			endpoint, StringPool.SLASH, objectEntryJSONObject.getLong("id"));
 	}
 
 	private String _getEndpoint(

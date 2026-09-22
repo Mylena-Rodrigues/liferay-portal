@@ -832,9 +832,9 @@ public class CPDefinitionLocalServiceTest {
 
 		try {
 			_cpDefinitionLocalService.getOrAddEmptyCPDefinition(
-				externalReferenceCode, SimpleCPTypeConstants.NAME,
-				TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-				_commerceCatalog.getGroupId());
+				externalReferenceCode, TestPropsValues.getCompanyId(),
+				TestPropsValues.getUserId(), _commerceCatalog.getGroupId(),
+				SimpleCPTypeConstants.NAME);
 
 			Assert.fail();
 		}
@@ -848,9 +848,9 @@ public class CPDefinitionLocalServiceTest {
 				LazyReferencingThreadLocal.setEnabledWithSafeCloseable(true)) {
 
 			cpDefinition = _cpDefinitionLocalService.getOrAddEmptyCPDefinition(
-				externalReferenceCode, SimpleCPTypeConstants.NAME,
-				TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-				_commerceCatalog.getGroupId());
+				externalReferenceCode, TestPropsValues.getCompanyId(),
+				TestPropsValues.getUserId(), _commerceCatalog.getGroupId(),
+				SimpleCPTypeConstants.NAME);
 
 			Assert.assertEquals(
 				WorkflowConstants.STATUS_EMPTY, cpDefinition.getStatus());
@@ -873,9 +873,9 @@ public class CPDefinitionLocalServiceTest {
 
 			CPDefinition resolvedCPDefinition =
 				_cpDefinitionLocalService.getOrAddEmptyCPDefinition(
-					externalReferenceCode, SimpleCPTypeConstants.NAME,
-					TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-					_commerceCatalog.getGroupId());
+					externalReferenceCode, TestPropsValues.getCompanyId(),
+					TestPropsValues.getUserId(), _commerceCatalog.getGroupId(),
+					SimpleCPTypeConstants.NAME);
 
 			Assert.assertEquals(
 				cpDefinition.getCPDefinitionId(),
@@ -2297,6 +2297,9 @@ public class CPDefinitionLocalServiceTest {
 	private AccountGroupRelLocalService _accountGroupRelLocalService;
 
 	@Inject
+	private CProductLocalService _cProductLocalService;
+
+	@Inject
 	private ClassNameLocalService _classNameLocalService;
 
 	private CommerceCatalog _commerceCatalog;
@@ -2357,9 +2360,6 @@ public class CPDefinitionLocalServiceTest {
 
 	@DeleteAfterTestRun
 	private final List<CPOption> _cpOptions = new ArrayList<>();
-
-	@Inject
-	private CProductLocalService _cProductLocalService;
 
 	@Inject
 	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;

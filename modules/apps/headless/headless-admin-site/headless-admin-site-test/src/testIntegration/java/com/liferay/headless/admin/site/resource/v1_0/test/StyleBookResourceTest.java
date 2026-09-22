@@ -133,6 +133,15 @@ public class StyleBookResourceTest extends BaseStyleBookResourceTestCase {
 		_testPostSiteStyleBookWithBlankThemeId();
 		_testPostSiteStyleBookWithDuplicateExternalReferenceCode();
 		_testPostSiteStyleBookWithDuplicateKey();
+		_testPostSiteStyleBookWithNullDefaultStyleBook();
+	}
+
+	@Override
+	@Test
+	public void testPutSiteStyleBook() throws Exception {
+		super.testPutSiteStyleBook();
+
+		_testPutSiteStyleBookWithNullDefaultStyleBook();
 	}
 
 	@Override
@@ -502,43 +511,6 @@ public class StyleBookResourceTest extends BaseStyleBookResourceTestCase {
 			siteStyleBookEntry);
 	}
 
-	private void _testGetSitePageSpecificationStyleBooksPageWithoutPermission()
-		throws Exception {
-
-		User user = UserTestUtil.addGroupUser(
-			testGroup, RoleConstants.SITE_MEMBER);
-
-		String password = RandomTestUtil.randomString();
-
-		_userLocalService.updatePassword(
-			user.getUserId(), password, password, false, true);
-
-		StyleBookResource styleBookResource = StyleBookResource.builder(
-		).authentication(
-			user.getEmailAddress(), password
-		).endpoint(
-			testCompany.getVirtualHostname(),
-			PortalUtil.getPortalServerPort(false), "http"
-		).locale(
-			LocaleUtil.getDefault()
-		).build();
-
-		Layout layout = LayoutTestUtil.addTypeContentLayout(testGroup);
-
-		try {
-			styleBookResource.getSitePageSpecificationStyleBooksPage(
-				testGroup.getExternalReferenceCode(),
-				layout.getExternalReferenceCode(), null, Pagination.of(1, 10));
-
-			Assert.fail();
-		}
-		catch (Problem.ProblemException problemException) {
-			Problem problem = problemException.getProblem();
-
-			Assert.assertEquals("NOT_FOUND", problem.getStatus());
-		}
-	}
-
 	private void _testGetSitePageSpecificationStyleBooksPageWithSearch()
 		throws Exception {
 
@@ -600,6 +572,43 @@ public class StyleBookResourceTest extends BaseStyleBookResourceTestCase {
 			styleBookResource.getSitePageSpecificationStyleBooksPage(
 				testGroup.getExternalReferenceCode(),
 				RandomTestUtil.randomString(), null, Pagination.of(1, 10));
+
+			Assert.fail();
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("NOT_FOUND", problem.getStatus());
+		}
+	}
+
+	private void _testGetSitePageSpecificationStyleBooksPageWithoutPermission()
+		throws Exception {
+
+		User user = UserTestUtil.addGroupUser(
+			testGroup, RoleConstants.SITE_MEMBER);
+
+		String password = RandomTestUtil.randomString();
+
+		_userLocalService.updatePassword(
+			user.getUserId(), password, password, false, true);
+
+		StyleBookResource styleBookResource = StyleBookResource.builder(
+		).authentication(
+			user.getEmailAddress(), password
+		).endpoint(
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(testGroup);
+
+		try {
+			styleBookResource.getSitePageSpecificationStyleBooksPage(
+				testGroup.getExternalReferenceCode(),
+				layout.getExternalReferenceCode(), null, Pagination.of(1, 10));
 
 			Assert.fail();
 		}
@@ -756,6 +765,40 @@ public class StyleBookResourceTest extends BaseStyleBookResourceTestCase {
 				"A style book with the same key already exists",
 				problemException.getMessage());
 		}
+	}
+
+	private void _testPostSiteStyleBookWithNullDefaultStyleBook()
+		throws Exception {
+
+		StyleBook randomStyleBook = randomStyleBook();
+
+		randomStyleBook.setDefaultStyleBook(() -> null);
+
+		StyleBook postStyleBook = testPostSiteStyleBook_addStyleBook(
+			randomStyleBook);
+
+		Assert.assertFalse(postStyleBook.getDefaultStyleBook());
+	}
+
+	private void _testPutSiteStyleBookWithNullDefaultStyleBook()
+		throws Exception {
+
+		StyleBook randomStyleBook1 = randomStyleBook();
+
+		randomStyleBook1.setDefaultStyleBook(Boolean.FALSE);
+
+		StyleBook postStyleBook = testPostSiteStyleBook_addStyleBook(
+			randomStyleBook1);
+
+		StyleBook randomStyleBook2 = randomStyleBook();
+
+		randomStyleBook2.setDefaultStyleBook(() -> null);
+
+		StyleBook putStyleBook = styleBookResource.putSiteStyleBook(
+			testGroup.getExternalReferenceCode(),
+			postStyleBook.getExternalReferenceCode(), randomStyleBook2);
+
+		Assert.assertFalse(putStyleBook.getDefaultStyleBook());
 	}
 
 	@Inject

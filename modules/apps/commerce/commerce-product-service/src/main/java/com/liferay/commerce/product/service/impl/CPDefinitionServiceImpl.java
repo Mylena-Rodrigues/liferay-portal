@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -344,6 +345,30 @@ public class CPDefinitionServiceImpl extends CPDefinitionServiceBaseImpl {
 	}
 
 	@Override
+	public CPDefinition getOrAddEmptyCPDefinition(
+			String externalReferenceCode, long groupId, String productTypeName)
+		throws PortalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		CPDefinition cpDefinition =
+			cpDefinitionService.
+				fetchCPDefinitionByCProductExternalReferenceCode(
+					externalReferenceCode, permissionChecker.getCompanyId(),
+					false);
+
+		if (cpDefinition != null) {
+			return cpDefinition;
+		}
+
+		_checkCommerceCatalog(groupId, ActionKeys.UPDATE);
+
+		return cpDefinitionLocalService.getOrAddEmptyCPDefinition(
+			externalReferenceCode, permissionChecker.getCompanyId(),
+			permissionChecker.getUserId(), groupId, productTypeName);
+	}
+
+	@Override
 	public Map<Locale, String> getUrlTitleMap(long cpDefinitionId)
 		throws PortalException {
 
@@ -610,6 +635,9 @@ public class CPDefinitionServiceImpl extends CPDefinitionServiceBaseImpl {
 	}
 
 	@Reference
+	private CProductPersistence _cProductPersistence;
+
+	@Reference
 	private CommerceCatalogLocalService _commerceCatalogLocalService;
 
 	@Reference(
@@ -620,8 +648,5 @@ public class CPDefinitionServiceImpl extends CPDefinitionServiceBaseImpl {
 
 	@Reference
 	private CommerceCatalogService _commerceCatalogService;
-
-	@Reference
-	private CProductPersistence _cProductPersistence;
 
 }
