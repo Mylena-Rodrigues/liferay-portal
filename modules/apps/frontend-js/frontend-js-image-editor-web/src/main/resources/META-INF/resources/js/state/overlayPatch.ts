@@ -32,7 +32,46 @@ const EDITABLE_KEYS: {[K in Kind]: ReadonlySet<string>} = {
 		'y',
 	]),
 	circle: new Set(BOX_KEYS),
+	emoji: new Set([
+		'character',
+		'name',
+		'opacity',
+		'rotation',
+		'size',
+		'x',
+		'y',
+	]),
+	image: new Set([
+		'description',
+		'height',
+		'opacity',
+		'rotation',
+		'src',
+		'width',
+		'x',
+		'y',
+	]),
+	redact: new Set([
+		'height',
+		'level',
+		'opacity',
+		'rotation',
+		'style',
+		'width',
+		'x',
+		'y',
+	]),
 	shape: new Set(BOX_KEYS),
+	stroke: new Set([
+		'color',
+		'opacity',
+		'points',
+		'rotation',
+		'smooth',
+		'width',
+		'x',
+		'y',
+	]),
 	text: new Set([
 		'color',
 		'fontFamily',
@@ -45,17 +84,47 @@ const EDITABLE_KEYS: {[K in Kind]: ReadonlySet<string>} = {
 	]),
 };
 
-const STRING_KEYS = new Set(['borderColor', 'color', 'fontFamily', 'text']);
+const STRING_KEYS = new Set([
+	'borderColor',
+	'character',
+	'color',
+	'description',
+	'fontFamily',
+	'name',
+	'src',
+	'text',
+]);
 
 const ENUM_KEYS: Record<string, ReadonlySet<string>> = {
 	head: new Set(['filled', 'open']),
+	level: new Set(['coarse', 'fine', 'medium', 'tiny']),
+	style: new Set(['blur', 'pixel']),
 };
 
 const CLEARABLE_KEYS = new Set(['borderColor', 'borderWidth', 'sketchSeed']);
 
-const AT_LEAST_ONE = new Set(['fontSize', 'height', 'thickness', 'width']);
+const AT_LEAST_ONE = new Set([
+	'fontSize',
+	'height',
+	'size',
+	'thickness',
+	'width',
+]);
 
 function validate(key: string, value: unknown): unknown {
+	if (key === 'smooth') {
+		return typeof value === 'boolean' ? value : undefined;
+	}
+
+	if (key === 'points') {
+		return Array.isArray(value) &&
+			value.length >= 2 &&
+			value.length % 2 === 0 &&
+			value.every((entry) => Number.isFinite(entry))
+			? value
+			: undefined;
+	}
+
 	if (ENUM_KEYS[key]) {
 		return typeof value === 'string' && ENUM_KEYS[key].has(value)
 			? value

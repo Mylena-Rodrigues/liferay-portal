@@ -6,6 +6,7 @@
 import {EditState, Overlay, rotatedSize} from '../state/types';
 import {coverScale} from './geometry';
 import {overlayCenter, textWidth} from './overlayShapes';
+import {pointsBounds} from './strokeGeometry';
 
 export type Matrix = readonly [number, number, number, number, number, number];
 
@@ -22,6 +23,26 @@ export function multiply(first: Matrix, second: Matrix): Matrix {
 		b1 * c2 + d1 * d2,
 		a1 * tx2 + c1 * ty2 + tx1,
 		b1 * tx2 + d1 * ty2 + ty1,
+	];
+}
+
+export function scaleAround(factor: number, x: number, y: number): Matrix {
+	return stretchAround(factor, factor, x, y);
+}
+
+export function stretchAround(
+	horizontal: number,
+	vertical: number,
+	x: number,
+	y: number
+): Matrix {
+	return [
+		horizontal,
+		0,
+		0,
+		vertical,
+		x * (1 - horizontal),
+		y * (1 - vertical),
 	];
 }
 
@@ -201,6 +222,7 @@ export function transformOverlay(overlay: Overlay, matrix: Matrix): Overlay {
 		}
 
 		case 'circle':
+		case 'redact':
 		case 'shape': {
 			const [cx, cy] = applyToPoint(
 				matrix,
@@ -221,6 +243,66 @@ export function transformOverlay(overlay: Overlay, matrix: Matrix): Overlay {
 				width: round(folded.width),
 				x: round(cx - folded.width / 2),
 				y: round(cy - folded.height / 2),
+			};
+		}
+
+		case 'emoji': {
+			const [cx, cy] = applyToPoint(matrix, overlay.x, overlay.y);
+
+			return {
+				...overlay,
+				rotation: foldRotation(overlay.rotation ?? 0, degrees),
+				size: round(overlay.size * scale),
+				x: round(cx),
+				y: round(cy),
+			};
+		}
+
+		case 'image': {
+			const [cx, cy] = applyToPoint(
+				matrix,
+				overlay.x + overlay.width / 2,
+				overlay.y + overlay.height / 2
+			);
+
+			const width = round(overlay.width * scale);
+			const height = round(overlay.height * scale);
+
+			return {
+				...overlay,
+				height,
+				rotation: foldRotation(overlay.rotation ?? 0, degrees),
+				width,
+				x: round(cx - width / 2),
+				y: round(cy - height / 2),
+			};
+		}
+
+		case 'stroke': {
+			const absolute: Array<[number, number]> = [];
+
+			for (let index = 0; index < overlay.points.length; index += 2) {
+				absolute.push(
+					applyToPoint(
+						matrix,
+						overlay.x + overlay.points[index],
+						overlay.y + overlay.points[index + 1]
+					)
+				);
+			}
+
+			const flat = absolute.flat();
+
+			const box = pointsBounds(flat);
+
+			return {
+				...overlay,
+				points: flat.map((value, index) =>
+					round(value - (index % 2 === 0 ? box.x : box.y))
+				),
+				width: round(overlay.width * scale),
+				x: round(box.x),
+				y: round(box.y),
 			};
 		}
 

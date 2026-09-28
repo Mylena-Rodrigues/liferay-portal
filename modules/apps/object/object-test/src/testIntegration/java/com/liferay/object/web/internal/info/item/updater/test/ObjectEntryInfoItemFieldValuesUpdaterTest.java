@@ -290,7 +290,7 @@ public class ObjectEntryInfoItemFieldValuesUpdaterTest
 				null, TestPropsValues.getUserId(),
 				parentObjectDefinition.getObjectDefinitionId(),
 				childObjectDefinition.getObjectDefinitionId(), 0,
-				ObjectRelationshipConstants.DELETION_TYPE_CASCADE, true,
+				ObjectRelationshipConstants.DELETION_TYPE_CASCADE, null, true,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				StringUtil.randomId(), false,
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY, null);
@@ -386,7 +386,7 @@ public class ObjectEntryInfoItemFieldValuesUpdaterTest
 			_objectRelationshipLocalService.updateObjectRelationship(
 				objectRelationship.getExternalReferenceCode(),
 				objectRelationship.getObjectRelationshipId(), 0,
-				ObjectRelationshipConstants.DELETION_TYPE_CASCADE, false,
+				ObjectRelationshipConstants.DELETION_TYPE_CASCADE, null, false,
 				objectRelationship.getLabelMap(), null);
 
 		_objectRelationshipLocalService.deleteObjectRelationship(
@@ -464,7 +464,7 @@ public class ObjectEntryInfoItemFieldValuesUpdaterTest
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
 				null, TestPropsValues.getUserId(),
-				objectFolder.getObjectFolderId(), null, true, false, true,
+				objectFolder.getObjectFolderId(), null, null, true, false, true,
 				false, true, false, false, false, false, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,

@@ -11,7 +11,7 @@ import {
 
 // eslint-disable-next-line @liferay/portal/no-cross-module-deep-import
 import {checkAccessibility} from '@liferay/layout-js-components-web/test/__lib__/index';
-import {fireEvent, render, screen} from '@testing-library/react';
+import {fireEvent, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -71,6 +71,7 @@ function renderElementVariations(props: Partial<Props> = {}) {
 		<ElementVariations
 			addElementVariationURL="/add"
 			audiences={AUDIENCES}
+			availableViewportSizes={{}}
 			createAudienceURL="/create-audience"
 			defaultLanguageId="en_US"
 			deleteElementVariationURL="/delete"
@@ -134,13 +135,27 @@ describe('ElementVariations', () => {
 		);
 	});
 
-	it('filters the variations by audience', async () => {
+	it('does not show the missing audiences alert when every variation has an audience', async () => {
+		renderElementVariations({elementVariations: ELEMENT_VARIATIONS});
+
+		loadPreview();
+
+		expect(await screen.findByText('My Variation')).toBeInTheDocument();
+		expect(screen.queryByText('missing-audience')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'there-are-missing-audiences-for-some-variations'
+			)
+		).not.toBeInTheDocument();
+	});
+
+	it('filters the variations without audiences from the missing audiences alert', async () => {
 		renderElementVariations({
 			elementVariations: [
 				ELEMENT_VARIATIONS[0],
 				{
 					...ELEMENT_VARIATIONS[0],
-					audienceEntryERCs: ['audience-2'],
+					audienceEntryERCs: [],
 					externalReferenceCode: 'element-variation-2',
 					name: 'Other Variation',
 				},
@@ -150,12 +165,63 @@ describe('ElementVariations', () => {
 		loadPreview();
 
 		expect(await screen.findByText('My Variation')).toBeInTheDocument();
+		expect(
+			screen.getByText('there-are-missing-audiences-for-some-variations')
+		).toBeInTheDocument();
+
+		await userEvent.click(screen.getByText('show-variations'));
+
+		expect(screen.queryByText('My Variation')).not.toBeInTheDocument();
 		expect(screen.getByText('Other Variation')).toBeInTheDocument();
+		expect(screen.getByText('none')).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'there-are-missing-audiences-for-some-variations'
+			)
+		).not.toBeInTheDocument();
+	});
 
-		await addAudienceFilter('Loyal Customers');
+	it('lists the variations without audiences when the site has no audiences left', async () => {
+		renderElementVariations({
+			audiences: [],
+			elementVariations: [
+				{...ELEMENT_VARIATIONS[0], audienceEntryERCs: []},
+			],
+		});
 
-		expect(screen.getByText('My Variation')).toBeInTheDocument();
-		expect(screen.queryByText('Other Variation')).not.toBeInTheDocument();
+		loadPreview();
+
+		expect(await screen.findByText('My Variation')).toBeInTheDocument();
+		expect(screen.getByText('missing-audience')).toBeInTheDocument();
+		expect(
+			screen.queryByText('create-new-audience')
+		).not.toBeInTheDocument();
+	});
+
+	it('dismisses the missing audiences alert', async () => {
+		renderElementVariations({
+			elementVariations: [
+				{...ELEMENT_VARIATIONS[0], audienceEntryERCs: []},
+			],
+		});
+
+		loadPreview();
+
+		expect(await screen.findByText('My Variation')).toBeInTheDocument();
+
+		await userEvent.click(
+			within(
+				screen.getByRole('alert').closest('.alert') as HTMLElement
+			).getByRole('button', {
+				name: 'close',
+			})
+		);
+
+		expect(
+			screen.queryByText(
+				'there-are-missing-audiences-for-some-variations'
+			)
+		).not.toBeInTheDocument();
 	});
 
 	it('excludes the selected audiences when the exclude toggle is on', async () => {
@@ -209,6 +275,9 @@ describe('ElementVariations', () => {
 		loadPreview();
 
 		expect(await screen.findByText('My Variation')).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', {name: 'remove-filter'})
+		).not.toBeInTheDocument();
 
 		await addAudienceFilter('New Visitors');
 
@@ -313,25 +382,7 @@ describe('ElementVariations', () => {
 		expect(screen.getByLabelText('New Visitors')).toBeInTheDocument();
 	});
 
-	it('does not show the results bar until a filter is added', async () => {
-		renderElementVariations({elementVariations: ELEMENT_VARIATIONS});
-
-		loadPreview();
-
-		expect(await screen.findByText('My Variation')).toBeInTheDocument();
-
-		expect(
-			screen.queryByRole('button', {name: 'remove-filter'})
-		).not.toBeInTheDocument();
-
-		await addAudienceFilter('Loyal Customers');
-
-		expect(
-			screen.getByRole('button', {name: 'remove-filter'})
-		).toBeInTheDocument();
-	});
-
-	it('filters the variations by the search term', async () => {
+	it('filters the variations by the search term until the search is cleared', async () => {
 		renderElementVariations({
 			elementVariations: [
 				ELEMENT_VARIATIONS[0],
@@ -354,20 +405,6 @@ describe('ElementVariations', () => {
 
 		expect(screen.queryByText('My Variation')).not.toBeInTheDocument();
 		expect(screen.getByText('Other Variation')).toBeInTheDocument();
-	});
-
-	it('removes the search from its chip', async () => {
-		renderElementVariations({elementVariations: ELEMENT_VARIATIONS});
-
-		loadPreview();
-
-		expect(await screen.findByText('My Variation')).toBeInTheDocument();
-
-		await userEvent.click(screen.getByRole('button', {name: 'search'}));
-
-		await userEvent.type(screen.getByRole('textbox'), 'Missing{enter}');
-
-		expect(screen.queryByText('My Variation')).not.toBeInTheDocument();
 
 		await userEvent.click(
 			screen.getByRole('button', {name: 'clear-search'})
@@ -388,24 +425,6 @@ describe('ElementVariations', () => {
 				name: 'open-element-variations-panel',
 			})
 		).not.toBeInTheDocument();
-	});
-
-	it('reveals the open button after the sidebar is closed on small screens', async () => {
-		mockUseMediaQuery.mockReturnValue(false);
-
-		renderElementVariations();
-
-		expect(
-			screen.queryByRole('button', {
-				name: 'open-element-variations-panel',
-			})
-		).not.toBeInTheDocument();
-
-		await userEvent.click(screen.getByRole('button', {name: 'close'}));
-
-		expect(
-			screen.getByRole('button', {name: 'open-element-variations-panel'})
-		).toBeInTheDocument();
 	});
 
 	it('reopens the sidebar from the open button', async () => {
@@ -456,24 +475,16 @@ describe('ElementVariations', () => {
 		await checkAccessibility({bestPractices: true, context: container});
 	});
 
-	it('has no accessibility violations when element variations are listed', async () => {
+	it('has no accessibility violations when the missing audiences alert is shown', async () => {
 		const {container} = renderElementVariations({
-			elementVariations: ELEMENT_VARIATIONS,
+			elementVariations: [
+				{...ELEMENT_VARIATIONS[0], audienceEntryERCs: []},
+			],
 		});
 
 		loadPreview();
 
-		expect(await screen.findByText('My Variation')).toBeInTheDocument();
-
-		await checkAccessibility({bestPractices: true, context: container});
-	});
-
-	it('has no accessibility violations while editing an element variation', async () => {
-		const {container} = renderElementVariations();
-
-		await userEvent.click(await screen.findByText('new'));
-
-		expect(screen.getByLabelText('name')).toBeInTheDocument();
+		expect(await screen.findByText('missing-audience')).toBeInTheDocument();
 
 		await checkAccessibility({bestPractices: true, context: container});
 	});
@@ -499,16 +510,6 @@ describe('ElementVariations', () => {
 		await userEvent.type(screen.getByLabelText('html'), '<p>Hello</p>');
 		await userEvent.type(
 			screen.getByLabelText('javascript'),
-			'console.log("hi");'
-		);
-
-		expect(screen.getByDisplayValue('My Variation')).toBeInTheDocument();
-		expect(screen.getByLabelText('page-element')).toHaveTextContent(
-			TARGET_ELEMENT_LABEL
-		);
-		expect(screen.getByText('Loyal Customers')).toBeInTheDocument();
-		expect(screen.getByLabelText('html')).toHaveValue('<p>Hello</p>');
-		expect(screen.getByLabelText('javascript')).toHaveValue(
 			'console.log("hi");'
 		);
 

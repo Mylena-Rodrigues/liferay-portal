@@ -19,15 +19,19 @@ import {
 	ShapeTool,
 	isShapeTool,
 } from '../editorConfig';
-import {overlayLabel, textWidth} from '../imaging/overlayShapes';
+import {loadOverlayImage} from '../imaging/loadImage';
+import {
+	DEFAULT_ANNOTATION_COLOR,
+	overlayLabel,
+	textWidth,
+} from '../imaging/overlayShapes';
 import {focusOverlayNode} from '../stage/focusOverlayNode';
 import {EditorAction} from '../state/editorReducer';
 import {nextId} from '../state/ids';
 import {CropRect, Overlay} from '../state/types';
+import {EmojiPicker} from './EmojiPicker';
 import {MenuGrid} from './MenuGrid';
 import {TEXT_DIALOG_CLOSE_MS, TextDialog} from './TextDialog';
-
-const SHAPE_COLOR = '#0b5fff';
 
 const SHAPE_LABELS: Record<ShapeTool, string> = {
 	arrow: Liferay.Language.get('arrow'),
@@ -109,19 +113,31 @@ interface Props {
 	dispatch: (action: EditorAction) => void;
 	onAnnounce: (message: string) => void;
 
+	onStartDrawing: (via: 'keyboard' | 'pointer') => void;
+
 	tools: AnnotateTool[];
 }
 
-export function AnnotatePanel({area, dispatch, onAnnounce, tools}: Props) {
+export function AnnotatePanel({
+	area,
+	dispatch,
+	onAnnounce,
+	onStartDrawing,
+	tools,
+}: Props) {
 	const eid = useEditorId();
 
 	const editorRoot = useEditorRoot();
 
-	const [textDialogOpen, setTextDialogOpen] = useState(false);
+	const [emojiMenuOpen, setEmojiMenuOpen] = useState(false);
+
+	const [rovingIndex, setRovingIndex] = useState(0);
 
 	const [shapeMenuOpen, setShapeMenuOpen] = useState(false);
 
-	const [rovingIndex, setRovingIndex] = useState(0);
+	const [textDialogOpen, setTextDialogOpen] = useState(false);
+
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const panelRef = useRef<HTMLDivElement>(null);
 
@@ -130,6 +146,10 @@ export function AnnotatePanel({area, dispatch, onAnnounce, tools}: Props) {
 	const controls: string[] = [
 		...(tools.includes('text') ? ['text'] : []),
 		...(shapeTools.length ? ['shapes'] : []),
+		...(tools.includes('draw') ? ['draw'] : []),
+		...(tools.includes('redaction') ? ['redaction'] : []),
+		...(tools.includes('image') ? ['image'] : []),
+		...(tools.includes('emoji') ? ['emoji'] : []),
 	];
 
 	const indexOf = (control: string) => controls.indexOf(control);
@@ -217,9 +237,64 @@ export function AnnotatePanel({area, dispatch, onAnnounce, tools}: Props) {
 		focusOverlayNode(editorRoot, overlay.id, delay);
 	};
 
+	const addRedaction = () =>
+		add({
+			height: Math.round(area.height * 0.15),
+			id: nextId('redact'),
+			kind: 'redact',
+			level: 'fine',
+			width: Math.round(area.width * 0.25),
+			x: Math.round(centerX - area.width * 0.125),
+			y: Math.round(centerY - area.height * 0.075),
+		});
+
+	const addImage = async (file: File) => {
+		let picture;
+
+		try {
+			picture = await loadOverlayImage(file);
+		}
+		catch {
+			onAnnounce(
+				Liferay.Language.get('that-file-could-not-be-read-as-an-image')
+			);
+
+			return;
+		}
+
+		const width = Math.min(
+			Math.round(area.width / 3),
+			Math.round(((area.height / 3) * picture.width) / picture.height)
+		);
+
+		const height = Math.round((width * picture.height) / picture.width);
+
+		add({
+			description: file.name.replace(/\.[^.]+$/, ''),
+			height,
+			id: nextId('image'),
+			kind: 'image',
+			src: picture.src,
+			width,
+			x: Math.round(centerX - width / 2),
+			y: Math.round(centerY - height / 2),
+		});
+	};
+
+	const addEmoji = (character: string, name: string) =>
+		add({
+			character,
+			id: nextId('emoji'),
+			kind: 'emoji',
+			name,
+			size: Math.round(Math.min(area.width, area.height) * 0.2),
+			x: centerX,
+			y: centerY,
+		});
+
 	const addRectangle = () =>
 		add({
-			color: SHAPE_COLOR,
+			color: DEFAULT_ANNOTATION_COLOR,
 			height: Math.round(area.height * 0.15),
 			id: nextId('shape'),
 			kind: 'shape',
@@ -232,7 +307,7 @@ export function AnnotatePanel({area, dispatch, onAnnounce, tools}: Props) {
 		const size = Math.round(Math.min(area.width, area.height) * 0.2);
 
 		add({
-			color: SHAPE_COLOR,
+			color: DEFAULT_ANNOTATION_COLOR,
 			height: size,
 			id: nextId('shape'),
 			kind: 'shape',
@@ -246,7 +321,7 @@ export function AnnotatePanel({area, dispatch, onAnnounce, tools}: Props) {
 		const size = Math.round(Math.min(area.width, area.height) * 0.2);
 
 		add({
-			color: SHAPE_COLOR,
+			color: DEFAULT_ANNOTATION_COLOR,
 			height: size,
 			id: nextId('circle'),
 			kind: 'circle',
@@ -260,7 +335,7 @@ export function AnnotatePanel({area, dispatch, onAnnounce, tools}: Props) {
 		const length = Math.round(Math.min(area.width, area.height) * 0.3);
 
 		add({
-			color: SHAPE_COLOR,
+			color: DEFAULT_ANNOTATION_COLOR,
 			dx: length,
 			dy: 0,
 			head: 'filled',
@@ -345,6 +420,122 @@ export function AnnotatePanel({area, dispatch, onAnnounce, tools}: Props) {
 								ADD_SHAPE[shape as ShapeTool]();
 							}}
 						/>
+					</ClayDropDown>
+				)}
+
+				{tools.includes('draw') && (
+					<ClayButton
+						{...rovingProps(indexOf('draw'))}
+						aria-label={Liferay.Language.get('draw')}
+						className="editor-tool-tile"
+						displayType="secondary"
+						onClick={(event: React.MouseEvent) =>
+
+							// A click a keyboard produced reports no
+							// detail: that is the browser's own record of
+							// how the button was pressed.
+
+							onStartDrawing(
+								event.detail === 0 ? 'keyboard' : 'pointer'
+							)
+						}
+					>
+						<ToolTile
+							icon="pencil"
+							label={Liferay.Language.get('draw')}
+						/>
+					</ClayButton>
+				)}
+
+				{tools.includes('redaction') && (
+					<ClayButton
+						{...rovingProps(indexOf('redaction'))}
+						aria-label={Liferay.Language.get('add-redaction')}
+						className="editor-tool-tile"
+						displayType="secondary"
+						onClick={addRedaction}
+					>
+						<ToolTile
+							icon="hidden"
+							label={Liferay.Language.get('redact')}
+						/>
+					</ClayButton>
+				)}
+
+				{tools.includes('image') && (
+					<>
+						<ClayButton
+							{...rovingProps(indexOf('image'))}
+							aria-label={Liferay.Language.get('add-image')}
+							className="editor-tool-tile"
+							displayType="secondary"
+							onClick={() => fileInputRef.current?.click()}
+						>
+							<ToolTile
+								icon="picture"
+								label={Liferay.Language.get('image')}
+							/>
+						</ClayButton>
+
+						{/*
+						 * Hidden rather than visually hidden: the button is
+						 * the control, and a reachable input next to it
+						 * would be the same action announced twice.
+						 */}
+						<input
+							accept="image/png,image/jpeg,image/webp,image/gif"
+							hidden
+							onChange={(event) => {
+								const file = event.target.files?.[0];
+
+								// Cleared before the await, so picking the
+								// same file again still fires a change.
+
+								event.target.value = '';
+
+								if (file) {
+									addImage(file);
+								}
+							}}
+							ref={fileInputRef}
+							type="file"
+						/>
+					</>
+				)}
+
+				{tools.includes('emoji') && (
+					<ClayDropDown
+						active={emojiMenuOpen}
+						menuElementAttrs={{
+							className:
+								'editor-emoji-popover editor-menu-popover',
+						}}
+						onActiveChange={setEmojiMenuOpen}
+						trigger={
+							<ClayButton
+								{...rovingProps(indexOf('emoji'))}
+								aria-label={Liferay.Language.get('add-emoji')}
+								className="editor-tool-tile"
+								data-menu-trigger
+								displayType="secondary"
+							>
+								<ToolTile
+									icon="emoji"
+									label={Liferay.Language.get('emoji')}
+									menu
+								/>
+							</ClayButton>
+						}
+					>
+						{emojiMenuOpen && (
+							<EmojiPicker
+								onChoose={(entry) => {
+									setEmojiMenuOpen(false);
+
+									addEmoji(entry.c, entry.n);
+								}}
+							/>
+						)}
 					</ClayDropDown>
 				)}
 			</div>

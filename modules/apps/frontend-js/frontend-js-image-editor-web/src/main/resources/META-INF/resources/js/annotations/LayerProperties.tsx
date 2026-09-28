@@ -16,16 +16,80 @@ import {
 } from '../chrome/fields';
 import {useEditorId} from '../chrome/instance';
 import {DEFAULT_BORDER_COLOR, overlayLabel} from '../imaging/overlayShapes';
+import {stretchAround, transformOverlay} from '../imaging/overlayTransform';
+import {pointsBounds} from '../imaging/strokeGeometry';
 import {EditorAction} from '../state/editorReducer';
 import {patchFor} from '../state/overlayPatch';
 import {
 	ArrowOverlay,
 	CircleOverlay,
 	Overlay,
+	RedactLevel,
+	RedactStyle,
 	ShapeOverlay,
+	StrokeOverlay,
+	TextOverlay,
 	isBoxOverlay,
 } from '../state/types';
 import {FONT_FAMILIES} from './textFonts';
+
+/**
+ * A stroke keeps no box of its own, so its size is the box of its points and
+ * a new one is reached by scaling every point around its corner.
+ */
+function overlaySize(overlay: Overlay): {height: number; width: number} | null {
+	if (isBoxOverlay(overlay)) {
+		return {height: overlay.height, width: overlay.width};
+	}
+
+	if (overlay.kind === 'stroke') {
+		return pointsBounds(overlay.points);
+	}
+
+	return null;
+}
+
+function strokeSizePatch(
+	overlay: StrokeOverlay,
+	proportional: boolean,
+	side: 'height' | 'width',
+	value: number
+): Partial<Overlay> {
+	const box = pointsBounds(overlay.points);
+
+	const current = side === 'width' ? box.width : box.height;
+
+	if (!current) {
+		return {};
+	}
+
+	const factor = Math.max(value, 1) / current;
+
+	const scaled = transformOverlay(
+		overlay,
+		stretchAround(
+			side === 'width' || proportional ? factor : 1,
+			side === 'height' || proportional ? factor : 1,
+			overlay.x + box.x,
+			overlay.y + box.y
+		)
+	);
+
+	if (scaled.kind !== 'stroke') {
+		return {};
+	}
+
+	// A free stretch leaves the line as thick as it was, the way stretching a
+	// shape leaves its border alone. A proportional one scales it, matching
+	// what the corner handles do.
+
+	return {
+		points: scaled.points,
+		width: proportional ? scaled.width : overlay.width,
+		x: scaled.x,
+		y: scaled.y,
+	};
+}
 
 interface Props {
 	dispatch: (action: EditorAction) => void;
@@ -61,10 +125,16 @@ export function LayerProperties({
 			type: 'update-overlay',
 		});
 
+	const size = overlaySize(overlay);
+
 	const sizePatch = (
 		side: 'height' | 'width',
 		value: number
 	): Partial<Overlay> => {
+		if (overlay.kind === 'stroke') {
+			return strokeSizePatch(overlay, proportional, side, value);
+		}
+
 		if (!proportional || !isBoxOverlay(overlay)) {
 			return {[side]: value};
 		}
@@ -106,19 +176,102 @@ export function LayerProperties({
 				/>
 			)}
 
-			<div className="editor-panel-grid">
-				<ColorField
-					fill
-					id={eid('layer-prop-color')}
-					label={
-						overlay.kind === 'text'
-							? Liferay.Language.get('text-color')
-							: Liferay.Language.get('color')
-					}
-					onCommit={(color) => commitPatch({color})}
-					onPreview={(color) => previewPatch({color})}
-					value={overlay.color}
+			{overlay.kind === 'image' && (
+				<TextField
+					id={eid('layer-prop-description')}
+					label={Liferay.Language.get('image-name')}
+					onCommit={(description) => commitPatch({description})}
+					value={overlay.description}
 				/>
+			)}
+
+			<div className="editor-panel-grid">
+				{overlay.kind === 'redact' && (
+					<ClayForm.Group small>
+						<label htmlFor={eid('layer-prop-redact-style')}>
+							{Liferay.Language.get('type')}
+						</label>
+
+						<ClaySelectWithOption
+							id={eid('layer-prop-redact-style')}
+							onChange={(event) =>
+								commitPatch(
+									patchFor(overlay)({
+										style: event.target
+											.value as RedactStyle,
+									})
+								)
+							}
+							options={[
+								{
+									label: Liferay.Language.get('pixelate'),
+									value: 'pixel',
+								},
+								{
+									label: Liferay.Language.get('blur'),
+									value: 'blur',
+								},
+							]}
+							sizing="sm"
+							value={overlay.style ?? 'pixel'}
+						/>
+					</ClayForm.Group>
+				)}
+
+				{overlay.kind === 'redact' && (
+					<ClayForm.Group small>
+						<label htmlFor={eid('layer-prop-level')}>
+							{Liferay.Language.get('strength')}
+						</label>
+
+						<ClaySelectWithOption
+							id={eid('layer-prop-level')}
+							onChange={(event) =>
+								commitPatch(
+									patchFor(overlay)({
+										level: event.target
+											.value as RedactLevel,
+									})
+								)
+							}
+							options={[
+								{
+									label: Liferay.Language.get('maximum'),
+									value: 'coarse',
+								},
+								{
+									label: Liferay.Language.get('strong'),
+									value: 'medium',
+								},
+								{
+									label: Liferay.Language.get('light'),
+									value: 'fine',
+								},
+								{
+									label: Liferay.Language.get('minimum'),
+									value: 'tiny',
+								},
+							]}
+							sizing="sm"
+							value={overlay.level}
+						/>
+					</ClayForm.Group>
+				)}
+
+				{hasColor(overlay) && (
+					<ColorField
+						fill
+						id={eid('layer-prop-color')}
+						label={
+							overlay.kind === 'text'
+								? Liferay.Language.get('text-color')
+								: Liferay.Language.get('color')
+						}
+						onCommit={(color) => commitPatch({color})}
+						onPreview={(color) => previewPatch({color})}
+						value={overlay.color}
+					/>
+				)}
 
 				<NumberField
 					id={eid('layer-prop-x')}
@@ -222,6 +375,61 @@ export function LayerProperties({
 					/>
 				)}
 
+				{overlay.kind === 'stroke' && (
+					<NumberField
+						id={eid('layer-prop-stroke-width')}
+						label={Liferay.Language.get('thickness')}
+						min={1}
+						onCommit={(width) => commitPatch({width})}
+						onPreview={(width) => previewPatch({width})}
+						value={overlay.width}
+					/>
+				)}
+
+				{overlay.kind === 'stroke' && (
+					<ClayForm.Group small>
+						<label htmlFor={eid('layer-prop-stroke-style')}>
+							{Liferay.Language.get('line-style')}
+						</label>
+
+						<ClaySelectWithOption
+							id={eid('layer-prop-stroke-style')}
+							onChange={(event) =>
+								commitPatch(
+									patchFor(overlay)({
+										smooth: event.target.value === 'smooth',
+									})
+								)
+							}
+							options={[
+								{
+									label: Liferay.Language.get('smooth-curve'),
+									value: 'smooth',
+								},
+								{
+									label: Liferay.Language.get(
+										'straight-lines'
+									),
+									value: 'straight',
+								},
+							]}
+							sizing="sm"
+							value={overlay.smooth ? 'smooth' : 'straight'}
+						/>
+					</ClayForm.Group>
+				)}
+
+				{overlay.kind === 'emoji' && (
+					<NumberField
+						id={eid('layer-prop-size')}
+						label={Liferay.Language.get('size')}
+						min={8}
+						onCommit={(size) => commitPatch({size})}
+						onPreview={(size) => previewPatch({size})}
+						value={overlay.size}
+					/>
+				)}
+
 				{overlay.kind === 'text' && (
 					<ClayForm.Group small>
 						<label htmlFor={eid('layer-prop-font-family')}>
@@ -253,7 +461,7 @@ export function LayerProperties({
 					/>
 				)}
 
-				{isBoxOverlay(overlay) && (
+				{size && (
 					<div className="editor-crop-size-row editor-layer-size-row">
 						<NumberField
 							id={eid('layer-prop-width')}
@@ -262,7 +470,7 @@ export function LayerProperties({
 							onPreview={(width) =>
 								previewPatch(sizePatch('width', width))
 							}
-							value={overlay.width}
+							value={size.width}
 						/>
 
 						<ClayButtonWithIcon
@@ -298,7 +506,7 @@ export function LayerProperties({
 							onPreview={(height) =>
 								previewPatch(sizePatch('height', height))
 							}
-							value={overlay.height}
+							value={size.height}
 						/>
 					</div>
 				)}
@@ -385,4 +593,19 @@ export function LayerProperties({
 
 function hasBorder(overlay: Overlay): overlay is CircleOverlay | ShapeOverlay {
 	return overlay.kind === 'circle' || overlay.kind === 'shape';
+}
+
+function hasColor(
+	overlay: Overlay
+): overlay is
+	| ArrowOverlay
+	| CircleOverlay
+	| ShapeOverlay
+	| StrokeOverlay
+	| TextOverlay {
+	return (
+		overlay.kind !== 'emoji' &&
+		overlay.kind !== 'image' &&
+		overlay.kind !== 'redact'
+	);
 }

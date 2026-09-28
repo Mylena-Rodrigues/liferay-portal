@@ -17,7 +17,7 @@ import com.liferay.object.relationship.util.ObjectRelationshipUtil;
 import com.liferay.object.rest.dto.v1_0.Assignee;
 import com.liferay.object.rest.dto.v1_0.FileEntry;
 import com.liferay.object.rest.dto.v1_0.ListEntry;
-import com.liferay.object.rest.internal.util.ObjectFieldDescriptionUtil;
+import com.liferay.object.rest.internal.util.ObjectDefinitionUtil;
 import com.liferay.object.rest.internal.vulcan.openapi.contributor.util.OpenAPIContributorUtil;
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResource;
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResourceProvider;
@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.openapi.OpenAPIContext;
 import com.liferay.portal.vulcan.resource.OpenAPIResource;
@@ -113,6 +114,9 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		Schema objectDefinitionSchema = schemas.get(
 			_objectDefinition.getShortName());
 
+		objectDefinitionSchema.setDescription(
+			ObjectDefinitionUtil.getDescription(_objectDefinition));
+
 		Map<String, Schema> objectDefinitionSchemaProperties =
 			objectDefinitionSchema.getProperties();
 
@@ -188,9 +192,6 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 					}
 
 					if (_addRelatedSchemas && (relatedSchemaName != null)) {
-						_setSchemaDescription(
-							objectRelationship, openAPI, relatedSchemaName);
-
 						objectDefinitionSchemaProperties.put(
 							objectRelationship.getName(),
 							_getSchema(objectRelationship, relatedSchemaName));
@@ -418,6 +419,12 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 				put(
 					new Operation() {
 						{
+							if (Validator.isNotNull(
+									objectAction.getDescription())) {
+
+								description(objectAction.getDescription());
+							}
+
 							operationId(
 								StringBundler.concat(
 									"put", _objectDefinition.getShortName(),
@@ -553,12 +560,6 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		}
 
 		return content;
-	}
-
-	private String _getDescription(ObjectRelationship objectRelationship) {
-		return StringBundler.concat(
-			"Information about the relationship ", objectRelationship.getName(),
-			" can be embedded with \"nestedFields\".");
 	}
 
 	private Map<String, Schema> _getIndividualActionSchemas(
@@ -727,6 +728,9 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 
 		objectSchema.set$ref(schemaName);
 
+		String description = ObjectDefinitionUtil.getDescription(
+			_objectDefinition, objectRelationship);
+
 		if (Objects.equals(
 				objectRelationship.getType(),
 				ObjectRelationshipConstants.TYPE_MANY_TO_MANY) ||
@@ -738,15 +742,13 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 
 			return new ArraySchema() {
 				{
-					setDescription(_getDescription(objectRelationship));
+					setDescription(description);
 					setItems(objectSchema);
 				}
 			};
 		}
 
-		objectSchema.setDescription(_getDescription(objectRelationship));
-
-		return objectSchema;
+		return OpenAPISchemaUtil.setDescription(description, objectSchema);
 	}
 
 	private Map<String, Schema> _getSchemas(OpenAPI openAPI) {
@@ -837,7 +839,7 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 
 			entry.setValue(
 				OpenAPISchemaUtil.setDescription(
-					ObjectFieldDescriptionUtil.getDescription(
+					ObjectDefinitionUtil.getDescription(
 						_objectDefinition, objectField),
 					entry.getValue()));
 		}
@@ -998,24 +1000,6 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 			}
 
 			objectDefinitionSchema.readOnly(true);
-		}
-	}
-
-	private void _setSchemaDescription(
-		ObjectRelationship objectRelationship, OpenAPI openAPI,
-		String relatedSchemaName) {
-
-		if (Objects.equals(
-				objectRelationship.getType(),
-				ObjectRelationshipConstants.TYPE_ONE_TO_MANY) &&
-			(objectRelationship.getObjectDefinitionId2() ==
-				_objectDefinition.getObjectDefinitionId())) {
-
-			Map<String, Schema> schemas = _getSchemas(openAPI);
-
-			Schema schema = schemas.get(relatedSchemaName);
-
-			schema.setDescription(_getDescription(objectRelationship));
 		}
 	}
 

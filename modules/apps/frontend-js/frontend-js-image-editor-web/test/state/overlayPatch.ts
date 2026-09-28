@@ -10,7 +10,9 @@ import {
 	patchOverlay,
 } from '../../src/main/resources/META-INF/resources/js/state/overlayPatch';
 import {
+	RedactOverlay,
 	ShapeOverlay,
+	StrokeOverlay,
 	TextOverlay,
 } from '../../src/main/resources/META-INF/resources/js/state/types';
 
@@ -129,5 +131,58 @@ describe('patchOverlay on shapes and arrows', () => {
 		expect(patchOverlay(SHAPE, {borderWidth: -4})).toMatchObject({
 			borderWidth: 0,
 		});
+	});
+});
+
+const STROKE: StrokeOverlay = {
+	color: '#0b5fff',
+	id: 'stroke-1',
+	kind: 'stroke',
+	points: [0, 0, 50, 50],
+	smooth: true,
+	width: 4,
+	x: 10,
+	y: 20,
+};
+
+describe('patchOverlay on strokes', () => {
+	it('switches the line style with a boolean and nothing else', () => {
+		expect(patchOverlay(STROKE, {smooth: false})).toMatchObject({
+			smooth: false,
+		});
+		expect(patchOverlay(STROKE, {smooth: 'no' as never})).toBe(STROKE);
+	});
+
+	it('takes only whole, finite point lists', () => {
+		expect(patchOverlay(STROKE, {points: [1, 2, 3]})).toBe(STROKE);
+		expect(patchOverlay(STROKE, {points: [1, NaN]})).toBe(STROKE);
+		expect(patchOverlay(STROKE, {points: [1, 2, 3, 4]})).toMatchObject({
+			points: [1, 2, 3, 4],
+		});
+	});
+
+	it('keeps the width at one', () => {
+		expect(patchOverlay(STROKE, {width: 0})).toMatchObject({width: 1});
+	});
+});
+
+const REDACT: RedactOverlay = {
+	height: 80,
+	id: 'redact-1',
+	kind: 'redact',
+	level: 'fine',
+	width: 120,
+	x: 0,
+	y: 0,
+};
+
+describe('patchOverlay on redactions', () => {
+	it('owns no color, and keeps its level and style to the known values', () => {
+		expect(patchOverlay(REDACT, {color: '#000000'} as never)).toBe(REDACT);
+		expect(patchOverlay(REDACT, {level: 'huge' as never})).toBe(REDACT);
+		expect(patchOverlay(REDACT, {style: 'smear' as never})).toBe(REDACT);
+		expect(
+			patchOverlay(REDACT, {level: 'coarse', style: 'blur'})
+		).toMatchObject({level: 'coarse', style: 'blur'});
 	});
 });

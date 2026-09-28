@@ -82,6 +82,10 @@ components:
                     type: string
                 defaultLanguageId:
                     type: string
+                description:
+                    additionalProperties:
+                        type: string
+                    type: object
                 enableCategorization:
                     type: boolean
                 enableComments:
@@ -252,6 +256,10 @@ components:
                     type: string
                 objectDefinitionExternalReferenceCode1:
                     type: string
+                objectDefinitionScope1:
+                    type: string
+                objectDefinitionSystem1:
+                    type: boolean
                 objectFieldSettings:
                     items:
                         $ref: "#/components/schemas/ObjectFieldSetting"
@@ -468,6 +476,10 @@ components:
                 deletionType:
                     enum: [cascade, disassociate, prevent]
                     type: string
+                description:
+                    additionalProperties:
+                        type: string
+                    type: object
                 edge:
                     type: boolean
                 externalReferenceCode:
@@ -719,7 +731,7 @@ components:
             type: object
 info:
     description:
-        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.object.admin.rest.client', and version '1.0.90'."
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.object.admin.rest.client', and version '1.0.91'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html

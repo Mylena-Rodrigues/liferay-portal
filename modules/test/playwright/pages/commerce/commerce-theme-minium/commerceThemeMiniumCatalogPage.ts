@@ -60,6 +60,7 @@ export class CommerceThemeMiniumCatalogPage {
 	) => Locator;
 	readonly productCardAddToCartButton: (productName: string) => Locator;
 	readonly productCardAddToWishListButton: (productName: string) => Locator;
+	readonly productCardViewAllVariantsButton: (productName: string) => Locator;
 	readonly productCardFragment: Locator;
 	readonly productCardFragmentAddToCartButton: (
 		targetLocator: Locator
@@ -104,6 +105,7 @@ export class CommerceThemeMiniumCatalogPage {
 	readonly productCardFragmentWishListToggle: (
 		targetLocator: Locator
 	) => Locator;
+	readonly productCards: Locator;
 	readonly productLink: (productName: string) => Locator;
 
 	constructor(page: Page) {
@@ -235,6 +237,11 @@ export class CommerceThemeMiniumCatalogPage {
 				exact: true,
 				name: 'Add to List',
 			});
+		this.productCardViewAllVariantsButton = (productName: string) =>
+			this.productCard(productName).getByRole('button', {
+				exact: true,
+				name: 'View all variants',
+			});
 		this.productCardFragment = page.locator('.cp-renderer .product-card');
 		this.productCardFragmentAddToCartButton = (targetLocator: Locator) =>
 			targetLocator.getByRole('button', {
@@ -293,6 +300,7 @@ export class CommerceThemeMiniumCatalogPage {
 			);
 		this.productCardFragmentWishListToggle = (targetLocator: Locator) =>
 			targetLocator.locator('.add-to-wish-list button:not(.skeleton)');
+		this.productCards = page.locator('.product-card');
 		this.productLink = (productName: string) =>
 			this.page.getByRole('link', {
 				exact: true,

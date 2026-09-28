@@ -5000,7 +5000,7 @@ public class ObjectEntryLocalServiceTest {
 			null, TestPropsValues.getUserId(),
 			_objectDefinition.getObjectDefinitionId(),
 			_draftObjectDefinition.getObjectDefinitionId(), 0,
-			ObjectRelationshipConstants.DELETION_TYPE_PREVENT, false,
+			ObjectRelationshipConstants.DELETION_TYPE_PREVENT, null, false,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 			StringUtil.randomId(), false,
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY, null);
@@ -5027,7 +5027,7 @@ public class ObjectEntryLocalServiceTest {
 			_objectDefinition.getDescriptionObjectFieldId(), 0,
 			_objectDefinition.getTitleObjectFieldId(),
 			_objectDefinition.isAccountEntryRestricted(), false,
-			_objectDefinition.getClassName(),
+			_objectDefinition.getClassName(), null,
 			_objectDefinition.isEnableCategorization(),
 			_objectDefinition.isEnableComments(),
 			_objectDefinition.isEnableFormContainer(),
@@ -5085,7 +5085,7 @@ public class ObjectEntryLocalServiceTest {
 			null, TestPropsValues.getUserId(),
 			publishedObjectDefinition.getObjectDefinitionId(),
 			draftObjectDefinition.getObjectDefinitionId(), 0,
-			ObjectRelationshipConstants.DELETION_TYPE_PREVENT, false,
+			ObjectRelationshipConstants.DELETION_TYPE_PREVENT, null, false,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 			StringUtil.randomId(), false,
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY, null);
@@ -5721,6 +5721,37 @@ public class ObjectEntryLocalServiceTest {
 		_assertObjectEntries(
 			Collections.singletonList(objectEntry3),
 			WorkflowConstants.STATUS_IN_TRASH);
+	}
+
+	@Test
+	public void testGetObjectEntriesCountWithChangedHeadObjectEntryId()
+		throws Exception {
+
+		long objectDefinitionId =
+			_irrelevantObjectDefinition.getObjectDefinitionId();
+
+		ObjectEntry objectEntry = _addObjectEntry(
+			0, objectDefinitionId, Collections.emptyMap());
+
+		Assert.assertEquals(
+			1,
+			_objectEntryLocalService.getObjectEntriesCount(objectDefinitionId));
+
+		objectEntry.setHeadObjectEntryId(RandomTestUtil.randomLong());
+
+		objectEntry = _objectEntryLocalService.updateObjectEntry(objectEntry);
+
+		Assert.assertEquals(
+			0,
+			_objectEntryLocalService.getObjectEntriesCount(objectDefinitionId));
+
+		objectEntry.setHeadObjectEntryId(objectEntry.getObjectEntryId());
+
+		_objectEntryLocalService.updateObjectEntry(objectEntry);
+
+		Assert.assertEquals(
+			1,
+			_objectEntryLocalService.getObjectEntriesCount(objectDefinitionId));
 	}
 
 	@Test
@@ -10784,7 +10815,9 @@ public class ObjectEntryLocalServiceTest {
 	}
 
 	private String _getNoSuchAlgorithmExceptionMessage() {
-		if (JavaDetector.isJDK21()) {
+		String javaVersion = JavaDetector.getJavaVersion();
+
+		if (javaVersion.startsWith("21")) {
 			return ": Null or empty transformation";
 		}
 

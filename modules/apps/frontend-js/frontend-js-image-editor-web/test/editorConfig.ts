@@ -38,6 +38,10 @@ describe('resolveConfig', () => {
 			'square',
 			'circle',
 			'arrow',
+			'draw',
+			'redaction',
+			'image',
+			'emoji',
 		]);
 	});
 

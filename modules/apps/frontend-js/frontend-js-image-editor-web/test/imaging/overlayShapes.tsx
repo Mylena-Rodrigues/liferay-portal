@@ -19,8 +19,12 @@ import {
 } from '../../src/main/resources/META-INF/resources/js/imaging/overlayShapes';
 import {
 	ArrowOverlay,
+	EmojiOverlay,
+	ImageOverlay,
 	Overlay,
+	RedactOverlay,
 	ShapeOverlay,
+	StrokeOverlay,
 	TextOverlay,
 	isBoxOverlay,
 } from '../../src/main/resources/META-INF/resources/js/state/types';
@@ -223,5 +227,160 @@ describe('a shape', () => {
 
 	it('fades as a group, so the border fades with the fill', () => {
 		expect(markup({...RECT, opacity: 50})).toMatch(/^<g opacity="0.5">/);
+	});
+});
+
+const STROKE: StrokeOverlay = {
+	color: '#0b5fff',
+	id: 'stroke-1',
+	kind: 'stroke',
+	points: [10, 0, 210, -100],
+	smooth: true,
+	width: 6,
+	x: 290,
+	y: 400,
+};
+
+describe('a stroke', () => {
+	it('is boxed by its points, grown by its own width', () => {
+		expect(isBoxOverlay(STROKE)).toBe(false);
+
+		expect(overlayBounds(STROKE)).toEqual({
+			height: 106,
+			width: 206,
+			x: 297,
+			y: 297,
+		});
+	});
+
+	it('draws its points as one path from its origin', () => {
+		const svg = markup(STROKE);
+
+		expect(svg).toContain('d="M10 0 C43.33 -16.67 176.67 -83.33 210 -100"');
+		expect(svg).toContain('transform="translate(290 400)"');
+		expect(svg).toContain('stroke-width="6"');
+	});
+
+	it('is named as a stroke', () => {
+		expect(overlayLabel(STROKE)).toBe('stroke');
+	});
+
+	it('keeps hugging what it was drawn around when the photo mirrors', () => {
+		const mirrored = mirrorOverlay(STROKE, 1000) as StrokeOverlay;
+
+		expect(mirrored.points).toEqual([210, 0, 10, -100]);
+		expect(mirrored.x + mirrored.points[0]).toBe(700);
+		expect(mirrored.x + mirrored.points[2]).toBe(500);
+		expect(mirrored.y).toBe(STROKE.y);
+	});
+});
+
+const REDACT: RedactOverlay = {
+	height: 80,
+	id: 'redact-1',
+	kind: 'redact',
+	level: 'fine',
+	width: 120,
+	x: 100,
+	y: 200,
+};
+
+describe('a redaction', () => {
+	it('is a box named by what it does', () => {
+		expect(isBoxOverlay(REDACT)).toBe(true);
+		expect(overlayBounds(REDACT)).toEqual({
+			height: 80,
+			width: 120,
+			x: 100,
+			y: 200,
+		});
+		expect(overlayLabel(REDACT)).toBe('redacted-area');
+	});
+
+	it('falls back to a solid block without a source to reveal', () => {
+		expect(markup(REDACT)).toContain('<rect fill="#14151f"');
+	});
+
+	it('mirrors by its far edge, so it keeps hiding the same pixels', () => {
+		expect(mirrorOverlay(REDACT, 1000)).toMatchObject({x: 780, y: 200});
+	});
+});
+
+const EMOJI_OVERLAY: EmojiOverlay = {
+	character: '🎉',
+	id: 'emoji-1',
+	kind: 'emoji',
+	name: 'party popper',
+	size: 120,
+	x: 400,
+	y: 300,
+};
+
+describe('an emoji annotation', () => {
+	it('is a square centred on its point', () => {
+		expect(isBoxOverlay(EMOJI_OVERLAY)).toBe(false);
+
+		expect(overlayBounds(EMOJI_OVERLAY)).toEqual({
+			height: 120,
+			width: 120,
+			x: 340,
+			y: 240,
+		});
+	});
+
+	it('is named by Unicode, not by us', () => {
+		expect(overlayLabel(EMOJI_OVERLAY)).toBe('party popper');
+	});
+
+	it('mirrors by its point when the photograph flips', () => {
+		expect(mirrorOverlay(EMOJI_OVERLAY, 1000)).toMatchObject({x: 600});
+	});
+});
+
+const PICTURE: ImageOverlay = {
+	description: 'Team badge',
+	height: 40,
+	id: 'image-1',
+	kind: 'image',
+	src: 'data:image/png;base64,AAAA',
+	width: 80,
+	x: 100,
+	y: 50,
+};
+
+describe('an image annotation', () => {
+	it('is one more box, so it stretches and mirrors like the rest', () => {
+		expect(isBoxOverlay(PICTURE)).toBe(true);
+
+		expect(overlayBounds(PICTURE)).toEqual({
+			height: 40,
+			width: 80,
+			x: 100,
+			y: 50,
+		});
+
+		expect(mirrorOverlay(PICTURE, 1000)).toMatchObject({x: 820});
+	});
+
+	it('is named by its description, which is what is read out', () => {
+		expect(overlayLabel(PICTURE)).toBe('Team badge');
+	});
+
+	it('fills its box rather than letterboxing inside it', () => {
+		const svg = markup(PICTURE);
+
+		expect(svg).toContain('preserveAspectRatio="none"');
+		expect(svg).toContain('href="data:image/png;base64,AAAA"');
+	});
+
+	it('keeps a full size target when the picture is a small badge', () => {
+		const stamp = {...PICTURE, height: 6, width: 6};
+
+		expect(overlayHitBox(stamp, 24)).toEqual({
+			height: 24,
+			width: 24,
+			x: 91,
+			y: 41,
+		});
 	});
 });

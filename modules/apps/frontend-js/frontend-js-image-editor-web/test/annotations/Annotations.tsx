@@ -28,6 +28,10 @@ import {
 } from '../../src/main/resources/META-INF/resources/js/editorConfig';
 import {useOverlaySelection} from '../../src/main/resources/META-INF/resources/js/hooks/useOverlaySelection';
 import {LoadedImage} from '../../src/main/resources/META-INF/resources/js/imaging/loadImage';
+import {
+	DrawResult,
+	strokeFromDrawing,
+} from '../../src/main/resources/META-INF/resources/js/stage/DrawSurface';
 import {Workspace} from '../../src/main/resources/META-INF/resources/js/stage/Workspace';
 import {
 	editorReducer,
@@ -38,10 +42,26 @@ import {
 	Overlay,
 } from '../../src/main/resources/META-INF/resources/js/state/types';
 
+jest.mock(
+	'../../src/main/resources/META-INF/resources/js/imaging/loadImage',
+	() => ({
+		...jest.requireActual<object>(
+			'../../src/main/resources/META-INF/resources/js/imaging/loadImage'
+		),
+		loadOverlayImage: () =>
+			Promise.resolve({
+				height: 8,
+				src: 'data:image/png;base64,',
+				width: 8,
+			}),
+	})
+);
+
 const IMAGE: LoadedImage = {
 	blob: new Blob(),
 	fileName: 'test.jpg',
 	height: 800,
+	pixelUrls: {coarse: 'c.png', fine: 'f.png', medium: 'm.png', tiny: 't.png'},
 	previewUrl: 'test.jpg',
 	thumbUrl: 'thumb.jpg',
 	type: 'image/jpeg',
@@ -60,13 +80,28 @@ const CAPTION: Overlay = {
 };
 
 function AnnotationHarness({
+	onAnnounce = () => {},
 	start = () => initialHistory(IMAGE.width, IMAGE.height),
 	tools = ANNOTATE_TOOLS,
 }: {
+	onAnnounce?: (message: string) => void;
 	start?: () => EditorHistory;
 	tools?: AnnotateTool[];
 }) {
 	const [history, dispatch] = useReducer(editorReducer, undefined, start);
+
+	const [drawing, setDrawing] = useState<null | {guided: boolean}>(null);
+
+	const finishDrawing = (result: DrawResult | null) => {
+		setDrawing(null);
+
+		if (result) {
+			dispatch({
+				overlay: strokeFromDrawing(result, history.present.crop),
+				type: 'add-overlay',
+			});
+		}
+	};
 
 	const {
 		layerProportional,
@@ -75,7 +110,7 @@ function AnnotationHarness({
 		selectedOverlayId,
 		setLayerProportional,
 		toggleMultiSelect,
-	} = useOverlaySelection(() => {});
+	} = useOverlaySelection(history.present.overlays, () => {});
 
 	const [clipboard, setClipboard] = useState<Overlay | null>(null);
 
@@ -85,9 +120,10 @@ function AnnotationHarness({
 				<Workspace
 					aspectLocked={false}
 					dispatch={dispatch}
+					drawing={drawing}
 					image={IMAGE}
 					multiSelectedIds={multiSelectedIds}
-					onAnnounce={() => {}}
+					onAnnounce={onAnnounce}
 					onCenterCrop={() => {}}
 					onCopyOverlay={(id) =>
 						setClipboard(
@@ -96,6 +132,7 @@ function AnnotationHarness({
 							) ?? null
 						)
 					}
+					onFinishDrawing={finishDrawing}
 					onMultiSelectToggle={toggleMultiSelect}
 					onPasteOverlay={() => {
 						if (clipboard) {
@@ -126,6 +163,9 @@ function AnnotationHarness({
 					area={history.present.crop}
 					dispatch={dispatch}
 					onAnnounce={() => {}}
+					onStartDrawing={(via) =>
+						setDrawing({guided: via === 'keyboard'})
+					}
 					tools={tools}
 				/>
 
@@ -156,6 +196,21 @@ const cropped = () =>
 	editorReducer(initialHistory(IMAGE.width, IMAGE.height), {
 		crop: {height: 400, width: 600, x: 600, y: 400},
 		type: 'set-crop',
+	});
+
+const withStroke = () =>
+	editorReducer(initialHistory(IMAGE.width, IMAGE.height), {
+		overlay: {
+			color: '#0b5fff',
+			id: 'stroke-1',
+			kind: 'stroke',
+			points: [0, 0, 200, 100],
+			smooth: false,
+			width: 10,
+			x: 300,
+			y: 400,
+		},
+		type: 'add-overlay',
 	});
 
 const hit = (container: HTMLElement) =>
@@ -345,6 +400,30 @@ describe('text annotations', () => {
 		);
 	});
 });
+
+const EMOJI_CATALOG = [
+	{c: '⭐', g: 7, n: 'star'},
+	{c: '🎉', g: 6, n: 'party popper'},
+	{c: '🇪🇸', g: 8, n: 'flag: Spain'},
+];
+
+// The shared jest setup replaces the global fetch with jest-fetch-mock,
+// whose own methods are not on the DOM type.
+
+const fetchMock = fetch as unknown as jest.Mock & {
+	mockResponse: (body: string) => void;
+};
+
+async function addEmoji(name: string) {
+	fireEvent.click(screen.getByRole('button', {name: 'add-emoji'}));
+
+	fireEvent.click(
+		within(await screen.findByRole('grid', {name: 'add-emoji'})).getByRole(
+			'button',
+			{name}
+		)
+	);
+}
 
 function addShape(shape: string) {
 	fireEvent.click(screen.getByRole('button', {name: 'add-shape'}));
@@ -1174,7 +1253,7 @@ describe('groups and the clipboard', () => {
 		expect(screen.getByText('selected-layer-x')).toBeInTheDocument();
 	});
 
-	it('deletes a whole group with one key and undoes it whole', () => {
+	it('deletes a whole group with one key and undoes it whole', async () => {
 		const {container} = render(<AnnotationHarness />);
 
 		addShape('rectangle');
@@ -1189,12 +1268,16 @@ describe('groups and the clipboard', () => {
 
 		expect(container.querySelectorAll('.overlay-hit')).toHaveLength(0);
 
+		await waitFor(() =>
+			expect(container.querySelector('.editor-workspace')).toHaveFocus()
+		);
+
 		fireEvent.click(screen.getByRole('button', {name: 'undo'}));
 
 		expect(container.querySelectorAll('.overlay-hit')).toHaveLength(2);
 	});
 
-	it('deletes a whole group from a layer row as well', () => {
+	it('deletes a whole group from a layer row as well', async () => {
 		const {container} = render(<AnnotationHarness />);
 
 		addShape('rectangle');
@@ -1209,6 +1292,10 @@ describe('groups and the clipboard', () => {
 
 		expect(container.querySelectorAll('.overlay-hit')).toHaveLength(0);
 		expect(screen.queryByText('layers')).toBeNull();
+
+		await waitFor(() =>
+			expect(container.querySelector('.editor-workspace')).toHaveFocus()
+		);
 	});
 
 	it('copies the focused annotation and pastes it into the workspace', () => {
@@ -1235,6 +1322,426 @@ describe('groups and the clipboard', () => {
 		expect(Number(shapes[1].getAttribute('x'))).toBe(
 			Number(shapes[0].getAttribute('x')) + 16
 		);
+	});
+});
+
+describe('drawing', () => {
+	const press = (
+		target: Element,
+		key: string,
+		times = 1,
+		shiftKey = false
+	) => {
+		for (let index = 0; index < times; index++) {
+			fireEvent.keyDown(target, {key, shiftKey});
+		}
+	};
+
+	const startDrawing = async (detail: number) => {
+		fireEvent.click(screen.getByRole('button', {name: 'draw'}), {detail});
+
+		const surface = screen.getByRole('application', {
+			name: 'drawing-area',
+		});
+
+		await waitFor(() => expect(surface).toHaveFocus());
+
+		await waitFor(() =>
+			expect(
+				surface.parentElement?.querySelector('.focus-ring-outer')
+			).toBeInTheDocument()
+		);
+
+		return surface;
+	};
+
+	const stroke = (container: HTMLElement) =>
+		container.querySelector(
+			'.editor-workspace path[stroke="#0b5fff"][transform]'
+		) as SVGPathElement;
+
+	it('draws a guided line with the keyboard alone', async () => {
+		const {container} = render(<AnnotationHarness />);
+
+		const surface = await startDrawing(0);
+
+		press(surface, 'ArrowRight', 4, true);
+		press(surface, 'Enter');
+		press(surface, 'ArrowDown', 3, true);
+		press(surface, 'Enter');
+
+		expect(
+			screen.queryByRole('application', {name: 'drawing-area'})
+		).toBeNull();
+
+		expect(
+			within(
+				document.querySelector('.editor-layer-list') as HTMLElement
+			).getByText('stroke')
+		).toBeInTheDocument();
+
+		expect(stroke(container)).toHaveAttribute(
+			'transform',
+			'translate(600 400)'
+		);
+		expect(stroke(container).getAttribute('d')).toMatch(/^M0 0 C/);
+
+		expect(screen.getByLabelText('thickness')).toBeInTheDocument();
+		expect(screen.getByLabelText('line-style')).toHaveValue('smooth');
+	});
+
+	it('resizes a stroke from its size fields, keeping it drawable by keyboard alone', async () => {
+		render(<AnnotationHarness />);
+
+		const surface = await startDrawing(0);
+
+		press(surface, 'ArrowRight', 4, true);
+		press(surface, 'Enter');
+		press(surface, 'ArrowDown', 3, true);
+		press(surface, 'Enter');
+
+		const width = screen.getByLabelText('width') as HTMLInputElement;
+		const height = screen.getByLabelText('height') as HTMLInputElement;
+		const thickness = screen.getByLabelText('thickness');
+
+		expect(width).toHaveValue(80);
+		expect(height).toHaveValue(60);
+
+		fireEvent.change(width, {target: {value: '160'}});
+		fireEvent.keyDown(width, {key: 'Enter'});
+
+		expect(width).toHaveValue(160);
+		expect(height).toHaveValue(60);
+		expect(thickness).toHaveValue(6);
+
+		fireEvent.click(
+			screen.getByRole('button', {name: 'lock-aspect-ratio'})
+		);
+
+		fireEvent.change(height, {target: {value: '120'}});
+		fireEvent.keyDown(height, {key: 'Enter'});
+
+		expect(width).toHaveValue(320);
+		expect(height).toHaveValue(120);
+		expect(thickness).toHaveValue(12);
+	});
+
+	it('refuses to set a line with no length', async () => {
+		const announce = jest.fn();
+
+		render(<AnnotationHarness onAnnounce={announce} />);
+
+		const surface = await startDrawing(0);
+
+		press(surface, 'Enter');
+
+		expect(announce).toHaveBeenLastCalledWith(
+			'move-the-end-away-from-the-start-first'
+		);
+		expect(surface).toBeInTheDocument();
+	});
+
+	it('steps back from the bend', async () => {
+		const {container} = render(<AnnotationHarness />);
+
+		const surface = await startDrawing(0);
+
+		press(surface, 'ArrowRight', 2, true);
+		press(surface, 'Enter');
+		press(surface, 'Backspace');
+		press(surface, 'ArrowRight', 2, true);
+		press(surface, 'Enter');
+		press(surface, 'Enter');
+
+		expect(stroke(container).getAttribute('d')).toBe(
+			'M0 0 C13.33 0 66.67 0 80 0'
+		);
+	});
+
+	it('abandons a drawing with Escape', async () => {
+		const announce = jest.fn();
+
+		const {container} = render(<AnnotationHarness onAnnounce={announce} />);
+
+		const surface = await startDrawing(0);
+
+		press(surface, 'ArrowRight', 2, true);
+		press(surface, 'Escape');
+
+		expect(
+			screen.queryByRole('application', {name: 'drawing-area'})
+		).toBeNull();
+		expect(stroke(container)).toBeNull();
+		expect(announce).toHaveBeenLastCalledWith('drawing-was-canceled');
+		expect(container.querySelector('.editor-workspace')).toHaveFocus();
+	});
+
+	it('scales a stroke from a corner, thickness and all', () => {
+		const {container} = render(<AnnotationHarness start={withStroke} />);
+
+		fireEvent.focus(hit(container));
+
+		const handles = container.querySelectorAll('.object-handle');
+
+		// Four corners and the rotation knob: a stroke has no edges to
+		// stretch, so it scales as a whole.
+
+		expect(handles).toHaveLength(5);
+
+		fireEvent.pointerDown(handles[2], {clientX: 0, clientY: 0});
+		fireEvent.pointerMove(handles[2], {clientX: 50, clientY: 20});
+		fireEvent.pointerUp(handles[2]);
+
+		const path = stroke(container);
+
+		const [x2, y2] = path
+			.getAttribute('d')!
+			.replace('M0 0 L', '')
+			.split(' ')
+			.map(Number);
+
+		expect(x2).toBeGreaterThan(200);
+		expect(x2 / 200).toBeCloseTo(y2 / 100, 2);
+
+		expect(Number(path.getAttribute('stroke-width'))).toBeCloseTo(
+			(10 * x2) / 200,
+			0
+		);
+
+		// The center holds, so the stroke grows around what it marks.
+
+		const [x, y] = path
+			.getAttribute('transform')!
+			.replace('translate(', '')
+			.replace(')', '')
+			.split(' ')
+			.map(Number);
+
+		expect(x + x2 / 2).toBeCloseTo(400, 0);
+		expect(y + y2 / 2).toBeCloseTo(450, 0);
+	});
+
+	it('places pen points with clicks and finishes on the last one', async () => {
+		const {container} = render(<AnnotationHarness />);
+
+		const surface = await startDrawing(1);
+
+		const tap = (clientX: number, clientY: number) => {
+			fireEvent.pointerDown(surface, {clientX, clientY, pointerId: 1});
+			fireEvent.pointerUp(surface, {clientX, clientY, pointerId: 1});
+		};
+
+		tap(100, 100);
+		tap(150, 100);
+		tap(150, 150);
+		tap(150, 150);
+
+		expect(stroke(container)).toHaveAttribute(
+			'transform',
+			'translate(200 200)'
+		);
+		expect(stroke(container).getAttribute('d')).toMatch(
+			/^M0 0 C.* 100 0 C.* 100 100$/
+		);
+	});
+
+	it('commits a freehand drag on release, simplified', async () => {
+		const {container} = render(<AnnotationHarness />);
+
+		const surface = await startDrawing(1);
+
+		fireEvent.pointerDown(surface, {clientX: 0, clientY: 0, pointerId: 1});
+
+		for (let step = 1; step <= 20; step++) {
+			fireEvent.pointerMove(surface, {
+				clientX: step * 5,
+				clientY: 0,
+				pointerId: 1,
+			});
+		}
+
+		fireEvent.pointerUp(surface, {clientX: 100, clientY: 0, pointerId: 1});
+
+		expect(stroke(container).getAttribute('d')).toBe(
+			'M0 0 C33.33 0 166.67 0 200 0'
+		);
+	});
+});
+
+describe('a redaction', () => {
+	const revealed = (container: HTMLElement) =>
+		container.querySelector(
+			'[clip-path*="redact-clip-"] image'
+		) as SVGImageElement;
+
+	it('pixelates through a clipped source and blurs from the picture', () => {
+		const {container} = render(<AnnotationHarness />);
+
+		fireEvent.click(screen.getByRole('button', {name: 'add-redaction'}));
+
+		expect(
+			within(
+				document.querySelector('.editor-layer-list') as HTMLElement
+			).getByText('redacted-area')
+		).toBeInTheDocument();
+
+		expect(revealed(container)).toHaveAttribute('href', 'f.png');
+		expect(screen.queryByLabelText('color')).toBeNull();
+
+		fireEvent.change(screen.getByLabelText('strength'), {
+			target: {value: 'tiny'},
+		});
+
+		expect(revealed(container)).toHaveAttribute('href', 't.png');
+
+		fireEvent.change(screen.getByLabelText('type'), {
+			target: {value: 'blur'},
+		});
+
+		expect(revealed(container)).toHaveAttribute('href', 'test.jpg');
+		expect(
+			container.querySelector('filter[id^="redact-blur-"] feGaussianBlur')
+		).toBeInTheDocument();
+
+		fireEvent.change(screen.getByLabelText('type'), {
+			target: {value: 'pixel'},
+		});
+
+		expect(revealed(container)).toHaveAttribute('href', 't.png');
+	});
+
+	it('is a box, with the handles of a rectangle', () => {
+		const {container} = render(<AnnotationHarness />);
+
+		fireEvent.click(screen.getByRole('button', {name: 'add-redaction'}));
+
+		act(() => {
+			(container.querySelector('.overlay-hit') as SVGElement).focus();
+		});
+
+		expect(container.querySelectorAll('.object-handle')).toHaveLength(9);
+		expect(screen.getByLabelText('width')).toBeInTheDocument();
+	});
+});
+
+describe('an emoji annotation', () => {
+	beforeEach(() => {
+
+		// The catalog is a resource of the module, asked for the first
+		// time the picker opens.
+
+		fetchMock.mockResponse(JSON.stringify(EMOJI_CATALOG));
+	});
+
+	it('asks the module for the catalog, once however often it opens', async () => {
+		render(<AnnotationHarness />);
+
+		fireEvent.click(screen.getByRole('button', {name: 'add-emoji'}));
+
+		await screen.findByRole('grid', {name: 'add-emoji'});
+
+		expect(fetchMock.mock.calls[0][0]).toBe(
+			'/o/frontend-js-image-editor-web/emoji.json'
+		);
+
+		const calls = fetchMock.mock.calls.length;
+
+		fireEvent.click(screen.getByRole('button', {name: 'add-emoji'}));
+		fireEvent.click(screen.getByRole('button', {name: 'add-emoji'}));
+
+		await screen.findByRole('grid', {name: 'add-emoji'});
+
+		expect(fetchMock.mock.calls).toHaveLength(calls);
+	});
+
+	it('adds an emoji as a layer of its own, sized but never coloured', async () => {
+		const {container} = render(<AnnotationHarness />);
+
+		await addEmoji('star');
+
+		expect(hit(container)).toHaveAttribute('aria-label', 'star');
+
+		expect(
+			container.querySelector('.editor-layer-glyph')?.textContent
+		).toBe('⭐');
+
+		expect(screen.getByLabelText('size')).toBeInTheDocument();
+		expect(screen.queryByLabelText('color')).toBeNull();
+		expect(screen.queryByLabelText('font-family')).toBeNull();
+	});
+
+	it('finds an emoji whatever the capitalisation of its name', async () => {
+		render(<AnnotationHarness />);
+
+		fireEvent.click(screen.getByRole('button', {name: 'add-emoji'}));
+
+		fireEvent.change(await screen.findByLabelText('search-emoji'), {
+			target: {value: 'spain'},
+		});
+
+		expect(
+			within(screen.getByRole('grid', {name: 'add-emoji'})).getByRole(
+				'button',
+				{name: 'flag: Spain'}
+			)
+		).toBeInTheDocument();
+	});
+
+	it('moves with the keyboard like every other annotation', async () => {
+		const {container} = render(<AnnotationHarness />);
+
+		await addEmoji('star');
+
+		const initialX = Number(hit(container).getAttribute('x'));
+
+		fireEvent.keyDown(hit(container), {key: 'ArrowRight', shiftKey: true});
+		fireEvent.keyUp(hit(container), {key: 'ArrowRight', shiftKey: true});
+
+		expect(Number(hit(container).getAttribute('x'))).toBe(initialX + 10);
+	});
+
+	it('is centered on the crop, not on the image', async () => {
+		const {container} = render(<AnnotationHarness start={cropped} />);
+
+		await addEmoji('star');
+
+		const target = hit(container);
+
+		const centerX =
+			Number(target.getAttribute('x')) +
+			Number(target.getAttribute('width')) / 2;
+		const centerY =
+			Number(target.getAttribute('y')) +
+			Number(target.getAttribute('height')) / 2;
+
+		expect(Math.round(centerX)).toBe(900);
+		expect(Math.round(centerY)).toBe(600);
+	});
+});
+
+describe('an image annotation', () => {
+	it('takes the name of its file and is renamed from its properties', async () => {
+		render(<AnnotationHarness />);
+
+		fireEvent.change(
+			document.querySelector(
+				'.editor-annotate-actions input[type="file"]'
+			) as HTMLInputElement,
+			{
+				target: {
+					files: [new File([''], 'badge.png', {type: 'image/png'})],
+				},
+			}
+		);
+
+		const imageName = await screen.findByLabelText('image-name');
+
+		expect(imageName).toHaveValue('badge');
+
+		fireEvent.change(imageName, {target: {value: 'Company Logo'}});
+		fireEvent.keyDown(imageName, {key: 'Enter'});
+
+		expect(layerNames()).toContain('Company Logo');
 	});
 });
 

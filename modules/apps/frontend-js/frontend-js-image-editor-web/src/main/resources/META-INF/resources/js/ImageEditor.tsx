@@ -6,6 +6,7 @@
 import '../css/ImageEditor.scss';
 
 import {ClayIconSpriteContext} from '@clayui/icon';
+import {ClayTooltipProvider} from '@clayui/tooltip';
 import {sub} from 'frontend-js-web';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
@@ -25,7 +26,9 @@ import {useOverlaySelection} from './hooks/useOverlaySelection';
 import {useSaveController} from './hooks/useSaveController';
 import {anchoredScroll} from './imaging/geometry';
 import {LoadedImage} from './imaging/loadImage';
+import {DrawResult, strokeFromDrawing} from './stage/DrawSurface';
 import {Workspace} from './stage/Workspace';
+import {focusOverlayNode} from './stage/focusOverlayNode';
 import {redoLabel, undoLabel} from './state/editorReducer';
 import {CropRect, EditState, rotatedSize} from './state/types';
 
@@ -115,7 +118,7 @@ function Editor({
 		setLayerProportional,
 		setSelectedOverlayId,
 		toggleMultiSelect,
-	} = useOverlaySelection(announce);
+	} = useOverlaySelection(state.overlays, announce);
 
 	const {copyOverlay, pasteOverlay} = useOverlayClipboard(
 		state,
@@ -148,6 +151,29 @@ function Editor({
 	const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
 	const [aspectLocked, setAspectLocked] = useState(false);
+
+	const [drawing, setDrawing] = useState<null | {guided: boolean}>(null);
+
+	const finishDrawing = (result: DrawResult | null) => {
+		setDrawing(null);
+
+		if (!result) {
+			return;
+		}
+
+		const overlay = strokeFromDrawing(result, state.crop);
+
+		dispatch({overlay, type: 'add-overlay'});
+
+		announce(
+			sub(
+				Liferay.Language.get('x-added-to-the-center-of-the-crop-area'),
+				Liferay.Language.get('stroke')
+			)
+		);
+
+		focusOverlayNode(() => editorRef.current ?? document, overlay.id);
+	};
 
 	const [cropFramed, setCropFramed] = useState(false);
 
@@ -436,101 +462,110 @@ function Editor({
 	return (
 		<EditorInstanceProvider value={instancePrefix}>
 			<EditorRootProvider value={editorRef}>
-				<div
-					className="image-editor"
-					onKeyDown={handleUndoShortcut}
-					ref={editorRef}
-				>
-					<div className="editor-main">
-						<Workspace
-							aspectLocked={aspectLocked}
-							dispatch={dispatch}
-							image={image}
-							multiSelectedIds={multiSelectedIds}
-							onAnnounce={announce}
-							onCenterCrop={centerCrop}
-							onCopyOverlay={copyOverlay}
-							onMultiSelectToggle={toggleMultiSelect}
-							onPasteOverlay={pasteOverlay}
-							onSelectOverlay={selectOverlay}
-							onWorkspacePointerLeave={
-								handleWorkspacePointerLeave
-							}
-							onWorkspacePointerMove={handleWorkspacePointerMove}
-							onWorkspaceScroll={() => {
-								if (programmaticScrollRef.current) {
-									programmaticScrollRef.current = false;
-								}
-								else {
-									setCropFramed(false);
-								}
-							}}
-							onZoom={zoomBy}
-							onZoomActual={zoomToActual}
-							onZoomFit={zoomToFit}
-							proportional={layerProportional}
-							selectedOverlayId={selectedOverlayId}
-							showCrop={enabled.crop.enabled}
-							showRecenter={!cropFramed}
-							state={state}
-							workspaceRef={handleWorkspaceRef}
-							zoom={zoom}
-						/>
-
-						{hasSidebar && (
-							<EditorSidebar
+				<ClayTooltipProvider>
+					<div
+						className="image-editor"
+						onKeyDown={handleUndoShortcut}
+						ref={editorRef}
+					>
+						<div className="editor-main">
+							<Workspace
 								aspectLocked={aspectLocked}
 								dispatch={dispatch}
-								frames={enabled.frames}
+								drawing={drawing}
 								image={image}
 								multiSelectedIds={multiSelectedIds}
 								onAnnounce={announce}
-								onAspectLockedChange={setAspectLocked}
-								onProportionalChange={setLayerProportional}
+								onCenterCrop={centerCrop}
+								onCopyOverlay={copyOverlay}
+								onFinishDrawing={finishDrawing}
+								onMultiSelectToggle={toggleMultiSelect}
+								onPasteOverlay={pasteOverlay}
 								onSelectOverlay={selectOverlay}
-								presets={enabled.filters}
+								onWorkspacePointerLeave={
+									handleWorkspacePointerLeave
+								}
+								onWorkspacePointerMove={
+									handleWorkspacePointerMove
+								}
+								onWorkspaceScroll={() => {
+									if (programmaticScrollRef.current) {
+										programmaticScrollRef.current = false;
+									}
+									else {
+										setCropFramed(false);
+									}
+								}}
+								onZoom={zoomBy}
+								onZoomActual={zoomToActual}
+								onZoomFit={zoomToFit}
 								proportional={layerProportional}
 								selectedOverlayId={selectedOverlayId}
 								showCrop={enabled.crop.enabled}
-								showStraighten={enabled.crop.straighten}
-								sidebarRef={sidebarRef}
-								sliders={enabled.adjustments}
+								showRecenter={!cropFramed}
 								state={state}
-								tools={enabled.annotate}
+								workspaceRef={handleWorkspaceRef}
+								zoom={zoom}
 							/>
-						)}
-					</div>
 
-					{saveError && (
-						<div
-							className="alert alert-danger editor-save-error"
-							role="alert"
-						>
-							{Liferay.Language.get(
-								'unable-to-save-the-image-please-try-again'
+							{hasSidebar && (
+								<EditorSidebar
+									aspectLocked={aspectLocked}
+									dispatch={dispatch}
+									frames={enabled.frames}
+									image={image}
+									multiSelectedIds={multiSelectedIds}
+									onAnnounce={announce}
+									onAspectLockedChange={setAspectLocked}
+									onProportionalChange={setLayerProportional}
+									onSelectOverlay={selectOverlay}
+									onStartDrawing={(via) =>
+										setDrawing({guided: via === 'keyboard'})
+									}
+									presets={enabled.filters}
+									proportional={layerProportional}
+									selectedOverlayId={selectedOverlayId}
+									showCrop={enabled.crop.enabled}
+									showStraighten={enabled.crop.straighten}
+									sidebarRef={sidebarRef}
+									sliders={enabled.adjustments}
+									state={state}
+									tools={enabled.annotate}
+								/>
 							)}
 						</div>
-					)}
 
-					<BottomBar
-						canRedo={!!redoLabel(history)}
-						canUndo={!!undoLabel(history)}
-						dispatch={dispatch}
-						onAnnounce={announce}
-						onCancel={onClose}
-						onRedo={redo}
-						onSave={handleSave}
-						onShowShortcuts={() => setShortcutsOpen(true)}
-						onUndo={undo}
-						onZoom={zoomBy}
-						onZoomFit={zoomToFit}
-						ratio={state.ratio}
-						ratios={enabled.crop.ratios}
-						saving={saving}
-						showRotate={enabled.crop.rotate}
-						zoom={zoom}
-					/>
-				</div>
+						{saveError && (
+							<div
+								className="alert alert-danger editor-save-error"
+								role="alert"
+							>
+								{Liferay.Language.get(
+									'unable-to-save-the-image-please-try-again'
+								)}
+							</div>
+						)}
+
+						<BottomBar
+							canRedo={!!redoLabel(history)}
+							canUndo={!!undoLabel(history)}
+							dispatch={dispatch}
+							onAnnounce={announce}
+							onCancel={onClose}
+							onRedo={redo}
+							onSave={handleSave}
+							onShowShortcuts={() => setShortcutsOpen(true)}
+							onUndo={undo}
+							onZoom={zoomBy}
+							onZoomFit={zoomToFit}
+							ratio={state.ratio}
+							ratios={enabled.crop.ratios}
+							saving={saving}
+							showRotate={enabled.crop.rotate}
+							zoom={zoom}
+						/>
+					</div>
+				</ClayTooltipProvider>
 
 				<ShortcutsDialog
 					onOpenChange={setShortcutsOpen}

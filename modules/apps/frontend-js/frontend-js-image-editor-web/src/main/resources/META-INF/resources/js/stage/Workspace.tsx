@@ -12,15 +12,23 @@ import {FilterDefs, isIdentityFilter} from '../imaging/FilterDefs';
 import {FrameShape} from '../imaging/frameShapes';
 import {imageTransform} from '../imaging/geometry';
 import {LoadedImage} from '../imaging/loadImage';
+import {
+	DEFAULT_ANNOTATION_COLOR,
+	redactSourceFor,
+} from '../imaging/overlayShapes';
 import {EditorAction} from '../state/editorReducer';
 import {EditState, rotatedSize} from '../state/types';
 import {CropMarquee} from './CropMarquee';
+import {DrawResult, DrawSurface, strokeWidthFor} from './DrawSurface';
 import {OverlaysEditable} from './OverlaysEditable';
 
 interface Props {
 	aspectLocked: boolean;
 
 	dispatch: (action: EditorAction) => void;
+
+	drawing?: {guided: boolean} | null;
+
 	image: LoadedImage;
 
 	multiSelectedIds: string[];
@@ -28,6 +36,9 @@ interface Props {
 	onCenterCrop: () => void;
 
 	onCopyOverlay: (id: string) => void;
+
+	onFinishDrawing?: (result: DrawResult | null) => void;
+
 	onMultiSelectToggle: (id: string) => void;
 
 	onPasteOverlay: () => void;
@@ -53,11 +64,13 @@ interface Props {
 export function Workspace({
 	aspectLocked,
 	dispatch,
+	drawing,
 	image,
 	multiSelectedIds,
 	onAnnounce,
 	onCenterCrop,
 	onCopyOverlay,
+	onFinishDrawing,
 	onMultiSelectToggle,
 	onPasteOverlay,
 	onSelectOverlay,
@@ -226,6 +239,11 @@ export function Workspace({
 						onSelect={onSelectOverlay}
 						overlays={state.overlays}
 						proportional={proportional}
+						redactSource={redactSourceFor(state, {
+							filterId: eid('preview-filter'),
+							imageUrl: image.previewUrl,
+							pixelUrls: image.pixelUrls,
+						})}
 						selectedId={selectedOverlayId}
 						zoom={zoom}
 					/>
@@ -237,6 +255,23 @@ export function Workspace({
 
 					{state.frame.overAnnotations && (
 						<FrameShape crop={crop} frame={state.frame} />
+					)}
+
+					{/*
+					 * The drawing surface rides above everything while it
+					 * lasts, because while drawing, drawing is the mode.
+					 */}
+
+					{drawing && onFinishDrawing && (
+						<DrawSurface
+							area={crop}
+							color={DEFAULT_ANNOTATION_COLOR}
+							guided={drawing.guided}
+							onAnnounce={onAnnounce}
+							onFinish={onFinishDrawing}
+							width={strokeWidthFor(crop)}
+							zoom={zoom}
+						/>
 					)}
 				</CropMarquee>
 			</svg>

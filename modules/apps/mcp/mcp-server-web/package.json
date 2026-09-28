@@ -12,6 +12,7 @@
 		"@clayui/management-toolbar": "^3.166.0",
 		"@clayui/modal": "^3.166.0",
 		"@clayui/table": "^3.166.0",
+		"@liferay/frontend-data-set-web": "*",
 		"@liferay/frontend-js-react-web": "*",
 		"@liferay/layout-js-components-web": "*",
 		"classnames": "2.3.1",
@@ -36,5 +37,5 @@
 		"format": "node-scripts format",
 		"test": "node-scripts test"
 	},
-	"version": "1.0.4"
+	"version": "1.0.5"
 }

@@ -5,6 +5,7 @@
 
 import {
 	Filter,
+	NO_AUDIENCE_VALUE,
 	getFilterOptions,
 	getFilterText,
 	getFilteredVariations,
@@ -56,8 +57,11 @@ function createVariation(
 
 describe('elementVariationFilters', () => {
 	describe('getFilterOptions', () => {
-		it('lists the audiences for the audience filter', () => {
-			expect(getFilterOptions('audience', AUDIENCES)).toBe(AUDIENCES);
+		it('lists the none option and the audiences for the audience filter', () => {
+			expect(getFilterOptions('audience', AUDIENCES)).toEqual([
+				{label: 'none', value: NO_AUDIENCE_VALUE},
+				...AUDIENCES,
+			]);
 		});
 
 		it('lists the enabled and disabled options for the status filter', () => {
@@ -107,17 +111,6 @@ describe('elementVariationFilters', () => {
 		});
 
 		it('previews three labels and counts the rest as hidden', () => {
-			const filter: Filter = {
-				exclude: false,
-				type: 'type',
-				values: ['html', 'javascript', 'hide-element'],
-			};
-
-			expect(getFilterText(filter, AUDIENCES)).toEqual({
-				hiddenCount: 0,
-				label: 'html, javascript, hide-element',
-			});
-
 			expect(
 				getFilterText(
 					{
@@ -194,6 +187,28 @@ describe('elementVariationFilters', () => {
 					],
 				})
 			).toEqual([other]);
+		});
+
+		it('keeps the variations without audiences for the none option', () => {
+			const matching = createVariation({key: 'matching'});
+
+			const other = createVariation({
+				audienceEntryERCs: ['audience-a'],
+				key: 'other',
+			});
+
+			expect(
+				filterVariations({
+					elementVariations: [matching, other],
+					filters: [
+						{
+							exclude: false,
+							type: 'audience',
+							values: [NO_AUDIENCE_VALUE],
+						},
+					],
+				})
+			).toEqual([matching]);
 		});
 
 		it('derives the status from the active flag', () => {

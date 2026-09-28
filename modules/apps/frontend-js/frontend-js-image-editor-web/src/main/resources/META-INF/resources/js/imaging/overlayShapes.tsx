@@ -6,8 +6,24 @@
 import {sub} from 'frontend-js-web';
 import React from 'react';
 
-import {ArrowOverlay, Overlay} from '../state/types';
-import {sketchyEllipsePath, sketchyRectPath} from './strokeGeometry';
+import {
+	ArrowOverlay,
+	EditState,
+	Overlay,
+	RedactLevel,
+	RedactOverlay,
+} from '../state/types';
+import {isIdentityFilter} from './FilterDefs';
+import {imageTransform} from './geometry';
+import {REDACT_SIZES} from './loadImage';
+import {
+	pointsBounds,
+	pointsToPath,
+	sketchyEllipsePath,
+	sketchyRectPath,
+} from './strokeGeometry';
+
+export const DEFAULT_ANNOTATION_COLOR = '#0b5fff';
 
 export const DEFAULT_BORDER_COLOR = '#272833';
 
@@ -84,6 +100,8 @@ export function overlayBounds(overlay: Overlay): {
 		}
 
 		case 'circle':
+		case 'image':
+		case 'redact':
 		case 'shape':
 			return {
 				height: overlay.height,
@@ -91,6 +109,29 @@ export function overlayBounds(overlay: Overlay): {
 				x: overlay.x,
 				y: overlay.y,
 			};
+
+		case 'emoji':
+			return {
+				height: overlay.size,
+				width: overlay.size,
+				x: overlay.x - overlay.size / 2,
+				y: overlay.y - overlay.size / 2,
+			};
+
+		case 'stroke': {
+
+			// The points' own box, grown by the stroke on every side.
+
+			const box = pointsBounds(overlay.points);
+			const pad = overlay.width / 2;
+
+			return {
+				height: box.height + overlay.width,
+				width: box.width + overlay.width,
+				x: overlay.x + box.x - pad,
+				y: overlay.y + box.y - pad,
+			};
+		}
 
 		case 'text':
 			return {
@@ -148,8 +189,20 @@ export function overlayLabel(overlay: Overlay): string {
 		case 'circle':
 			return Liferay.Language.get('circle');
 
+		case 'emoji':
+			return overlay.name;
+
+		case 'image':
+			return overlay.description;
+
+		case 'redact':
+			return Liferay.Language.get('redacted-area');
+
 		case 'shape':
 			return Liferay.Language.get('rectangle');
+
+		case 'stroke':
+			return Liferay.Language.get('stroke');
 
 		case 'text':
 			return sub(Liferay.Language.get('text-x'), overlay.text);
@@ -159,18 +212,180 @@ export function overlayLabel(overlay: Overlay): string {
 	}
 }
 
+export interface RedactSource {
+
+	/**
+	 * Reference to the color pipeline in use (`url(#...)`), so the mosaic
+	 * carries the same adjustments and filter as the image underneath.
+	 * Undefined when the pipeline is the identity.
+	 */
+	filter?: string;
+
+	/**
+	 * The picture itself, which the blur works from: a mosaic wants a
+	 * downsampled copy, a blur wants the real thing.
+	 */
+	imageUrl?: string;
+
+	pixelUrls: Record<RedactLevel, string>;
+	sourceHeight: number;
+	sourceWidth: number;
+
+	/**
+	 * The same transform the base image uses, so the mosaic lines up with
+	 * the photo whatever the rotation and straighten angle.
+	 */
+	transform?: string;
+}
+
+export function redactSourceFor(
+	state: EditState,
+	picture: {
+		filterId: string;
+		imageUrl: string;
+		pixelUrls: Record<RedactLevel, string>;
+	}
+): RedactSource {
+	return {
+		filter: isIdentityFilter(state.adjustments, state.filter)
+			? undefined
+			: `url(#${picture.filterId})`,
+		imageUrl: picture.imageUrl,
+		pixelUrls: picture.pixelUrls,
+		sourceHeight: state.sourceHeight,
+		sourceWidth: state.sourceWidth,
+		transform: imageTransform(state),
+	};
+}
+
 /**
  * The visual node of an overlay. Shared verbatim between the interactive
  * preview and the static export renderer. Opacity (the native color input
  * offers no alpha channel) wraps the node as a group attribute, so it
  * rasterizes identically at export.
  */
-export function OverlayShape({overlay}: {overlay: Overlay}) {
+export function OverlayShape({
+	overlay,
+	redactSource,
+}: {
+	overlay: Overlay;
+	redactSource?: RedactSource;
+}) {
 	const opacity = (overlay.opacity ?? 100) / 100;
 
-	const node = renderOverlayNode(overlay);
+	const node = renderOverlayNode(overlay, redactSource);
 
 	return opacity < 1 ? <g opacity={opacity}>{node}</g> : node;
+}
+
+/**
+ * The blur that matches a mosaic step. A mosaic of block size B destroys
+ * detail finer than B, and a Gaussian blur does something comparable at
+ * roughly half that as its deviation, so the four steps mean the same
+ * amount of hiding whichever style is chosen.
+ */
+function blurDeviation(level: RedactLevel, sourceLongestSide: number): number {
+	return Math.max(sourceLongestSide / REDACT_SIZES[level] / 2, 1);
+}
+
+/**
+ * A redaction reveals a heavily downsampled copy of the image through a
+ * clip, scaled back up with nearest-neighbor: real pixelation, entirely
+ * declarative. The inner counter-rotation keeps the mosaic locked to the
+ * photo when the block itself is rotated.
+ */
+function RedactBlock({
+	overlay,
+	source,
+}: {
+	overlay: RedactOverlay;
+	source?: RedactSource;
+}) {
+	const blurId = `redact-blur-${overlay.id}`;
+	const clipId = `redact-clip-${overlay.id}`;
+
+	if (!source) {
+		return (
+			<rect
+				fill="#14151f"
+				height={overlay.height}
+				width={overlay.width}
+				x={overlay.x}
+				y={overlay.y}
+			/>
+		);
+	}
+
+	const centerX = overlay.x + overlay.width / 2;
+	const centerY = overlay.y + overlay.height / 2;
+
+	const blurred = overlay.style === 'blur' && Boolean(source.imageUrl);
+
+	// The blur is applied to the whole picture and clipped afterwards, so
+	// no transparency is drawn in from outside the block: blurring a
+	// cut-out first would fade its own edges.
+
+	const deviation = blurDeviation(
+		overlay.level,
+		Math.max(source.sourceWidth, source.sourceHeight)
+	);
+
+	return (
+		<>
+			<defs>
+				<clipPath id={clipId}>
+					<rect
+						height={overlay.height}
+						width={overlay.width}
+						x={overlay.x}
+						y={overlay.y}
+					/>
+				</clipPath>
+
+				{blurred && (
+					<filter
+						colorInterpolationFilters="sRGB"
+						height="130%"
+						id={blurId}
+						width="130%"
+						x="-15%"
+						y="-15%"
+					>
+						<feGaussianBlur stdDeviation={deviation} />
+					</filter>
+				)}
+			</defs>
+
+			<g clipPath={`url(#${clipId})`}>
+				<g
+					transform={`rotate(${-(
+						overlay.rotation ?? 0
+					)} ${centerX} ${centerY})`}
+				>
+					<g filter={blurred ? `url(#${blurId})` : undefined}>
+						<g transform={source.transform}>
+							<image
+								filter={source.filter}
+								height={source.sourceHeight}
+								href={
+									blurred
+										? source.imageUrl
+										: source.pixelUrls[overlay.level]
+								}
+								preserveAspectRatio="none"
+								style={
+									blurred
+										? undefined
+										: {imageRendering: 'pixelated'}
+								}
+								width={source.sourceWidth}
+							/>
+						</g>
+					</g>
+				</g>
+			</g>
+		</>
+	);
 }
 
 /**
@@ -273,7 +488,7 @@ function ArrowLine({overlay}: {overlay: ArrowOverlay}) {
 	);
 }
 
-function renderOverlayNode(overlay: Overlay) {
+function renderOverlayNode(overlay: Overlay, redactSource?: RedactSource) {
 	switch (overlay.kind) {
 		case 'arrow':
 			return <ArrowLine overlay={overlay} />;
@@ -309,6 +524,42 @@ function renderOverlayNode(overlay: Overlay) {
 				/>
 			);
 
+		case 'emoji':
+			return (
+				<text
+					fontSize={overlay.size}
+
+					// Centred horizontally by the anchor and vertically by
+					// the offset, rather than by `dominant-baseline`, which
+					// the export's rasteriser does not resolve reliably.
+
+					textAnchor="middle"
+					x={overlay.x}
+					y={overlay.y + overlay.size * 0.35}
+				>
+					{overlay.character}
+				</text>
+			);
+
+		case 'image':
+			return (
+				<image
+					height={overlay.height}
+					href={overlay.src}
+
+					// The box is the geometry the user resized, so the
+					// picture fills it rather than letterboxing inside it.
+
+					preserveAspectRatio="none"
+					width={overlay.width}
+					x={overlay.x}
+					y={overlay.y}
+				/>
+			);
+
+		case 'redact':
+			return <RedactBlock overlay={overlay} source={redactSource} />;
+
 		case 'shape':
 			if (overlay.sketchSeed !== undefined) {
 				return (
@@ -337,6 +588,19 @@ function renderOverlayNode(overlay: Overlay) {
 					width={overlay.width}
 					x={overlay.x}
 					y={overlay.y}
+				/>
+			);
+
+		case 'stroke':
+			return (
+				<path
+					d={pointsToPath(overlay.points, overlay.smooth)}
+					fill="none"
+					stroke={overlay.color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={overlay.width}
+					transform={`translate(${overlay.x} ${overlay.y})`}
 				/>
 			);
 
@@ -379,6 +643,28 @@ export function mirrorOverlay(overlay: Overlay, boundsWidth: number): Overlay {
 	}
 
 	const rotation = overlay.rotation ? -overlay.rotation : overlay.rotation;
+
+	if (overlay.kind === 'emoji') {
+		return {...overlay, rotation, x: boundsWidth - overlay.x};
+	}
+
+	if (overlay.kind === 'stroke') {
+
+		// The origin reflects and every relative x negates, exactly as
+		// the arrow's vector does: the stroke keeps hugging whatever it
+		// was drawn around.
+
+		const box = pointsBounds(overlay.points);
+
+		return {
+			...overlay,
+			points: overlay.points.map((value, index) =>
+				index % 2 === 0 ? box.width - (value - box.x) + box.x : value
+			),
+			rotation,
+			x: boundsWidth - overlay.x - box.width - box.x * 2,
+		};
+	}
 
 	if (overlay.kind === 'text') {
 		const width = textWidth(

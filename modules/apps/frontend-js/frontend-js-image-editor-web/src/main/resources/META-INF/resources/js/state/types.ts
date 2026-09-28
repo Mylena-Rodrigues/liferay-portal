@@ -117,6 +117,23 @@ export interface EditState {
 	sourceWidth: number;
 }
 
+export interface EmojiOverlay {
+	character: string;
+	id: string;
+	kind: 'emoji';
+
+	name: string;
+
+	opacity?: number;
+	rotation?: number;
+
+	size: number;
+
+	x: number;
+
+	y: number;
+}
+
 export type FilterPreset =
 	| 'bleach'
 	| 'cool'
@@ -167,7 +184,29 @@ interface HistoryEntry {
 	state: EditState;
 }
 
-export type Overlay = ArrowOverlay | CircleOverlay | ShapeOverlay | TextOverlay;
+export interface ImageOverlay {
+	description: string;
+
+	height: number;
+	id: string;
+	kind: 'image';
+	opacity?: number;
+	rotation?: number;
+	src: string;
+	width: number;
+	x: number;
+	y: number;
+}
+
+export type Overlay =
+	| ArrowOverlay
+	| CircleOverlay
+	| EmojiOverlay
+	| ImageOverlay
+	| RedactOverlay
+	| ShapeOverlay
+	| StrokeOverlay
+	| TextOverlay;
 
 export type RatioPreset =
 	| '1:1'
@@ -178,10 +217,49 @@ export type RatioPreset =
 	| 'custom'
 	| 'original';
 
+export type RedactLevel = 'coarse' | 'fine' | 'medium' | 'tiny';
+
+export interface RedactOverlay {
+	height: number;
+	id: string;
+	kind: 'redact';
+
+	level: RedactLevel;
+
+	opacity?: number;
+	rotation?: number;
+
+	style?: RedactStyle;
+
+	width: number;
+	x: number;
+	y: number;
+}
+
+export type RedactStyle = 'blur' | 'pixel';
+
 type Rotation = 0 | 90 | 180 | 270;
 
 export interface ShapeOverlay extends BoxOverlayBase {
 	kind: 'shape';
+}
+
+export interface StrokeOverlay {
+	color: string;
+	id: string;
+	kind: 'stroke';
+	opacity?: number;
+
+	points: number[];
+
+	rotation?: number;
+
+	smooth: boolean;
+
+	width: number;
+
+	x: number;
+	y: number;
 }
 
 export interface TextOverlay {
@@ -208,6 +286,11 @@ export function rotatedSize(state: EditState): {
 
 export function isBoxOverlay(
 	overlay: Overlay
-): overlay is CircleOverlay | ShapeOverlay {
-	return overlay.kind === 'circle' || overlay.kind === 'shape';
+): overlay is CircleOverlay | ImageOverlay | RedactOverlay | ShapeOverlay {
+	return (
+		overlay.kind === 'circle' ||
+		overlay.kind === 'image' ||
+		overlay.kind === 'redact' ||
+		overlay.kind === 'shape'
+	);
 }
