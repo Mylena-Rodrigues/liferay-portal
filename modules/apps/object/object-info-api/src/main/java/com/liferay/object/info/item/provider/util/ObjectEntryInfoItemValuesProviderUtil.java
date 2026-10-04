@@ -168,16 +168,22 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 					fetchObjectRelationshipByObjectFieldId2(
 						objectField.getObjectFieldId());
 
+			ObjectDefinition relatedSystemObjectDefinition = null;
 			com.liferay.object.model.ObjectEntry
 				serviceBuilderRelatedObjectEntry = null;
 
 			if (serviceBuilderObjectEntry != null) {
+				relatedSystemObjectDefinition =
+					serviceBuilderObjectEntry.getRelatedSystemObjectDefinition(
+						objectField.getName());
 				serviceBuilderRelatedObjectEntry =
 					serviceBuilderObjectEntry.getRelatedObjectEntry(
 						objectField.getName());
 			}
 
-			if (serviceBuilderRelatedObjectEntry == null) {
+			if ((relatedSystemObjectDefinition == null) &&
+				(serviceBuilderRelatedObjectEntry == null)) {
+
 				long objectEntryId = GetterUtil.getLong(
 					values.get(objectField.getName()));
 
@@ -189,7 +195,8 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 
 			ObjectDefinition parentObjectDefinition =
 				_getParentObjectDefinition(
-					objectDefinitionLocalService, objectRelationship,
+					objectDefinition, objectDefinitionLocalService,
+					objectRelationship, relatedSystemObjectDefinition,
 					serviceBuilderRelatedObjectEntry);
 
 			ObjectEntry objectEntry = ObjectEntryInfoItemUtil.getObjectEntry(
@@ -734,13 +741,25 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 	}
 
 	private static ObjectDefinition _getParentObjectDefinition(
+			ObjectDefinition objectDefinition,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectRelationship objectRelationship,
+			ObjectDefinition relatedSystemObjectDefinition,
 			com.liferay.object.model.ObjectEntry
 				serviceBuilderRelatedObjectEntry)
 		throws Exception {
 
 		if (serviceBuilderRelatedObjectEntry == null) {
+			if (relatedSystemObjectDefinition != null) {
+				return relatedSystemObjectDefinition;
+			}
+
+			if (objectRelationship.getObjectDefinitionId1() ==
+					objectDefinition.getObjectDefinitionId()) {
+
+				return objectDefinition;
+			}
+
 			return objectDefinitionLocalService.getObjectDefinition(
 				objectRelationship.getObjectDefinitionId1());
 		}
