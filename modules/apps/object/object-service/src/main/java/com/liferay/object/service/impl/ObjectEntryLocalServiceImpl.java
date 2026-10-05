@@ -451,21 +451,20 @@ public class ObjectEntryLocalServiceImpl
 
 		defaultLanguageId = _getDefaultLanguageId(defaultLanguageId, groupId);
 
-		_fillDefaultValue(
-			defaultLanguageId, groupId, objectDefinitionId, values);
+		_fillDefaultValue(defaultLanguageId, groupId, objectDefinition, values);
 
 		_contributeValues(groupId, objectDefinition, userId, values);
 
 		Map<ObjectField, Set<DLFileEntry>> dlFileEntriesMap = new HashMap<>();
 		long objectEntryId = counterLocalService.increment();
+		ObjectFieldBag objectFieldBag = objectDefinition.getObjectFieldBag();
 		User user = _userLocalService.getUser(userId);
 
 		_validateValues(
 			defaultLanguageId, dlFileEntriesMap, null, groupId,
 			user.isGuestUser(), objectDefinition, null,
-			_objectFieldPersistence.findByObjectDefinitionId(
-				objectDefinition.getObjectDefinitionId()),
-			false, serviceContext, null, userId, null, values);
+			objectFieldBag.getObjectFields(), false, serviceContext, null,
+			userId, null, values);
 
 		_addDLFileEntries(
 			dlFileEntriesMap, groupId, objectDefinition, objectEntryId,
@@ -494,6 +493,7 @@ public class ObjectEntryLocalServiceImpl
 		objectEntry.setUserName(user.getFullName());
 		objectEntry.setCreateDate(new Date());
 		objectEntry.setHeadObjectEntryId(objectEntryId);
+		objectEntry.setObjectDefinition(objectDefinition);
 		objectEntry.setObjectDefinitionId(objectDefinitionId);
 		objectEntry.setObjectEntryFolderId(objectEntryFolderId);
 		objectEntry.setDefaultLanguageId(defaultLanguageId);
@@ -532,9 +532,7 @@ public class ObjectEntryLocalServiceImpl
 			extensionDynamicObjectDefinitionStaticValues) {
 
 			_addObjectRelationshipERCFieldValue(
-				_objectFieldPersistence.findByObjectDefinitionId(
-					objectEntry.getObjectDefinitionId()),
-				insertedValues);
+				objectFieldBag.getObjectFields(), insertedValues);
 
 			objectEntry.setValues(insertedValues);
 		}
@@ -869,7 +867,7 @@ public class ObjectEntryLocalServiceImpl
 			0, objectDefinition.getObjectDefinitionId(), primaryKey);
 
 		_deleteFileEntries(
-			Collections.emptyMap(), objectDefinition.getObjectDefinitionId(),
+			Collections.emptyMap(), objectDefinition,
 			extensionDynamicObjectDefinitionTableValues);
 	}
 
@@ -3797,14 +3795,12 @@ public class ObjectEntryLocalServiceImpl
 	}
 
 	private void _deleteFileEntries(
-		Map<String, Serializable> newValues, long objectDefinitionId,
+		Map<String, Serializable> newValues, ObjectDefinition objectDefinition,
 		Map<String, Serializable> oldValues) {
 
-		List<ObjectField> objectFields =
-			_objectFieldPersistence.findByObjectDefinitionId(
-				objectDefinitionId);
+		ObjectFieldBag objectFieldBag = objectDefinition.getObjectFieldBag();
 
-		for (ObjectField objectField : objectFields) {
+		for (ObjectField objectField : objectFieldBag.getObjectFields()) {
 			if (objectField.isSystem() ||
 				!Objects.equals(
 					objectField.getBusinessType(),
@@ -4151,13 +4147,12 @@ public class ObjectEntryLocalServiceImpl
 	}
 
 	private void _fillDefaultValue(
-		String defaultLanguageId, long groupId, long objectDefinitionId,
-		Map<String, Serializable> values) {
+		String defaultLanguageId, long groupId,
+		ObjectDefinition objectDefinition, Map<String, Serializable> values) {
 
-		for (ObjectField objectField :
-				_objectFieldPersistence.findByObjectDefinitionId(
-					objectDefinitionId)) {
+		ObjectFieldBag objectFieldBag = objectDefinition.getObjectFieldBag();
 
+		for (ObjectField objectField : objectFieldBag.getObjectFields()) {
 			Map<String, Object> localizedValues =
 				(Map<String, Object>)values.getOrDefault(
 					objectField.getI18nObjectFieldName(), new HashMap<>());
@@ -6075,9 +6070,7 @@ public class ObjectEntryLocalServiceImpl
 				objectDefinition, _objectFieldLocalService),
 			objectFieldBag, objectEntry.getObjectEntryId(), values);
 		_addObjectRelationshipERCFieldValue(
-			_objectFieldPersistence.findByObjectDefinitionId(
-				objectEntry.getObjectDefinitionId()),
-			values);
+			objectFieldBag.getObjectFields(), values);
 
 		return values;
 	}
@@ -7873,19 +7866,22 @@ public class ObjectEntryLocalServiceImpl
 			_objectDefinitionPersistence.findByPrimaryKey(
 				objectEntry.getObjectDefinitionId());
 
+		objectEntry.setObjectDefinition(objectDefinition);
+
 		if (!partialUpdate) {
 			_fillDefaultValue(
 				objectEntry.getDefaultLanguageId(), objectEntry.getGroupId(),
-				objectDefinition.getObjectDefinitionId(), values);
+				objectDefinition, values);
 		}
 
 		_contributeValues(
 			objectEntry.getGroupId(), objectDefinition, userId, values);
 
 		Map<ObjectField, Set<DLFileEntry>> dlFileEntriesMap = new HashMap<>();
-		List<ObjectField> objectFields =
-			_objectFieldPersistence.findByObjectDefinitionId(
-				objectDefinition.getObjectDefinitionId());
+
+		ObjectFieldBag objectFieldBag = objectDefinition.getObjectFieldBag();
+
+		List<ObjectField> objectFields = objectFieldBag.getObjectFields();
 
 		_validateValues(
 			objectEntry.getDefaultLanguageId(), dlFileEntriesMap,
@@ -8045,8 +8041,7 @@ public class ObjectEntryLocalServiceImpl
 
 		if (!objectDefinition.isEnableObjectEntryVersioning()) {
 			_deleteFileEntries(
-				objectEntry.getValues(), objectEntry.getObjectDefinitionId(),
-				transientValues);
+				objectEntry.getValues(), objectDefinition, transientValues);
 		}
 
 		_deleteTempFileEntries(dlFileEntriesMap);
