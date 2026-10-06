@@ -11,6 +11,11 @@
 	},
 	"items": [
 		{
+			"externalReferenceCode": "C_ACCOUNT_BUYER",
+			"name": "Account Buyer",
+			"roleType": "account"
+		},
+		{
 			"externalReferenceCode": "C_ACCOUNT_REQUESTER",
 			"name": "Account Requester",
 			"roleType": "account"
@@ -39,6 +44,11 @@
 			"externalReferenceCode": "C_CRITICAL_INCIDENT_CONTACT",
 			"name": "Critical Incident Contact",
 			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_CUSTOMER",
+			"name": "Customer",
+			"roleType": "regular"
 		},
 		{
 			"externalReferenceCode": "C_CUSTOMER_EXPERIENCE_MANAGER",
@@ -91,6 +101,21 @@
 			"roleType": "account"
 		},
 		{
+			"externalReferenceCode": "C_PAAS_USER",
+			"name": "PaaS User",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PARTNER",
+			"name": "Partner",
+			"roleType": "regular"
+		},
+		{
+			"externalReferenceCode": "C_PARTNER_ACCOUNT_ADMIN",
+			"name": "Partner Account Admin",
+			"roleType": "account"
+		},
+		{
 			"externalReferenceCode": "C_PARTNER_MANAGER",
 			"name": "Partner Manager",
 			"roleType": "account"
@@ -118,6 +143,26 @@
 		{
 			"externalReferenceCode": "C_PRIMARY_CONTACT",
 			"name": "Primary Contact",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PRIVACY_BREACH_CONTACT",
+			"name": "Privacy Breach Contact",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PROJECT_ADMIN",
+			"name": "Project Admin",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PROJECT_REQUESTER",
+			"name": "Project Requester",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PROJECT_USER",
+			"name": "Project User",
 			"roleType": "account"
 		},
 		{
@@ -153,6 +198,11 @@
 		{
 			"externalReferenceCode": "C_SECONDARY_CONTACT",
 			"name": "Secondary Contact",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_SECURITY_BREACH_CONTACT",
+			"name": "Security Breach Contact",
 			"roleType": "account"
 		},
 		{
