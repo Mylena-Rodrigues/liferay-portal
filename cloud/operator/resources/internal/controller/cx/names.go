@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"strings"
 
 	cxv1alpha1 "github.com/liferay/liferay-portal/cloud/operator/api/cx/v1alpha1"
@@ -25,6 +26,7 @@ const (
 
 const (
 	MetadataTypeDxp          = "dxp"
+	MetadataTypeExtInit      = "ext-init"
 	MetadataTypeExtProvision = "ext-provision"
 )
 
@@ -54,6 +56,43 @@ func effectiveDxpNamespace(clientExtension *cxv1alpha1.ClientExtension) string {
 	return clientExtension.Namespace
 }
 
+func extInitApplicationERCs(clientExtension *cxv1alpha1.ClientExtension) []string {
+	var externalReferenceCodes []string
+
+	for pid := range clientExtension.Spec.Configs {
+		for _, separator := range []string{"~", "_", "-"} {
+			index := strings.Index(pid, separator)
+
+			if index <= 0 {
+				continue
+			}
+
+			if !slices.Contains(extInitFactoryPIDs, pid[:index]) {
+				break
+			}
+
+			externalReferenceCode, _, _ := strings.Cut(pid[index+1:], "/")
+
+			if externalReferenceCode != "" {
+				externalReferenceCodes = append(externalReferenceCodes, externalReferenceCode)
+			}
+
+			break
+		}
+	}
+
+	slices.Sort(externalReferenceCodes)
+
+	return slices.Compact(externalReferenceCodes)
+}
+
+func extInitName(clientExtension *cxv1alpha1.ClientExtension) string {
+	return fmt.Sprintf(
+		"%s-%s-lxc-ext-init-metadata",
+		clientExtension.Spec.ServiceID, clientExtension.Spec.VirtualInstanceID,
+	)
+}
+
 func extProvisionName(clientExtension *cxv1alpha1.ClientExtension) string {
 	return fmt.Sprintf(
 		"%s-%s-lxc-ext-provision-metadata",
@@ -70,4 +109,9 @@ func ownerLabelValue(clientExtension *cxv1alpha1.ClientExtension) string {
 func ownsExtProvision(clientExtension *cxv1alpha1.ClientExtension, configMap *corev1.ConfigMap) bool {
 	return (configMap.Annotations[AnnotationOwnerName] == clientExtension.Name) &&
 		(configMap.Annotations[AnnotationOwnerNamespace] == clientExtension.Namespace)
+}
+
+var extInitFactoryPIDs = []string{
+	"com.liferay.oauth2.provider.configuration.OAuth2ProviderApplicationHeadlessServerConfiguration",
+	"com.liferay.oauth2.provider.configuration.OAuth2ProviderApplicationUserAgentConfiguration",
 }
