@@ -4,13 +4,12 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {
-	AIAssistantTriggerButton,
-	ChatContext,
-} from '@liferay/ai-hub-cell-js-components-web';
 import {openToast} from 'frontend-js-components-web';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
+import AIAssistantTriggerButton, {
+	ChatContext,
+} from './components/AIAssistantTriggerButton';
 import StepLayout from './components/StepLayout';
 import {
 	commitGeneration,
