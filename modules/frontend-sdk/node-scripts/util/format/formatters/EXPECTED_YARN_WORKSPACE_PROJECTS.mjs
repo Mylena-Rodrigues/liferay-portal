@@ -58,7 +58,6 @@ export default [
 	'@liferay/account-validator-vies-web',
 	'@liferay/address-web',
 	'@liferay/ai-creator-openai-web',
-	'@liferay/ai-hub-cell-js-components-web',
 	'@liferay/analytics-reports-js-components-web',
 	'@liferay/analytics-settings-web',
 	'@liferay/application-list-taglib',
