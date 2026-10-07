@@ -1,5 +1,5 @@
 {
-	"@generated": "e30293eeea22a9f13613982182aa225bced1421b",
+	"@generated": "39c55d18183ddcda41bbf88b64c4133fdd90d0ee",
 	"@readonly": "** AUTO-GENERATED: DO NOT EDIT **",
 	"compilerOptions": {
 		"allowSyntheticDefaultImports": true,
@@ -11,12 +11,6 @@
 		"module": "es2022",
 		"moduleResolution": "node",
 		"paths": {
-			"@liferay/ai-hub-cell-js-components-web": [
-				"../../../../../../../ai-hub-cell/ai-hub-cell-js-components-web/src/main/resources/META-INF/resources/js/index.ts"
-			],
-			"@liferay/ai-hub-cell-js-components-web/renderAIAssistantTrigger": [
-				"../../../../../../../ai-hub-cell/ai-hub-cell-js-components-web/src/main/resources/META-INF/resources/js/renderAIAssistantTrigger.ts"
-			],
 			"@liferay/cookies-banner-web": [
 				"../../../../../../../cookies/cookies-banner-web/src/main/resources/META-INF/resources/js/index.d.ts"
 			],
@@ -64,9 +58,6 @@
 		"../../../../../../../../global.d.ts"
 	],
 	"references": [
-		{
-			"path": "../../../../../../../ai-hub-cell/ai-hub-cell-js-components-web/src/main/resources/META-INF/resources/tsconfig.json"
-		},
 		{
 			"path": "../../../../../../../cookies/cookies-banner-web/src/main/resources/META-INF/resources/tsconfig.json"
 		},
