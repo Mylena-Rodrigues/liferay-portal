@@ -168,6 +168,10 @@ exports[`SegmentEditor should render 1`] = `
         </ul>
       </nav>
       <div
+        aria-live="assertive"
+        class="sr-only"
+      />
+      <div
         class="form-body"
       >
         <div
@@ -346,7 +350,7 @@ exports[`SegmentEditor should render 1`] = `
                           <span
                             class="text-4"
                           >
-                            Drag and drop criterion from the right to add rules.
+                            Drag and drop criterion from the left to add rules.
                           </span>
                         </div>
                         <div>
