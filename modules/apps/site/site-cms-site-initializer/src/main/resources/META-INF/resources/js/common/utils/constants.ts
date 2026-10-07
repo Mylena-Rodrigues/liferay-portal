@@ -11,6 +11,8 @@ export const OBJECT_ENTRY_FOLDER_CLASS_NAME =
 
 export const AI_ASSISTANT_TOOLBAR_TRIGGER_ID = 'ai-assistant-toolbar-trigger';
 
+export const CONTENT_CHANGED_EVENT = 'cms:aiAssistant:contentChanged';
+
 export const ENTERPRISE_URL =
 	'https://www.liferay.com/web/lr/cms-upgrade?utm_medium=referral&utm_source=cms-ft&utm_content=cms-ft-upgrade&utm_cid=701VO00000wwP6IYAU';
 

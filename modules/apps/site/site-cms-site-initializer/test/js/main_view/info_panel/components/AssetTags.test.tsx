@@ -68,9 +68,13 @@ function MockItemSelectorItem({children}: {children: React.ReactNode}) {
 	return <div>{children}</div>;
 }
 
-jest.mock('@liferay/ai-hub-cell-js-components-web', () => ({
-	AIAssistantTriggerButton: MockAIAssistantTriggerButton,
-}));
+jest.mock(
+	'../../../../../src/main/resources/META-INF/resources/js/common/components/AIAssistantTriggerButton',
+	() => ({
+		__esModule: true,
+		default: MockAIAssistantTriggerButton,
+	})
+);
 
 jest.mock(
 	'../../../../../src/main/resources/META-INF/resources/js/common/services/ApiHelper'
