@@ -3,7 +3,7 @@ modules/apps/account/    @liferay-commerce
 modules/apps/adaptive-media/    @liferay-content-management
 modules/apps/address/    @liferay-commerce
 modules/apps/ai-creator/    @liferay-content-management
-modules/apps/ai-hub-cell/    @liferay-ai-hub
+modules/apps/ai-hub-cell/ai-hub-cell-api/    @liferay-ai-hub
 modules/apps/analytics/    @liferay-ac
 modules/apps/announcements/    @liferay-content-management
 modules/apps/application-list/    @liferay-platform-experience
