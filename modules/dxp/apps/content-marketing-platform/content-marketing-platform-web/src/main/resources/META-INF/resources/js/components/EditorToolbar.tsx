@@ -6,9 +6,12 @@
 import ClayButton from '@clayui/button';
 import {ClayInput} from '@clayui/form';
 import ClayLink from '@clayui/link';
-import {AIAssistantTriggerButton} from '@liferay/ai-hub-cell-js-components-web';
 import {isCtrlOrMeta} from '@liferay/layout-js-components-web';
-import {ApiHelper, Toolbar} from '@liferay/site-cms-site-initializer';
+import {
+	AIAssistantTriggerButton,
+	ApiHelper,
+	Toolbar,
+} from '@liferay/site-cms-site-initializer';
 import {escapeHTML, navigate, sessionStorage, sub} from 'frontend-js-web';
 import React, {useEffect, useId, useRef, useState} from 'react';
 

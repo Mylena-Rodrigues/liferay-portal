@@ -18,15 +18,31 @@ const mockGetObjectFields = jest.fn();
 const mockGetSpaces = jest.fn();
 const mockRenderAIAssistantTriggerButton = jest.fn();
 
-jest.mock('@liferay/ai-hub-cell-js-components-web', () => ({
+jest.mock('@liferay/site-cms-site-initializer', () => ({
 	AIAssistantTriggerButton: (props: {label: string}) => {
 		mockRenderAIAssistantTriggerButton(props);
 
 		return require('react').createElement('button', null, props.label);
 	},
-	getObjectFields: (externalReferenceCode: string) =>
-		mockGetObjectFields(externalReferenceCode),
-	getSpaces: () => mockGetSpaces(),
+}));
+
+jest.mock('frontend-js-web', () => ({
+	loadModule: (importDeclaration: string) =>
+		Promise.resolve(
+			importDeclaration.startsWith('{getObjectFields}')
+				? (externalReferenceCode: string) =>
+						mockGetObjectFields(externalReferenceCode)
+				: () => mockGetSpaces()
+		),
+	sub: (key: string, ...args: string[]) => {
+		let result = key;
+
+		args.forEach((arg, index) => {
+			result = result.replace(`{${index}}`, arg);
+		});
+
+		return result;
+	},
 }));
 
 describe('ContentGapMatrixHeader', () => {
@@ -119,8 +135,10 @@ describe('ContentGapMatrixHeader', () => {
 			/>
 		);
 
-		expect(mockGetObjectFields).toHaveBeenCalledWith(
-			'L_CMS_BASIC_WEB_CONTENT'
+		await waitFor(() =>
+			expect(mockGetObjectFields).toHaveBeenCalledWith(
+				'L_CMS_BASIC_WEB_CONTENT'
+			)
 		);
 
 		await waitFor(() => {

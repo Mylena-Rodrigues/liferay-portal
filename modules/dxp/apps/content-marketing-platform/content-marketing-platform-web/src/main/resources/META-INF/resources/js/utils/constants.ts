@@ -5,6 +5,8 @@
 
 import {IDisplayType} from './types';
 
+export const CONTENT_CHANGED_EVENT = 'cms:aiAssistant:contentChanged';
+
 export const DEFAULT_TASK_STATE_KEY = 'notStarted';
 
 export const DISPLAY_TYPES = [
