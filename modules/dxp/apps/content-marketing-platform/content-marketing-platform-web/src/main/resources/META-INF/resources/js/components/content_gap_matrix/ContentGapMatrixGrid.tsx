@@ -4,11 +4,11 @@
  */
 
 import {ClayTooltipProvider} from '@clayui/tooltip';
-import {CONTENT_CHANGED_EVENT} from '@liferay/ai-hub-cell-js-components-web';
 import {FDS_EVENT} from '@liferay/frontend-data-set-web';
 import {sub} from 'frontend-js-web';
 import React, {useEffect} from 'react';
 
+import {CONTENT_CHANGED_EVENT} from '../../utils/constants';
 import ContentGapCell from './ContentGapCell';
 import {MatrixData, TaxonomyTerm} from './types';
 import {useAIInsightsChatContext} from './useAIInsightsChatContext';

@@ -33,7 +33,6 @@
 		"@clayui/time-picker": "^3.166.0",
 		"@clayui/toolbar": "^3.166.0",
 		"@clayui/tooltip": "^3.166.0",
-		"@liferay/ai-hub-cell-js-components-web": "*",
 		"@liferay/analytics-reports-js-components-web": "*",
 		"@liferay/frontend-data-set-web": "*",
 		"@liferay/frontend-js-charts-web": "*",

@@ -5,7 +5,7 @@
 
 import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
-import {AIAssistantTriggerButton} from '@liferay/ai-hub-cell-js-components-web';
+import {AIAssistantTriggerButton} from '@liferay/site-cms-site-initializer';
 import {sub} from 'frontend-js-web';
 import React from 'react';
 

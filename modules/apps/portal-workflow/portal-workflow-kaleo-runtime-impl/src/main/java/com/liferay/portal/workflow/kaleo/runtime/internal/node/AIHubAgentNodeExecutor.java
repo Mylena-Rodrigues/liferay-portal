@@ -45,6 +45,9 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Carolina Barbosa
@@ -155,11 +158,19 @@ public class AIHubAgentNodeExecutor extends BaseNodeExecutor {
 		KaleoInstanceToken kaleoInstanceToken =
 			executionContext.getKaleoInstanceToken();
 
+		AIHubCellAuthorizationTokenProvider
+			aiHubCellAuthorizationTokenProvider =
+				_aiHubCellAuthorizationTokenProvider;
+
+		if (aiHubCellAuthorizationTokenProvider == null) {
+			throw new PortalException(
+				"No AI Hub Cell authorization token provider is available");
+		}
+
 		JSONObject authorizationTokenJSONObject =
-			_aiHubCellAuthorizationTokenProvider.
-				getAuthorizationTokenJSONObject(
-					kaleoInstanceToken.getCompanyId(),
-					kaleoInstanceToken.getUserId());
+			aiHubCellAuthorizationTokenProvider.getAuthorizationTokenJSONObject(
+				kaleoInstanceToken.getCompanyId(),
+				kaleoInstanceToken.getUserId());
 
 		options.addHeader(
 			HttpHeaders.AUTHORIZATION,
@@ -246,8 +257,12 @@ public class AIHubAgentNodeExecutor extends BaseNodeExecutor {
 	private static final Log _log = LogFactoryUtil.getLog(
 		AIHubAgentNodeExecutor.class);
 
-	@Reference
-	private AIHubCellAuthorizationTokenProvider
+	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY
+	)
+	private volatile AIHubCellAuthorizationTokenProvider
 		_aiHubCellAuthorizationTokenProvider;
 
 	@Reference

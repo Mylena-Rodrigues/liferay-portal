@@ -5,11 +5,11 @@
 
 import Label from '@clayui/label';
 import ClayPanel from '@clayui/panel';
-import {AIAssistantTriggerButton} from '@liferay/ai-hub-cell-js-components-web';
 import {ItemSelector} from '@liferay/frontend-js-item-selector-web';
 import {sub} from 'frontend-js-web';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
+import AIAssistantTriggerButton from '../../../common/components/AIAssistantTriggerButton';
 import ApiHelper from '../../../common/services/ApiHelper';
 import TagService from '../../../common/services/TagService';
 import {IAssetObjectEntry} from '../../../common/types/AssetType';

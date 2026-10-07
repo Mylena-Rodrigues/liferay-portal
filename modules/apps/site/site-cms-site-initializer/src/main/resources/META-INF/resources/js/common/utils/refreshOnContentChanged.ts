@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {CONTENT_CHANGED_EVENT} from '@liferay/ai-hub-cell-js-components-web';
-
-import {FDS_EVENT_UPDATE_DISPLAY} from './constants';
+import {CONTENT_CHANGED_EVENT, FDS_EVENT_UPDATE_DISPLAY} from './constants';
 
 const dataSetIds = new Set<string>();
 

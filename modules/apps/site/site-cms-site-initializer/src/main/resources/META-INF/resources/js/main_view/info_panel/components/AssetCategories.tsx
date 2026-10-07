@@ -6,10 +6,10 @@
 import ClayForm from '@clayui/form';
 import Label from '@clayui/label';
 import ClayPanel from '@clayui/panel';
-import {AIAssistantTriggerButton} from '@liferay/ai-hub-cell-js-components-web';
 import {ItemSelector} from '@liferay/frontend-js-item-selector-web';
 import React, {useCallback, useId, useMemo, useState} from 'react';
 
+import AIAssistantTriggerButton from '../../../common/components/AIAssistantTriggerButton';
 import ErrorFeedback from '../../../common/components/forms/ErrorFeedback';
 import {
 	IAssetObjectEntry,

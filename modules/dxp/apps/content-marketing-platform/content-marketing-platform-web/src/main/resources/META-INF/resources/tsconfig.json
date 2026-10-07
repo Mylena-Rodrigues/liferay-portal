@@ -1,5 +1,5 @@
 {
-	"@generated": "b377dabd7056e11e72b20b2a3e7eb6571da150e9",
+	"@generated": "41d744e98c70c6cc726fc0168be0fd5b1793c38b",
 	"@readonly": "** AUTO-GENERATED: DO NOT EDIT **",
 	"compilerOptions": {
 		"allowSyntheticDefaultImports": true,
@@ -11,12 +11,6 @@
 		"module": "es2022",
 		"moduleResolution": "node",
 		"paths": {
-			"@liferay/ai-hub-cell-js-components-web": [
-				"../../../../../../../../../apps/ai-hub-cell/ai-hub-cell-js-components-web/src/main/resources/META-INF/resources/js/index.ts"
-			],
-			"@liferay/ai-hub-cell-js-components-web/renderAIAssistantTrigger": [
-				"../../../../../../../../../apps/ai-hub-cell/ai-hub-cell-js-components-web/src/main/resources/META-INF/resources/js/renderAIAssistantTrigger.ts"
-			],
 			"@liferay/analytics-reports-js-components-web": [
 				"../../../../../../../../../apps/analytics/analytics-reports-js-components-web/src/main/resources/META-INF/resources/js/index.ts"
 			],
@@ -100,9 +94,6 @@
 		"../../../../../../../../../global.d.ts"
 	],
 	"references": [
-		{
-			"path": "../../../../../../../../../apps/ai-hub-cell/ai-hub-cell-js-components-web/src/main/resources/META-INF/resources/tsconfig.json"
-		},
 		{
 			"path": "../../../../../../../../../apps/analytics/analytics-reports-js-components-web/src/main/resources/META-INF/resources/tsconfig.json"
 		},
