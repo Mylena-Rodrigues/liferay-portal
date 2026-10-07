@@ -13,6 +13,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.cms.site.initializer.internal.util.InfoItemUtil;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -22,6 +23,10 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Mylena Monte
@@ -46,7 +51,8 @@ public class AIAssistantIconComponentSectionFragmentRenderer
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		if (!FeatureFlagManagerUtil.isEnabled(
+		if ((_aiHubCellJSComponentsWebServletContext == null) ||
+			!FeatureFlagManagerUtil.isEnabled(
 				themeDisplay.getCompanyId(), "LPD-62272")) {
 
 			return;
@@ -90,5 +96,13 @@ public class AIAssistantIconComponentSectionFragmentRenderer
 			"round", true
 		).build();
 	}
+
+	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(osgi.web.symbolicname=com.liferay.ai.hub.cell.js.components.web)"
+	)
+	private volatile ServletContext _aiHubCellJSComponentsWebServletContext;
 
 }
