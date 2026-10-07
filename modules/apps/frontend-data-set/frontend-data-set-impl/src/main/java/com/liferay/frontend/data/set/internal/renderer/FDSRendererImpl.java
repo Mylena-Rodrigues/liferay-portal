@@ -5,15 +5,12 @@
 
 package com.liferay.frontend.data.set.internal.renderer;
 
-import com.liferay.frontend.data.set.SystemFDSEntry;
 import com.liferay.frontend.data.set.SystemFDSEntryRegistry;
 import com.liferay.frontend.data.set.constants.FDSAdminPortletKeys;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.data.set.model.FDSSortItem;
 import com.liferay.frontend.data.set.renderer.FDSRenderer;
 import com.liferay.frontend.data.set.serializer.FDSSerializer;
-import com.liferay.frontend.data.set.view.FDSView;
-import com.liferay.frontend.data.set.view.FDSViewRegistry;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
@@ -289,13 +286,7 @@ public class FDSRendererImpl implements FDSRenderer {
 				).put(
 					"showSearch",
 					() -> {
-						List<FDSView> fdsViews = _fdsViewRegistry.getFDSViews(
-							fdsName);
-
-						SystemFDSEntry systemFDSEntry =
-							_systemFDSEntryRegistry.getSystemFDSEntry(fdsName);
-
-						if ((fdsViews == null) && (systemFDSEntry == null)) {
+						if (!hasConfiguration) {
 							return null;
 						}
 
@@ -416,9 +407,6 @@ public class FDSRendererImpl implements FDSRenderer {
 		FDSRendererImpl.class);
 
 	private BundleContext _bundleContext;
-
-	@Reference
-	private FDSViewRegistry _fdsViewRegistry;
 
 	@Reference
 	private Portal _portal;

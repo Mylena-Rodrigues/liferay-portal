@@ -8,11 +8,11 @@ package com.liferay.frontend.data.set.internal.renderer;
 import com.liferay.frontend.data.set.SystemFDSEntry;
 import com.liferay.frontend.data.set.SystemFDSEntryRegistry;
 import com.liferay.frontend.data.set.serializer.FDSSerializer;
-import com.liferay.frontend.data.set.view.FDSViewRegistry;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.template.react.renderer.ComponentDescriptor;
@@ -51,10 +51,6 @@ public class FDSRendererImplTest {
 
 	@Before
 	public void setUp() {
-		ReflectionTestUtil.setFieldValue(
-			_fdsRendererImpl, "_fdsViewRegistry",
-			Mockito.mock(FDSViewRegistry.class));
-
 		Portal portal = Mockito.mock(Portal.class);
 
 		MockSettings mockSettings = Mockito.withSettings();
@@ -94,6 +90,7 @@ public class FDSRendererImplTest {
 
 		Assert.assertTrue((boolean)props.get("searchAsYouType"));
 		Assert.assertTrue((boolean)props.get("searchSuggestionsEnabled"));
+		Assert.assertTrue((boolean)props.get("showSearch"));
 	}
 
 	@Test
@@ -110,6 +107,7 @@ public class FDSRendererImplTest {
 
 		Assert.assertTrue((boolean)props.get("searchAsYouType"));
 		Assert.assertTrue((boolean)props.get("searchSuggestionsEnabled"));
+		Assert.assertTrue((boolean)props.get("showSearch"));
 	}
 
 	@Test
@@ -120,6 +118,7 @@ public class FDSRendererImplTest {
 
 		Assert.assertFalse(props.containsKey("searchAsYouType"));
 		Assert.assertFalse(props.containsKey("searchSuggestionsEnabled"));
+		Assert.assertFalse((boolean)props.get("showSearch"));
 	}
 
 	private void _registerFDSSerializer(String type) {
@@ -146,6 +145,12 @@ public class FDSRendererImplTest {
 		);
 
 		Mockito.when(
+			fdsSerializer.serializeShowSearch(_FDS_NAME, _httpServletRequest)
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
 			_serviceTrackerMap.getService(type)
 		).thenReturn(
 			fdsSerializer
@@ -154,8 +159,11 @@ public class FDSRendererImplTest {
 
 	private Map<String, Object> _render() throws Exception {
 		_fdsRendererImpl.render(
-			null, RandomTestUtil.randomString(), _FDS_NAME, _httpServletRequest,
-			null, RandomTestUtil.randomBoolean(), null, new StringWriter());
+			HashMapBuilder.<String, Object>put(
+				"showSearch", false
+			).build(),
+			RandomTestUtil.randomString(), _FDS_NAME, _httpServletRequest, null,
+			RandomTestUtil.randomBoolean(), null, new StringWriter());
 
 		ArgumentCaptor<Map<String, Object>> argumentCaptor =
 			ArgumentCaptor.forClass(Map.class);

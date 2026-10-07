@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.site.cms.site.initializer.internal.comparison.ObjectEntryVersionFieldValueResolver;
 
@@ -215,12 +216,18 @@ public class CompareObjectEntryVersionsCMSServlet extends BaseCMSServlet {
 			return Validator.isNotNull(displayValue);
 		}
 
-		return ObjectFieldConstants.BUSINESS_TYPE_BOOLEAN.equals(
+		return _shownUnchangedObjectFieldBusinessTypes.contains(
 			objectField.getBusinessType());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CompareObjectEntryVersionsCMSServlet.class);
+
+	private static final Set<String> _shownUnchangedObjectFieldBusinessTypes =
+		SetUtil.fromArray(
+			ObjectFieldConstants.BUSINESS_TYPE_BOOLEAN,
+			ObjectFieldConstants.BUSINESS_TYPE_PHONE_NUMBER,
+			ObjectFieldConstants.BUSINESS_TYPE_RICH_TEXT);
 
 	@Reference
 	private DiffHtml _diffHtml;

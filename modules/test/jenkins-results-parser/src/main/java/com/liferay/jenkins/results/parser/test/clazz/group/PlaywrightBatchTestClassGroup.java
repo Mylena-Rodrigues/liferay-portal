@@ -17,6 +17,7 @@ import com.liferay.jenkins.results.parser.job.property.JobProperty;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestBatch;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestSelector;
 import com.liferay.jenkins.results.parser.test.clazz.PlaywrightJUnitTestClass;
+import com.liferay.jenkins.results.parser.test.clazz.PlaywrightTestClassMethod;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassFactory;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassMethod;
@@ -363,16 +364,17 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 		File rootDir = new File(configJSONObject.getString("rootDir"));
 
-		Map<String, Map<File, TestClass>> testClassesByProjectMap =
-			new HashMap<>();
+		Map<String, Map<File, TestClass>> testClassesMaps = new HashMap<>();
 
-		_parsePlaywrightJSONObjects(
-			rootDir, _playwrightJSONObject.optJSONArray("suites"),
-			testClassesByProjectMap);
+		synchronized (_playwrightJSONObjectsLoaded) {
+			_parsePlaywrightJSONObjects(
+				rootDir, _playwrightJSONObject.optJSONArray("suites"),
+				testClassesMaps);
+		}
 
 		for (String projectName : _projectNames) {
 			List<TestClass> testClasses = _getTestClasses(
-				projectName, rootDir, testClassesByProjectMap);
+				projectName, rootDir, testClassesMaps);
 
 			if (testClasses.isEmpty()) {
 				continue;
@@ -688,7 +690,7 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 	private List<TestClass> _getTestClasses(
 		String projectName, File rootDir,
-		Map<String, Map<File, TestClass>> testClassesByProjectMap) {
+		Map<String, Map<File, TestClass>> testClassesMaps) {
 
 		if (isRootCauseAnalysis()) {
 			String portalBatchTestSelector = Environment.get(
@@ -705,8 +707,8 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 				portalBatchTestSelector);
 
 			if (matcher.matches()) {
-				Map<File, TestClass> testClassesMap =
-					testClassesByProjectMap.get(projectName);
+				Map<File, TestClass> testClassesMap = testClassesMaps.get(
+					projectName);
 
 				if (testClassesMap != null) {
 					File specFile = new File(
@@ -723,9 +725,8 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 			}
 		}
 
-		Map<File, TestClass> testClassesMap =
-			testClassesByProjectMap.getOrDefault(
-				projectName, Collections.emptyMap());
+		Map<File, TestClass> testClassesMap = testClassesMaps.getOrDefault(
+			projectName, Collections.emptyMap());
 
 		return new ArrayList<>(testClassesMap.values());
 	}
@@ -762,6 +763,23 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		return _hasRunPlaywrightGradleTask;
+	}
+
+	private boolean _hasTestClassMethod(TestClass testClass, String testName) {
+		for (TestClassMethod testClassMethod :
+				testClass.getTestClassMethods()) {
+
+			PlaywrightTestClassMethod playwrightTestClassMethod =
+				(PlaywrightTestClassMethod)testClassMethod;
+
+			if (Objects.equals(
+					playwrightTestClassMethod.getTestName(), testName)) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private boolean _isPlaywrightInYarnWorkspace() throws IOException {
@@ -955,7 +973,7 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 	private void _parsePlaywrightJSONObjects(
 		File rootDir, JSONArray suitesJSONArray,
-		Map<String, Map<File, TestClass>> testClassesByProjectMap) {
+		Map<String, Map<File, TestClass>> testClassesMaps) {
 
 		if (suitesJSONArray == null) {
 			return;
@@ -969,7 +987,7 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 			if (subSuitesJSONArray != null) {
 				_parsePlaywrightJSONObjects(
-					rootDir, subSuitesJSONArray, testClassesByProjectMap);
+					rootDir, subSuitesJSONArray, testClassesMaps);
 			}
 
 			JSONArray specsJSONArray = suiteJSONObject.optJSONArray("specs");
@@ -1012,6 +1030,17 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 					specTitle = subSuite + " › " + specTitle;
 				}
 
+				Map<File, TestClass> testClassesMap =
+					testClassesMaps.computeIfAbsent(
+						specProjectName, k -> new LinkedHashMap<>());
+
+				TestClass testClass = testClassesMap.computeIfAbsent(
+					specFile, k -> TestClassFactory.newTestClass(this, k));
+
+				if (_hasTestClassMethod(testClass, specTitle)) {
+					continue;
+				}
+
 				JSONArray tagsJSONArray = specJSONObject.optJSONArray("tags");
 
 				String tags = null;
@@ -1050,13 +1079,6 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 						}
 					}
 				}
-
-				Map<File, TestClass> testClassesMap =
-					testClassesByProjectMap.computeIfAbsent(
-						specProjectName, k -> new LinkedHashMap<>());
-
-				TestClass testClass = testClassesMap.computeIfAbsent(
-					specFile, k -> TestClassFactory.newTestClass(this, k));
 
 				if (tags != null) {
 					testClass.addTestClassMethod(

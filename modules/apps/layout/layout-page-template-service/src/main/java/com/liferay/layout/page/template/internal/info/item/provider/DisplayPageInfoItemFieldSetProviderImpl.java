@@ -31,7 +31,9 @@ import com.liferay.layout.page.template.info.item.provider.DisplayPageInfoItemFi
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.page.template.util.LayoutPageTemplateEntryUtil;
+import com.liferay.petra.function.UnsafeSupplierValue;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -99,6 +101,12 @@ public class DisplayPageInfoItemFieldSetProviderImpl
 
 		List<InfoFieldValue<Object>> infoFieldValues = new ArrayList<>();
 
+		UnsafeSupplierValue<String, Exception>
+			defaultDisplayPageURLUnsafeSupplierValue =
+				new UnsafeSupplierValue<>(
+					() -> _getDefaultDisplayPageURL(
+						infoItemReference, object, themeDisplay));
+
 		infoFieldValues.add(
 			new InfoFieldValue<>(
 				InfoField.builder(
@@ -110,16 +118,18 @@ public class DisplayPageInfoItemFieldSetProviderImpl
 				).labelInfoLocalizedValue(
 					InfoLocalizedValue.localize(getClass(), "default")
 				).build(),
-				_getDefaultDisplayPageURL(
-					infoItemReference, object, themeDisplay)));
+				() -> {
+					try {
+						return defaultDisplayPageURLUnsafeSupplierValue.
+							getValue();
+					}
+					catch (Exception exception) {
+						return ReflectionUtil.throwException(exception);
+					}
+				}));
 
 		long classNameId = _portal.getClassNameId(
 			infoItemReference.getClassName());
-
-		Group group = themeDisplay.getScopeGroup();
-
-		String groupFriendlyURL = _portal.getGroupFriendlyURL(
-			group.getPublicLayoutSet(), themeDisplay, false, false);
 
 		List<LayoutPageTemplateEntry> layoutPageTemplateEntries =
 			_layoutPageTemplateEntryService.getLayoutPageTemplateEntries(
@@ -129,6 +139,15 @@ public class DisplayPageInfoItemFieldSetProviderImpl
 					themeDisplay.getScopeGroupId()),
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 				WorkflowConstants.STATUS_APPROVED);
+
+		if (layoutPageTemplateEntries.isEmpty()) {
+			return infoFieldValues;
+		}
+
+		Group group = themeDisplay.getScopeGroup();
+
+		String groupFriendlyURL = _portal.getGroupFriendlyURL(
+			group.getPublicLayoutSet(), themeDisplay, false, false);
 
 		for (LayoutPageTemplateEntry layoutPageTemplateEntry :
 				layoutPageTemplateEntries) {
