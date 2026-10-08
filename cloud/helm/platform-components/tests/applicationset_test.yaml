@@ -203,7 +203,7 @@ tests:
                     path: spec.template.spec.sources[0].helm.parameters
                 template: templates/applicationset-infrastructure.yaml
             -   equal:
-                    path: spec.template.spec.sources[0].helm.parameters[6]
+                    path: spec.template.spec.sources[0].helm.parameters[5]
                     value:
                         name: persistence.storageClassName
                         value: managed-csi-premium-v2

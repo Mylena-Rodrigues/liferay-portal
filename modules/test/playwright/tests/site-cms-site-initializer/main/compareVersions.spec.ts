@@ -363,7 +363,7 @@ test(
 		});
 
 		await test.step('Moving the focus with the keyboard also aligns the other version', async () => {
-			await getDiffBox(rightFrame, 'words').click();
+			await getDiffBox(rightFrame, 'essay').click();
 
 			await rightFrame
 				.locator('[data-field-name="ObjectField_attachment"]')
@@ -384,7 +384,7 @@ test(
 				);
 
 			expect(fieldName).toBeTruthy();
-			expect(fieldName).not.toBe('ObjectField_words');
+			expect(fieldName).not.toBe('ObjectField_essay');
 
 			await expect(async () => {
 				const leftBox = await leftFrame

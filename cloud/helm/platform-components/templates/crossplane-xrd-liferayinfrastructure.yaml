@@ -135,9 +135,6 @@ spec:
                                 projectId:
                                     minLength: 1
                                     type: string
-                                region:
-                                    minLength: 1
-                                    type: string
                                 restoreGeneration:
                                     nullable: true
                                     pattern: ^[0-9a-f]{6}$
@@ -199,7 +196,6 @@ spec:
                                 -   database
                                 -   environmentId
                                 -   projectId
-                                -   region
                                 -   storage
                             type: object
                         status:

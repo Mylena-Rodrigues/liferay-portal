@@ -40,7 +40,6 @@ overlayBucket:
 persistence:
     storageClassName: ""
 projectId: ""
-region: ""
 search:
     elasticsearch:
         env:

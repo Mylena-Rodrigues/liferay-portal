@@ -71,6 +71,39 @@
 	<td></td>
 </tr>
 
+<!--FILTER-->
+
+<tr>
+	<td>FILTER_CONDITION_OPTION</td>
+	<td>//*[@role='option'][normalize-space()='${key_option}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILTER_CONDITION_PICKER</td>
+	<td>xpath=(//div[contains(@class,'condition-builder__row')])[last()]//button[@aria-label='${key_picker}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILTER_CONDITION_PICKER_VALUE</td>
+	<td>xpath=(//div[contains(@class,'condition-builder__row')])[last()]//button[@aria-label='${key_picker}'][normalize-space()='${key_value}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILTER_CONDITION_SELECT_BUTTON</td>
+	<td>xpath=(//div[contains(@class,'condition-builder__row')])[last()]//button[@aria-haspopup='dialog']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILTER_CONDITION_VALUE</td>
+	<td>xpath=(//div[contains(@class,'condition-builder__row')])[last()]//input[@aria-label='Value']</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+
 <!--VIEW_CONTENT-->
 
 <tr>

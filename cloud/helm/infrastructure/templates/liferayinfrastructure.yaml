@@ -24,7 +24,6 @@ spec:
     overlayAccess:
         {{- .Values.overlayAccess | toYaml | nindent 8 }}
     projectId: {{ .Values.projectId | quote }}
-    region: {{ .Values.region | quote }}
     {{- if eq .Values.search.engine "opensearch" }}
     search:
         opensearch:
