@@ -947,6 +947,8 @@ describe('AIAssistantHost', () => {
 	});
 
 	describe('scrolling', () => {
+		const CONTAINER_TOP = 100;
+		const MESSAGE_HEIGHT = 300;
 		const SCROLL_HEIGHT = 900;
 
 		let scrollIntoView: jest.Mock;
@@ -962,11 +964,24 @@ describe('AIAssistantHost', () => {
 				{configurable: true, value: SCROLL_HEIGHT}
 			);
 
+			window.HTMLElement.prototype.getBoundingClientRect = function (
+				this: HTMLElement
+			) {
+				return {
+					top: this.classList.contains('ai-assistant-chat__message')
+						? CONTAINER_TOP + getMessageOffset(this)
+						: CONTAINER_TOP,
+				} as DOMRect;
+			};
 			window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
 			window.HTMLElement.prototype.scrollTo = scrollTo;
 		});
 
 		afterEach(() => {
+			Reflect.deleteProperty(
+				window.HTMLElement.prototype,
+				'getBoundingClientRect'
+			);
 			Reflect.deleteProperty(
 				window.HTMLElement.prototype,
 				'scrollHeight'
@@ -989,6 +1004,14 @@ describe('AIAssistantHost', () => {
 					type: 'image',
 				})
 			);
+		}
+
+		function getMessageOffset(element: Element | null) {
+			const messageWrappers = Array.from(
+				document.querySelectorAll('.ai-assistant-chat__message')
+			);
+
+			return MESSAGE_HEIGHT * (messageWrappers.indexOf(element!) + 1);
 		}
 
 		function getMessageWrapper(text: string) {
@@ -1078,14 +1101,11 @@ describe('AIAssistantHost', () => {
 				);
 			});
 
-			expect(scrollIntoView).toHaveBeenCalledWith({
+			expect(scrollIntoView).not.toHaveBeenCalled();
+			expect(scrollTo).toHaveBeenCalledWith({
 				behavior: 'smooth',
-				block: 'start',
+				top: getMessageOffset(getMessageWrapper('Here are your tags')),
 			});
-			expect(scrollIntoView.mock.instances).toContain(
-				getMessageWrapper('Here are your tags')
-			);
-			expect(scrollTo).not.toHaveBeenCalled();
 		});
 
 		it('scrolls the conversation to the start of the text when an image arrives after it', async () => {
@@ -1109,14 +1129,11 @@ describe('AIAssistantHost', () => {
 				emitImage(fakeEventSource);
 			});
 
-			expect(scrollIntoView).toHaveBeenCalledWith({
+			expect(scrollIntoView).not.toHaveBeenCalled();
+			expect(scrollTo).toHaveBeenCalledWith({
 				behavior: 'smooth',
-				block: 'start',
+				top: getMessageOffset(getMessageWrapper('Here is your image')),
 			});
-			expect(scrollIntoView.mock.instances).toEqual([
-				getMessageWrapper('Here is your image'),
-			]);
-			expect(scrollTo).not.toHaveBeenCalled();
 		});
 
 		it('shows the scroll to bottom button only when not scrolled to the bottom', async () => {
