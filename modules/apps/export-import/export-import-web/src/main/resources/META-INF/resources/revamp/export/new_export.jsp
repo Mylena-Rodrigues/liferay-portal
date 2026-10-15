@@ -25,6 +25,7 @@ renderResponse.setTitle(exportImportProcessDisplayContext.getExportTitle());
 
 <clay:container-fluid
 	cssClass="container-form-lg"
+	size="lg"
 >
 	<div class="sheet">
 		<span aria-hidden="true" class="loading-animation mb-9 mt-8"></span>
@@ -36,7 +37,11 @@ renderResponse.setTitle(exportImportProcessDisplayContext.getExportTitle());
 				module="{NewStaticSiteExport} from exportimport-web"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
+						"availableLanguages", exportImportProcessDisplayContext.getAvailableLanguagesJSONArray()
+					).put(
 						"backURL", exportImportProcessDisplayContext.getBackURL()
+					).put(
+						"defaultLanguageId", exportImportProcessDisplayContext.getDefaultLanguageId()
 					).put(
 						"exportProcessAPIURL", exportImportProcessDisplayContext.getExportProcessAPIURL()
 					).put(
