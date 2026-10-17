@@ -424,8 +424,12 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 	public Layout copyLayoutContent(Layout sourceLayout, Layout targetLayout)
 		throws Exception {
 
+		sourceLayout = layoutLocalService.getLayout(sourceLayout.getPlid());
+
 		LayoutPermissionUtil.check(
 			getPermissionChecker(), sourceLayout, ActionKeys.VIEW);
+
+		targetLayout = layoutLocalService.getLayout(targetLayout.getPlid());
 
 		LayoutPermissionUtil.checkLayoutUpdatePermission(
 			getPermissionChecker(), targetLayout);
@@ -439,8 +443,12 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 			long targetSegmentsExperienceId, Layout targetLayout)
 		throws Exception {
 
+		sourceLayout = layoutLocalService.getLayout(sourceLayout.getPlid());
+
 		LayoutPermissionUtil.check(
 			getPermissionChecker(), sourceLayout, ActionKeys.VIEW);
+
+		targetLayout = layoutLocalService.getLayout(targetLayout.getPlid());
 
 		LayoutPermissionUtil.checkLayoutUpdatePermission(
 			getPermissionChecker(), targetLayout);

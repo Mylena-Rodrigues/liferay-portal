@@ -700,10 +700,12 @@ public class SourceFormatter {
 			if (_isFeatureFlagChanges()) {
 				File portalDir = SourceFormatterUtil.getPortalDir(
 					_sourceFormatterArgs.getBaseDirName(),
-					_sourceFormatterArgs.getMaxLineLength());
+					_sourceFormatterArgs.getMaxDirLevel());
 
-				dependentFileNames.add(
-					portalDir + "/portal-impl/src/portal.properties");
+				if (portalDir != null) {
+					dependentFileNames.add(
+						portalDir + "/portal-impl/src/portal.properties");
+				}
 			}
 		}
 
@@ -1083,7 +1085,7 @@ public class SourceFormatter {
 			_excludeWorkingDirCheckoutPrivateApps(
 				SourceFormatterUtil.getPortalDir(
 					_sourceFormatterArgs.getBaseDirName(),
-					_sourceFormatterArgs.getMaxLineLength()));
+					_sourceFormatterArgs.getMaxDirLevel()));
 		}
 
 		_propertiesMap = new HashMap<>();
@@ -1214,7 +1216,7 @@ public class SourceFormatter {
 	private boolean _isRootTestPropertiesChanges(String recentChangesFileName) {
 		File portalDir = SourceFormatterUtil.getPortalDir(
 			_sourceFormatterArgs.getBaseDirName(),
-			_sourceFormatterArgs.getMaxLineLength());
+			_sourceFormatterArgs.getMaxDirLevel());
 
 		if (portalDir == null) {
 			return false;
@@ -1393,7 +1395,7 @@ public class SourceFormatter {
 
 		File portalDir = SourceFormatterUtil.getPortalDir(
 			_sourceFormatterArgs.getBaseDirName(),
-			_sourceFormatterArgs.getMaxLineLength());
+			_sourceFormatterArgs.getMaxDirLevel());
 
 		if (portalDir == null) {
 			return;
