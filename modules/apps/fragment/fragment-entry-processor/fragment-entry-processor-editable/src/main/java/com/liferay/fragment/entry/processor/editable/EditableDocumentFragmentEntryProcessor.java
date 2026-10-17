@@ -15,7 +15,6 @@ import com.liferay.fragment.entry.processor.util.EditableFragmentEntryProcessorU
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.DocumentFragmentEntryProcessor;
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
-import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.InfoItemServiceRegistry;
@@ -28,7 +27,6 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -175,9 +173,15 @@ public class EditableDocumentFragmentEntryProcessor
 					fragmentEntryProcessorContext.getLocale());
 			}
 
-			JSONObject configJSONObject = JSONUtil.merge(
-				editableValueJSONObject.getJSONObject("config"),
-				mappedValueConfigJSONObject);
+			JSONObject configJSONObject = editableValueJSONObject.getJSONObject(
+				"config");
+
+			if ((configJSONObject == null) ||
+				(mappedValueConfigJSONObject.length() > 0)) {
+
+				configJSONObject = JSONUtil.merge(
+					configJSONObject, mappedValueConfigJSONObject);
+			}
 
 			JSONObject localizedJSONObject = configJSONObject.getJSONObject(
 				LocaleUtil.toLanguageId(
@@ -242,26 +246,6 @@ public class EditableDocumentFragmentEntryProcessor
 					editableValueJSONObject, fragmentEntryProcessorContext,
 					_fragmentEntryProcessorHelper, infoDisplaysFieldValues,
 					_infoItemServiceRegistry));
-		}
-
-		if ((fragmentEntryProcessorContext.getPreviewClassNameId() > 0) &&
-			(fragmentEntryProcessorContext.getPreviewClassPK() > 0)) {
-
-			InfoItemReference infoItemReference = new InfoItemReference(
-				_portal.getClassName(
-					fragmentEntryProcessorContext.getPreviewClassNameId()),
-				new ClassPKInfoItemIdentifier(
-					fragmentEntryProcessorContext.getPreviewClassPK()));
-
-			if (infoDisplaysFieldValues.containsKey(infoItemReference)) {
-				Element previewElement = new Element("div");
-
-				previewElement.attr("style", "border: 1px solid #0B5FFF");
-
-				Element bodyElement = document.body();
-
-				previewElement.html(bodyElement.html());
-			}
 		}
 	}
 
@@ -365,8 +349,5 @@ public class EditableDocumentFragmentEntryProcessor
 
 	@Reference
 	private JSONFactory _jsonFactory;
-
-	@Reference
-	private Portal _portal;
 
 }
