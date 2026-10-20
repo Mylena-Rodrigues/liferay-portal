@@ -24,6 +24,8 @@ function main {
 
 	configuration_json_file=$(resolve_config_json "${1}")
 
+	_validate_setup_values "${configuration_json_file}"
+
 	generate_tfvars "azure" "${configuration_json_file}" "aks"
 
 	generate_tfvars "azure" "${configuration_json_file}" "platform"
@@ -60,7 +62,7 @@ function main {
 		generate_local_backend_overrides "azure" "aks" "platform"
 	fi
 
-	_set_up_azure_aks "${terraform_args[@]}"
+	_set_up_azure_aks "${configuration_json_file}" "${terraform_args[@]}"
 
 	connect_to_cluster
 
@@ -233,17 +235,45 @@ function _log {
 }
 
 function _set_up_azure_aks {
+	local configuration_json_file="${1}"
+
+	local database_engine
+
+	database_engine=$(jq --raw-output '.setup.database.engine // error("setup.database.engine is missing")' "${configuration_json_file}")
+
 	push_directory "${ROOT_CLOUD_DIR}/terraform/azure/aks"
 
 	echo "Setting up the Azure AKS cluster."
 
 	terraform init
 
-	terraform apply -input=false "${@}"
+	terraform \
+		apply \
+		-input=false \
+		-var="database_engine=${database_engine}" \
+		"${@:2}"
 
 	echo "Azure AKS cluster setup complete."
 
 	pop_directory
+}
+
+function _validate_setup_values {
+	local configuration_json_file="${1}"
+
+	local chart_registry
+	local chart_version
+
+	chart_registry=$(jq --raw-output '.artifacts.charts."liferay-azure-infrastructure-provider".registry // error("artifacts.charts.liferay-azure-infrastructure-provider.registry is missing")' "${configuration_json_file}")
+	chart_version=$(jq --raw-output '.artifacts.charts."liferay-azure-infrastructure-provider".version // error("artifacts.charts.liferay-azure-infrastructure-provider.version is missing")' "${configuration_json_file}")
+
+	helm \
+		template \
+		--values <(jq '.setup' "${configuration_json_file}") \
+		--version "${chart_version}" \
+		liferay-azure-infrastructure-provider \
+		"oci://${chart_registry}/liferay-azure-infrastructure-provider" \
+		> /dev/null
 }
 
 main "${@}"
