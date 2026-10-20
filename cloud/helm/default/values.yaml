@@ -50,6 +50,8 @@ clientExtensions:
         operatorServiceAccount:
             name: dxp-operator
             namespace: dxp-operator-system
+    policy:
+        allowedNamespaces: []
 configmap:
     annotations: {}
     data: {}
@@ -393,6 +395,7 @@ licensing:
     activationCodeSecretName: ""
     dxpVersion: ""
     enabled: false
+    environmentName: ""
     offline: false
     offlineActivationBundle: ""
     onlineActivationWorkflow:

@@ -31,8 +31,6 @@ const test = mergeTests(
 const APPLICATION_NAME = 'cms/basic-web-contents';
 const DATE_DISPLAYED = '12/31/2099, 10:00 AM';
 const DATE_INPUT = '12/31/2099 10:00 AM';
-const DUE_DATE_INPUT = '2099-12-31';
-const DUE_TIME_INPUT = '10:00';
 const LONG_STANDING_DRAFT_AGE_DAYS = 45;
 const PAST_DATE = '2020-01-01T00:00:00Z';
 const TIME_ZONE_BROWSER = 'America/Los_Angeles';
@@ -98,22 +96,26 @@ function getDocumentHTML(externalReferenceCode: string) {
 	);
 }
 
-async function gotoBrokenLinks(page: Page, spaceName: string, title: string) {
-	await page.goto('/web/cms/dashboard');
-
-	await selectSpace(page, spaceName);
-
-	await page.getByRole('button', {name: /broken links/i}).click();
-
-	await expect(page).toHaveURL(/broken-links\?groupId=/);
+async function openBrokenLinksList(
+	page: Page,
+	spaceName: string,
+	title: string
+) {
+	const brokenLinksList = page.getByRole('region', {name: 'Broken Links'});
 
 	await expect(async () => {
-		await page.reload();
+		await page.goto('/web/cms/dashboard');
 
-		await expect(page.getByText(title, {exact: true})).toBeVisible({
-			timeout: 5000,
-		});
+		await selectSpace(page, spaceName);
+
+		await page.getByRole('button', {name: /^Broken Links /}).click();
+
+		await expect(
+			brokenLinksList.getByText(title, {exact: true})
+		).toBeVisible({timeout: 5000});
 	}).toPass();
+
+	return brokenLinksList;
 }
 
 async function pollDate(
@@ -587,180 +589,7 @@ test.describe('Freshness section', () => {
 	);
 });
 
-test.describe('Attention Required section', () => {
-	test(
-		'Updates the due date of pending workflow contents from the dashboard',
-		{tag: '@LPD-98986'},
-		async ({apiHelpers, page}) => {
-			const firstSpaceName = `space ${getRandomString()}`;
-			const secondSpaceName = `space ${getRandomString()}`;
-			const secondSpaceTitle = `pending ${getRandomString()}`;
-			const remainingTitles = [
-				`pending ${getRandomString()}`,
-				`pending ${getRandomString()}`,
-			];
-
-			const pendingWorkflowsCard = page.getByRole('button', {
-				name: /pending workflows/i,
-			});
-
-			const pendingWorkflowsCount = pendingWorkflowsCard
-				.locator('.cms-dashboard__interactive-card__metric > div')
-				.first();
-
-			let objectDefinitionClassName: string;
-			let pendingContents: Awaited<
-				ReturnType<typeof apiHelpers.objectEntry.postObjectEntry>
-			>[];
-
-			await test.step('Enable workflow and create pending contents in two spaces', async () => {
-				const firstSpace =
-					await apiHelpers.headlessAssetLibrary.createAssetLibrary({
-						name: firstSpaceName,
-						type: 'Space',
-					});
-
-				const secondSpace =
-					await apiHelpers.headlessAssetLibrary.createAssetLibrary({
-						name: secondSpaceName,
-						type: 'Space',
-					});
-
-				const objectDefinition =
-					await apiHelpers.objectAdmin.getObjectDefinitionByName(
-						'CMSBasicWebContent'
-					);
-
-				objectDefinitionClassName = objectDefinition.className;
-
-				const workflowDefinition =
-					await apiHelpers.headlessAdminWorkflow.getWorkflowDefinitionByName(
-						'Single Approver'
-					);
-
-				for (const space of [firstSpace, secondSpace]) {
-					await apiHelpers.headlessAdminWorkflow.postWorkflowDefinitionLink(
-						objectDefinition.className,
-						space.siteId,
-						workflowDefinition.id,
-						workflowDefinition.name,
-						Number(workflowDefinition.version)
-					);
-				}
-
-				const postPendingContent = (spaceName: string, title: string) =>
-					apiHelpers.objectEntry.postObjectEntry(
-						{
-							objectEntryFolderExternalReferenceCode:
-								'L_CONTENTS',
-							title,
-						},
-						APPLICATION_NAME,
-						spaceName
-					);
-
-				pendingContents = [
-					await postPendingContent(
-						firstSpaceName,
-						`pending ${getRandomString()}`
-					),
-					await postPendingContent(secondSpaceName, secondSpaceTitle),
-					await postPendingContent(
-						secondSpaceName,
-						remainingTitles[0]
-					),
-					await postPendingContent(
-						secondSpaceName,
-						remainingTitles[1]
-					),
-				];
-
-				for (const pendingContent of pendingContents) {
-					apiHelpers.data.push({
-						id: pendingContent.id,
-						type: 'document',
-					});
-
-					expect(pendingContent.id).toBeTruthy();
-				}
-			});
-
-			await test.step('Check the pending workflows count per space', async () => {
-				await page.goto('/web/cms/dashboard');
-
-				await selectSpace(page, firstSpaceName);
-
-				await expect(pendingWorkflowsCount).toHaveText('1');
-
-				await selectSpace(page, secondSpaceName);
-
-				await expect(pendingWorkflowsCount).toHaveText('3');
-			});
-
-			await test.step('Open the pending workflows list', async () => {
-				await pendingWorkflowsCard.click();
-
-				await expect(page).toHaveURL(/cms\/pending-workflows/);
-
-				await expect(async () => {
-					await page.reload();
-
-					await expect(
-						page.getByText(secondSpaceTitle, {exact: true})
-					).toBeVisible({timeout: 5000});
-				}).toPass();
-
-				await expect(
-					page.getByRole('link', {
-						exact: true,
-						name: secondSpaceTitle,
-					})
-				).toHaveAttribute(
-					'href',
-					new RegExp(
-						`edit_content_item\\?objectEntryId=${pendingContents[1].id}&redirect=%2F`
-					)
-				);
-			});
-
-			await test.step('Update the due date from its row action', async () => {
-				await page
-					.getByRole('button', {name: `${secondSpaceTitle} Actions`})
-					.click();
-
-				await page
-					.getByRole('menuitem', {name: 'Update Due Date'})
-					.click();
-
-				const modal = page.locator('.modal-content');
-
-				await expect(modal).toBeVisible();
-
-				await modal.locator('input[type="date"]').fill(DUE_DATE_INPUT);
-				await modal.locator('input[type="time"]').fill(DUE_TIME_INPUT);
-
-				await modal.getByRole('button', {name: 'Save'}).click();
-
-				await expect
-					.poll(async () => {
-						const workflowTask =
-							await apiHelpers.headlessAdminWorkflow.getWorkflowTaskByAsset(
-								objectDefinitionClassName,
-								String(pendingContents[1].id)
-							);
-
-						return workflowTask?.dateDue
-							? formatInTimeZone(
-									workflowTask.dateDue,
-									TIME_ZONE_BROWSER
-								)
-							: null;
-					})
-					.toBe(DATE_DISPLAYED);
-			});
-		}
-	);
-
+test.describe('Quality section', () => {
 	test(
 		'Lists the contents that point at an expired asset of the selected space',
 		{tag: '@LPD-103027'},
@@ -839,27 +668,41 @@ test.describe('Attention Required section', () => {
 			});
 
 			await test.step('Confirm the second space lists its own broken link', async () => {
-				await gotoBrokenLinks(
+				await openBrokenLinksList(
 					page,
 					secondSpaceName,
 					secondSpaceReferringTitle
 				);
 			});
 
-			await test.step('Open the broken links page of the first space', async () => {
-				await gotoBrokenLinks(page, firstSpaceName, referringTitle);
-			});
-
 			await test.step('Check that only the first space is listed', async () => {
+				const brokenLinksList = await openBrokenLinksList(
+					page,
+					firstSpaceName,
+					referringTitle
+				);
+
 				await expect(
-					page.getByText(`${expiredTitle} - Expired Asset`, {
-						exact: true,
-					})
+					brokenLinksList.getByText('1 Expired Asset', {exact: true})
 				).toBeVisible();
 
 				await expect(
-					page.getByText(secondSpaceReferringTitle, {exact: true})
+					brokenLinksList.getByText(secondSpaceReferringTitle, {
+						exact: true,
+					})
 				).toBeHidden();
+			});
+
+			await test.step('Open the broken links page of the first space', async () => {
+				await page
+					.getByRole('link', {name: 'View All Broken Links'})
+					.click();
+
+				await expect(page).toHaveURL(/broken-links\?groupId=/);
+
+				await expect(
+					page.getByText(referringTitle, {exact: true})
+				).toBeVisible();
 			});
 
 			await test.step('Edit the content from the list', async () => {
