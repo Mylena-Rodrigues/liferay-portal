@@ -20,11 +20,11 @@ type ContentAgeRange = {
 export type AssetStatistics = {
 	approvedCount: number;
 	brokenLinksCount: number;
-	duplicatedCount?: number;
 	expiredCount: number;
 	expiringSoonCount: number;
 	inDraftCount: number;
 	longStandingDraftsCount: number;
+	missingRequiredFieldsCount: number;
 	overdueWorkflowTasksCount: number;
 	pendingCount: number;
 	reviewDateOverdueCount: number;
@@ -111,28 +111,10 @@ async function getAssetStatistics(
 ) {
 	const scope = assetLibraryId ? `assetLibraryId=${assetLibraryId}&` : '';
 
-	const [statistics, similarityClusters] = await Promise.all([
-		ApiHelper.get<AssetStatistics>(
-			`/o/headless-cms/v1.0/asset-statistics?${scope}`,
-			signal
-		),
-		ApiHelper.get<{totalCount: number}>(
-			`/o/headless-cms/v1.0/similarity-clusters?${scope}pageSize=1`,
-			signal
-		),
-	]);
-
-	if (!statistics.data) {
-		return statistics;
-	}
-
-	return {
-		...statistics,
-		data: {
-			...statistics.data,
-			duplicatedCount: similarityClusters.data?.totalCount,
-		},
-	};
+	return ApiHelper.get<AssetStatistics>(
+		`/o/headless-cms/v1.0/asset-statistics?${scope}`,
+		signal
+	);
 }
 
 async function getContributors(
@@ -336,7 +318,7 @@ function getAssetsByIdsURL(ids: number[]) {
 	return `${SEARCH_URL}?${searchParams}`;
 }
 
-function getBrokenLinkAssetsURL(assetLibraryId?: string) {
+function getQualityAssetsURL(path: string, assetLibraryId?: string) {
 	const searchParams = new URLSearchParams({
 		pageSize: String(GOVERNANCE_ASSET_LIST_PAGE_SIZE),
 		sort: 'title:asc',
@@ -346,7 +328,18 @@ function getBrokenLinkAssetsURL(assetLibraryId?: string) {
 		searchParams.set('assetLibraryId', assetLibraryId);
 	}
 
-	return `/o/headless-cms/v1.0/broken-link-assets?${searchParams}`;
+	return `/o/headless-cms/v1.0/${path}?${searchParams}`;
+}
+
+function getBrokenLinkAssetsURL(assetLibraryId?: string) {
+	return getQualityAssetsURL('broken-link-assets', assetLibraryId);
+}
+
+function getMissingRequiredFieldsAssetsURL(assetLibraryId?: string) {
+	return getQualityAssetsURL(
+		'missing-required-fields-assets',
+		assetLibraryId
+	);
 }
 
 function getDateInDays(days: number) {
@@ -381,4 +374,5 @@ export default {
 	getFreshnessListURL,
 	getLongStandingDraftsThresholdDate,
 	getLongStandingDraftsURL,
+	getMissingRequiredFieldsAssetsURL,
 };

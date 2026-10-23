@@ -11,7 +11,7 @@ describe('GovernanceService.getAssetStatistics', () => {
 		jest.restoreAllMocks();
 	});
 
-	it('scopes both requests by assetLibraryId when a space is given', () => {
+	it('scopes the request by assetLibraryId when a space is given', () => {
 		const getSpy = jest
 			.spyOn(ApiHelper, 'get')
 			.mockResolvedValue({data: {}, error: null} as any);
@@ -20,11 +20,6 @@ describe('GovernanceService.getAssetStatistics', () => {
 
 		expect(getSpy).toHaveBeenCalledWith(
 			'/o/headless-cms/v1.0/asset-statistics?assetLibraryId=123&',
-			undefined
-		);
-
-		expect(getSpy).toHaveBeenCalledWith(
-			'/o/headless-cms/v1.0/similarity-clusters?assetLibraryId=123&pageSize=1',
 			undefined
 		);
 	});
@@ -40,14 +35,9 @@ describe('GovernanceService.getAssetStatistics', () => {
 			'/o/headless-cms/v1.0/asset-statistics?',
 			undefined
 		);
-
-		expect(getSpy).toHaveBeenCalledWith(
-			'/o/headless-cms/v1.0/similarity-clusters?pageSize=1',
-			undefined
-		);
 	});
 
-	it('passes the abort signal to both requests', () => {
+	it('passes the abort signal to the request', () => {
 		const getSpy = jest
 			.spyOn(ApiHelper, 'get')
 			.mockResolvedValue({data: {}, error: null} as any);
@@ -60,39 +50,6 @@ describe('GovernanceService.getAssetStatistics', () => {
 			'/o/headless-cms/v1.0/asset-statistics?',
 			signal
 		);
-
-		expect(getSpy).toHaveBeenCalledWith(
-			'/o/headless-cms/v1.0/similarity-clusters?pageSize=1',
-			signal
-		);
-	});
-
-	it('counts the assets in similarity clusters as the duplicated count', async () => {
-		jest.spyOn(ApiHelper, 'get').mockImplementation(((url: string) => {
-			if (url.includes('similarity-clusters')) {
-				return Promise.resolve({data: {totalCount: 5}, error: null});
-			}
-
-			return Promise.resolve({data: {brokenLinksCount: 0}, error: null});
-		}) as any);
-
-		const {data} = await GovernanceService.getAssetStatistics();
-
-		expect(data?.duplicatedCount).toBe(5);
-	});
-
-	it('leaves the duplicated count unset when the clusters are unavailable', async () => {
-		jest.spyOn(ApiHelper, 'get').mockImplementation(((url: string) => {
-			if (url.includes('similarity-clusters')) {
-				return Promise.resolve({data: null, error: 'Not Found'});
-			}
-
-			return Promise.resolve({data: {brokenLinksCount: 0}, error: null});
-		}) as any);
-
-		const {data} = await GovernanceService.getAssetStatistics();
-
-		expect(data?.duplicatedCount).toBeUndefined();
 	});
 });
 
@@ -384,6 +341,20 @@ describe('GovernanceService.getBrokenLinkAssetsURL', () => {
 	it('scopes the request by assetLibraryId when a space is given', () => {
 		expect(GovernanceService.getBrokenLinkAssetsURL('123')).toBe(
 			'/o/headless-cms/v1.0/broken-link-assets?pageSize=8&sort=title%3Aasc&assetLibraryId=123'
+		);
+	});
+});
+
+describe('GovernanceService.getMissingRequiredFieldsAssetsURL', () => {
+	it('requests the first page of missing required fields assets sorted by title', () => {
+		expect(GovernanceService.getMissingRequiredFieldsAssetsURL()).toBe(
+			'/o/headless-cms/v1.0/missing-required-fields-assets?pageSize=8&sort=title%3Aasc'
+		);
+	});
+
+	it('scopes the request by assetLibraryId when a space is given', () => {
+		expect(GovernanceService.getMissingRequiredFieldsAssetsURL('123')).toBe(
+			'/o/headless-cms/v1.0/missing-required-fields-assets?pageSize=8&sort=title%3Aasc&assetLibraryId=123'
 		);
 	});
 });

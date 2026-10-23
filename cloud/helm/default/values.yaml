@@ -321,6 +321,11 @@ customVolumes:
                 defaultMode: 0755
                 name: liferay-init-scripts-default
             name: liferay-init-scripts-default
+database:
+    engine: ""
+    host: ""
+    port: ""
+    tlsRequired: false
 dependencies: {}
 env:
     -   name: DNS_MEMBERSHIP_SERVICE_NAME
@@ -401,7 +406,7 @@ licensing:
     onlineActivationWorkflow:
         clusterRoleName: online-activation-cluster-role
         clusterWorkflowTemplateName: online-activation-cluster-workflow-template
-        enabled: true
+        enabled: false
         serviceAccountName: online-activation-service-account
         ttlSecondsAfterCompletion: 3600
         userAccess:

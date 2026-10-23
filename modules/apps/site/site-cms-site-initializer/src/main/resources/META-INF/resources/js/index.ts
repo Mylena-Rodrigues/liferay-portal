@@ -25,6 +25,7 @@ export {
 } from './common/types/BulkActionTask';
 export {ObjectField, StateFlowValue} from './common/types/ObjectDefinition';
 export {type Space} from './common/types/Space';
+export {getFormattedLabel} from './common/utils/getFormattedText';
 export {getScopeExternalReferenceCode} from './common/utils/getScopeExternalReferenceCode';
 export {
 	displayCreateSuccessToast,
@@ -83,6 +84,7 @@ export {default as CategoryFDSPropsTransformer} from './main_view/props_transfor
 export {default as CategoryUsagesFDSPropsTransformer} from './main_view/props_transformer/CategoryUsagesFDSPropsTransformer';
 export {default as HomeRecentAssetsFDSPropsTransformer} from './main_view/props_transformer/HomeRecentAssetsFDSPropsTransformer';
 export {default as MembersFDSPropsTransformer} from './main_view/props_transformer/MembersFDSPropsTransformer';
+export {default as MissingRequiredFieldsFDSPropsTransformer} from './main_view/props_transformer/MissingRequiredFieldsFDSPropsTransformer';
 export {default as RecycleBinFDSPropsTransformer} from './main_view/props_transformer/RecycleBinFDSPropsTransformer';
 export {default as RelatedAssetsFDSPropsTransformer} from './main_view/props_transformer/RelatedAssetsFDSPropsTransformer';
 export {default as SharedWithMeFDSPropsTransformer} from './main_view/props_transformer/SharedWithMeFDSPropsTransformer';

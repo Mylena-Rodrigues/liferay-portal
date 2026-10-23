@@ -35,7 +35,6 @@ import com.liferay.change.tracking.model.CTEntry;
 import com.liferay.change.tracking.model.CTEntryTable;
 import com.liferay.change.tracking.model.CTPreferences;
 import com.liferay.change.tracking.model.CTSchemaVersion;
-import com.liferay.change.tracking.model.CTScore;
 import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.change.tracking.service.CTPreferencesLocalService;
 import com.liferay.change.tracking.service.CTSchemaVersionLocalService;
@@ -46,7 +45,6 @@ import com.liferay.change.tracking.service.persistence.CTEntryPersistence;
 import com.liferay.change.tracking.service.persistence.CTMessagePersistence;
 import com.liferay.change.tracking.service.persistence.CTPreferencesPersistence;
 import com.liferay.change.tracking.service.persistence.CTSchemaVersionPersistence;
-import com.liferay.change.tracking.service.persistence.CTScorePersistence;
 import com.liferay.change.tracking.spi.display.CTDisplayRenderer;
 import com.liferay.change.tracking.spi.resolver.ConstraintResolver;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
@@ -177,14 +175,6 @@ public class CTCollectionLocalServiceImpl
 		ctCollection.setStatus(WorkflowConstants.STATUS_DRAFT);
 
 		ctCollection = ctCollectionPersistence.update(ctCollection);
-
-		CTScore ctScore = _ctScorePersistence.create(
-			counterLocalService.increment(CTScore.class.getName()));
-
-		ctScore.setCompanyId(companyId);
-		ctScore.setCtCollectionId(ctCollectionId);
-
-		_ctScorePersistence.update(ctScore);
 
 		_resourceLocalService.addResources(
 			ctCollection.getCompanyId(), 0, ctCollection.getUserId(),
@@ -558,13 +548,6 @@ public class CTCollectionLocalServiceImpl
 
 		_ctMessagePersistence.removeByCtCollectionId(
 			ctCollection.getCtCollectionId());
-
-		CTScore ctScore = _ctScorePersistence.fetchByCtCollectionId(
-			ctCollection.getCtCollectionId());
-
-		if (ctScore != null) {
-			_ctScorePersistence.remove(ctScore);
-		}
 
 		Group group = _groupLocalService.fetchGroup(
 			ctCollection.getCompanyId(),
@@ -1072,14 +1055,18 @@ public class CTCollectionLocalServiceImpl
 				toCTCollectionId, entry.getKey(), entry.getValue());
 		}
 
+		relatedCTEntries = getRelatedCTEntries(
+			toCTCollection.getCtCollectionId(),
+			TransformUtil.transformToLongArray(
+				ctEntries, CTEntry::getCtEntryId));
+
+		_ctClosureFactory.clearCache(fromCTCollectionId);
+		_ctClosureFactory.clearCache(toCTCollectionId);
+
 		conflictInfosMap = checkConflicts(
-			toCTCollection.getCompanyId(),
-			getRelatedCTEntries(
-				toCTCollection.getCtCollectionId(),
-				TransformUtil.transformToLongArray(
-					ctEntries, CTEntry::getCtEntryId)),
-			toCTCollectionId, toCTCollection.getName(),
-			CTConstants.CT_COLLECTION_ID_PRODUCTION, "Production");
+			toCTCollection.getCompanyId(), relatedCTEntries, toCTCollectionId,
+			toCTCollection.getName(), CTConstants.CT_COLLECTION_ID_PRODUCTION,
+			"Production");
 
 		for (Map.Entry<Long, List<ConflictInfo>> entry :
 				conflictInfosMap.entrySet()) {
@@ -1092,9 +1079,6 @@ public class CTCollectionLocalServiceImpl
 				}
 			}
 		}
-
-		_ctClosureFactory.clearCache(fromCTCollectionId);
-		_ctClosureFactory.clearCache(toCTCollectionId);
 	}
 
 	@Override
@@ -1891,9 +1875,6 @@ public class CTCollectionLocalServiceImpl
 
 	@Reference
 	private CTSchemaVersionPersistence _ctSchemaVersionPersistence;
-
-	@Reference
-	private CTScorePersistence _ctScorePersistence;
 
 	@Reference
 	private CTServiceRegistry _ctServiceRegistry;
