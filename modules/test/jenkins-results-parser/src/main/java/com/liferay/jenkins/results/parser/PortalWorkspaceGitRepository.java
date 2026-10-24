@@ -138,6 +138,12 @@ public class PortalWorkspaceGitRepository extends BaseWorkspaceGitRepository {
 			"liferay-portal-ee", "master-private");
 	}
 
+	public void setBasePortalWorkspaceGitRepository(
+		PortalWorkspaceGitRepository basePortalWorkspaceGitRepository) {
+
+		_basePortalWorkspaceGitRepository = basePortalWorkspaceGitRepository;
+	}
+
 	public void setUpPortalProfile() {
 		String setupProfileDXPBranchNamesString = null;
 
@@ -380,6 +386,8 @@ public class PortalWorkspaceGitRepository extends BaseWorkspaceGitRepository {
 
 	@Override
 	protected void setUpAdditionalCaches() throws IOException {
+		_setUpBasePortalCache();
+
 		if (isBinariesCacheEnabled()) {
 			setUpBinariesCache();
 			setUpWorkspaceYarnMirrors();
@@ -573,6 +581,104 @@ public class PortalWorkspaceGitRepository extends BaseWorkspaceGitRepository {
 		}
 	}
 
+	private void _checkoutBasePortalWorkspaceGitRepository() {
+		GitWorkingDirectory baseGitWorkingDirectory =
+			_basePortalWorkspaceGitRepository.getGitWorkingDirectory();
+
+		LocalGitBranch baseLocalGitBranch =
+			baseGitWorkingDirectory.getCurrentLocalGitBranch();
+
+		GitWorkingDirectory gitWorkingDirectory = getGitWorkingDirectory();
+
+		gitWorkingDirectory.fetchLocalGitBranch(
+			baseLocalGitBranch.getName(), baseLocalGitBranch);
+
+		Properties properties = new Properties();
+
+		properties.setProperty(
+			"public.branch.git.hash", baseLocalGitBranch.getSHA());
+
+		JenkinsResultsParserUtil.writePropertiesFile(
+			new File(
+				getDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"working.dir.", Environment.get("HOSTNAME"),
+					".properties")),
+			properties, true);
+
+		try {
+			AntUtil.callTarget(
+				getDirectory(), "build-working-dir.xml", "checkout-portal");
+		}
+		catch (AntException antException) {
+			throw new RuntimeException(antException);
+		}
+	}
+
+	private void _downloadBasePortalCache() throws IOException {
+		String basePortalCacheS3ObjectPath = _getBasePortalCacheS3ObjectPath();
+
+		if (!CloudBucketUtil.isS3ObjectPathAvailable(
+				basePortalCacheS3ObjectPath)) {
+
+			throw new RuntimeException(
+				"Unable to download " + basePortalCacheS3ObjectPath);
+		}
+
+		File basePortalCacheFile = null;
+
+		try {
+			basePortalCacheFile = File.createTempFile(
+				"base-portal-cache", ".zip", getDirectory());
+
+			CloudBucketUtil.downloadS3File(
+				basePortalCacheFile, basePortalCacheS3ObjectPath);
+
+			JenkinsResultsParserUtil.unzip(basePortalCacheFile, getDirectory());
+
+			System.out.println(
+				JenkinsResultsParserUtil.combine(
+					"Successfully unzipped ", basePortalCacheS3ObjectPath,
+					" to ",
+					JenkinsResultsParserUtil.getCanonicalPath(getDirectory())));
+		}
+		finally {
+			if (basePortalCacheFile != null) {
+				JenkinsResultsParserUtil.delete(basePortalCacheFile);
+			}
+		}
+	}
+
+	private String _getBasePortalCacheS3ObjectPath() {
+		try {
+			if (_basePortalWorkspaceGitRepository == null) {
+				return null;
+			}
+
+			String basePortalCachesPath =
+				JenkinsResultsParserUtil.getBuildProperty(
+					"cloud.ci.s3.bucket.base.portal.caches.path");
+
+			if (JenkinsResultsParserUtil.isNullOrEmpty(basePortalCachesPath)) {
+				return null;
+			}
+
+			return JenkinsResultsParserUtil.combine(
+				basePortalCachesPath, "/",
+				_basePortalWorkspaceGitRepository.getName(), "/",
+				_basePortalWorkspaceGitRepository.getBaseBranchSHA(), "/",
+				_basePortalWorkspaceGitRepository.getSenderBranchSHA(),
+				"/base-portal-cache.zip");
+		}
+		catch (IOException ioException) {
+			System.out.println(
+				"WARNING: Unable to get the property " +
+					"\"cloud.ci.s3.bucket.base.portal.caches.path\"");
+
+			return null;
+		}
+	}
+
 	private String _getLiferayFacesURL(
 		String repositoryName, String propertyName) {
 
@@ -627,7 +733,7 @@ public class PortalWorkspaceGitRepository extends BaseWorkspaceGitRepository {
 		}
 		catch (IOException ioException) {
 			System.out.println(
-				"WARNING: Unable to get " +
+				"WARNING: Unable to get the property " +
 					"\"cloud.ci.s3.bucket.yarn.caches.path\"");
 
 			return null;
@@ -670,6 +776,98 @@ public class PortalWorkspaceGitRepository extends BaseWorkspaceGitRepository {
 		}
 
 		return _yarnLockDigest;
+	}
+
+	private boolean _isBasePortalCacheAvailable() {
+		if (!JenkinsResultsParserUtil.isCloudCINode() ||
+			!CloudBucketUtil.isS3ObjectPathAvailable(
+				_getBasePortalCacheS3ObjectPath())) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	private synchronized void _setUpBasePortalCache() throws IOException {
+		if ((_basePortalWorkspaceGitRepository == null) ||
+			_setUpBasePortalCache) {
+
+			return;
+		}
+
+		File buildWorkingDirFile = new File(
+			getDirectory(), "build-working-dir.xml");
+
+		if (!buildWorkingDirFile.exists()) {
+			return;
+		}
+
+		if (_isBasePortalCacheAvailable()) {
+			_downloadBasePortalCache();
+
+			CloudBucketUtil.touchS3File(_getBasePortalCacheS3ObjectPath());
+
+			_setUpBasePortalCache = true;
+
+			return;
+		}
+
+		if (!JenkinsResultsParserUtil.isTopLevelJobName(
+				Environment.get("JOB_NAME"))) {
+
+			System.out.println(
+				"WARNING: Unable to find " + _getBasePortalCacheS3ObjectPath());
+
+			_setUpBasePortalCache = true;
+
+			return;
+		}
+
+		_basePortalWorkspaceGitRepository.setUp();
+
+		_checkoutBasePortalWorkspaceGitRepository();
+
+		_uploadBasePortalCache();
+
+		_setUpBasePortalCache = true;
+	}
+
+	private synchronized void _uploadBasePortalCache() throws IOException {
+		String basePortalCacheS3ObjectPath = _getBasePortalCacheS3ObjectPath();
+
+		if (!JenkinsResultsParserUtil.isCloudCINode() ||
+			!CloudBucketUtil.isValidS3ObjectPath(basePortalCacheS3ObjectPath)) {
+
+			return;
+		}
+
+		File basePortalCacheFile = null;
+
+		try {
+			basePortalCacheFile = File.createTempFile(
+				"base-portal-cache", ".zip", getDirectory());
+
+			JenkinsResultsParserUtil.delete(basePortalCacheFile);
+
+			PortalGitWorkingDirectory portalGitWorkingDirectory =
+				(PortalGitWorkingDirectory)getGitWorkingDirectory();
+
+			basePortalCacheFile =
+				portalGitWorkingDirectory.createBasePortalCache(
+					basePortalCacheFile.getName());
+
+			CloudBucketUtil.uploadS3File(
+				basePortalCacheS3ObjectPath, basePortalCacheFile);
+
+			System.out.println(
+				"Successfully uploaded to " + basePortalCacheS3ObjectPath);
+		}
+		finally {
+			if (basePortalCacheFile != null) {
+				JenkinsResultsParserUtil.delete(basePortalCacheFile);
+			}
+		}
 	}
 
 	private void _writeAppServerPropertiesFile() {
@@ -718,6 +916,8 @@ public class PortalWorkspaceGitRepository extends BaseWorkspaceGitRepository {
 	}
 
 	private Properties _appServerProperties;
+	private PortalWorkspaceGitRepository _basePortalWorkspaceGitRepository;
+	private boolean _setUpBasePortalCache;
 	private boolean _setUpBinariesCache;
 	private boolean _setUpYarn;
 	private boolean _setUpYarnCache;

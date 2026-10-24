@@ -6,15 +6,14 @@
 package com.liferay.oauth2.provider.internal.configuration;
 
 import com.liferay.oauth2.provider.model.OAuth2Application;
-import com.liferay.oauth2.provider.scope.liferay.LiferayOAuth2Scope;
 import com.liferay.oauth2.provider.scope.liferay.ScopeLocator;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationScopeAliasesLocalService;
 import com.liferay.portal.k8s.agent.PortalK8sConfigMapModifier;
-import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.VirtualHostLocalService;
@@ -214,12 +213,6 @@ public class ConfigurationFactoryTest {
 		_scopeLocator = Mockito.mock(ScopeLocator.class);
 
 		Mockito.when(
-			_scopeLocator.getLiferayOAuth2Scopes(_companyId)
-		).thenReturn(
-			new ArrayList<>()
-		);
-
-		Mockito.when(
 			_scopeLocator.getScopeAliases(_companyId)
 		).thenReturn(
 			new ArrayList<>()
@@ -267,12 +260,6 @@ public class ConfigurationFactoryTest {
 		).thenReturn(
 			_user
 		);
-
-		Runnable syncCallableFuture = ReflectionTestUtil.getFieldValue(
-			DependencyManagerSyncUtil.class,
-			"_syncCallableDefaultNoticeableFuture");
-
-		syncCallableFuture.run();
 	}
 
 	@Test
@@ -336,6 +323,7 @@ public class ConfigurationFactoryTest {
 			virtualHostLocalService);
 
 		configurationFactory.activate(
+			SystemBundleUtil.getBundleContext(),
 			HashMapBuilder.<String, Object>put(
 				"baseURL", "http://localhost"
 			).put(
@@ -413,9 +401,12 @@ public class ConfigurationFactoryTest {
 		);
 
 		Mockito.when(
-			_scopeLocator.getLiferayOAuth2Scopes(_companyId, scopeAlias2)
+			_scopeLocator.waitForScopeAliases(
+				Mockito.eq(_companyId),
+				Mockito.eq(Collections.singleton(scopeAlias2)),
+				Mockito.any(Runnable.class))
 		).thenReturn(
-			Collections.singletonList(Mockito.mock(LiferayOAuth2Scope.class))
+			Collections.singleton(scopeAlias2)
 		);
 
 		configurationFactory.updateScopes(_oAuth2Application, scopeAliasesList);
@@ -448,6 +439,7 @@ public class ConfigurationFactoryTest {
 			_snapshot);
 
 		configurationFactory.activate(
+			SystemBundleUtil.getBundleContext(),
 			HashMapBuilder.<String, Object>put(
 				"baseURL", "http://localhost"
 			).put(
