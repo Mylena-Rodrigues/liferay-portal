@@ -453,7 +453,7 @@ public class ExportPreviewResourceTest
 				unsafeBiFunction)
 		throws Exception {
 
-		long now = System.currentTimeMillis();
+		long time = System.currentTimeMillis();
 
 		String portletId = objectDefinition.getPortletId();
 
@@ -463,38 +463,38 @@ public class ExportPreviewResourceTest
 		Assert.assertEquals(
 			1L,
 			_getAdditionCount(
-				unsafeBiFunction.apply(new Date(now - (24 * Time.HOUR)), null),
+				unsafeBiFunction.apply(new Date(time - (24 * Time.HOUR)), null),
 				portletId));
 		Assert.assertEquals(
 			1L,
 			_getAdditionCount(
-				unsafeBiFunction.apply(null, new Date(now - (24 * Time.HOUR))),
+				unsafeBiFunction.apply(null, new Date(time - (24 * Time.HOUR))),
 				portletId));
 		Assert.assertEquals(
 			1L,
 			_getAdditionCount(
 				unsafeBiFunction.apply(
-					new Date(now - (24 * Time.HOUR)), new Date(now)),
+					new Date(time - (24 * Time.HOUR)), new Date(time)),
 				portletId));
 		Assert.assertEquals(
 			2L,
 			_getAdditionCount(
 				unsafeBiFunction.apply(
-					new Date(now - (48 * Time.HOUR)), new Date(now)),
+					new Date(time - (48 * Time.HOUR)), new Date(time)),
 				portletId));
 		Assert.assertEquals(
 			1L,
 			_getAdditionCount(
 				unsafeBiFunction.apply(
-					new Date(now - (26 * Time.HOUR)),
-					new Date(now - (24 * Time.HOUR))),
+					new Date(time - (26 * Time.HOUR)),
+					new Date(time - (24 * Time.HOUR))),
 				portletId));
 		Assert.assertEquals(
 			0L,
 			_getAdditionCount(
 				unsafeBiFunction.apply(
-					new Date(now - (3 * Time.DAY)),
-					new Date(now - (2 * Time.DAY))),
+					new Date(time - (3 * Time.DAY)),
+					new Date(time - (2 * Time.DAY))),
 				portletId));
 	}
 
@@ -545,6 +545,15 @@ public class ExportPreviewResourceTest
 				unsafeBiFunction)
 		throws Exception {
 
+		Layout layout = LayoutTestUtil.addTypeContentLayout(
+			testGroup, false, false);
+
+		long time = System.currentTimeMillis();
+
+		layout.setModifiedDate(new Date(time - (2 * Time.DAY)));
+
+		_layoutLocalService.updateLayout(layout);
+
 		LayoutTestUtil.addTypeContentLayout(testGroup, false, false);
 		LayoutTestUtil.addTypeContentLayout(testGroup, true, false);
 		LayoutTestUtil.addTypeContentLayout(testGroup, true, false);
@@ -553,16 +562,51 @@ public class ExportPreviewResourceTest
 			LayoutTestUtil.addTypeContentLayout(testGroup, false, false),
 			ServiceContextTestUtil.getServiceContext());
 
+		String portletId =
+			"com_liferay_layout_admin_web_portlet_LayoutSetLayoutsPortlet";
+
 		PreviewPortletDataHandler previewPortletDataHandler =
 			_getPreviewPortletDataHandler(
 				unsafeBiFunction.apply(null, null),
-				"PORTLET_DATA_com_liferay_layout_admin_web_portlet_" +
-					"LayoutSetLayoutsPortlet");
+				"PORTLET_DATA_" + portletId);
 
 		Assert.assertNotNull(previewPortletDataHandler);
 
 		Choice choice = _getChoice(
 			previewPortletDataHandler, "publicLayoutPages");
+
+		Assert.assertEquals(2L, GetterUtil.getLong(choice.getAdditionCount()));
+		Assert.assertEquals(1L, GetterUtil.getLong(choice.getDeletionCount()));
+
+		choice = _getChoice(previewPortletDataHandler, "privateLayoutPages");
+
+		Assert.assertEquals(2L, GetterUtil.getLong(choice.getAdditionCount()));
+		Assert.assertEquals(0L, GetterUtil.getLong(choice.getDeletionCount()));
+
+		previewPortletDataHandler = _getPreviewPortletDataHandler(
+			unsafeBiFunction.apply(
+				new Date(time - (3 * Time.DAY)), new Date(time - Time.DAY)),
+			"PORTLET_DATA_" + portletId);
+
+		Assert.assertNotNull(previewPortletDataHandler);
+
+		choice = _getChoice(previewPortletDataHandler, "publicLayoutPages");
+
+		Assert.assertEquals(1L, GetterUtil.getLong(choice.getAdditionCount()));
+		Assert.assertEquals(0L, GetterUtil.getLong(choice.getDeletionCount()));
+
+		choice = _getChoice(previewPortletDataHandler, "privateLayoutPages");
+
+		Assert.assertEquals(0L, GetterUtil.getLong(choice.getAdditionCount()));
+		Assert.assertEquals(0L, GetterUtil.getLong(choice.getDeletionCount()));
+
+		previewPortletDataHandler = _getPreviewPortletDataHandler(
+			unsafeBiFunction.apply(new Date(time - Time.DAY), null),
+			"PORTLET_DATA_" + portletId);
+
+		Assert.assertNotNull(previewPortletDataHandler);
+
+		choice = _getChoice(previewPortletDataHandler, "publicLayoutPages");
 
 		Assert.assertEquals(1L, GetterUtil.getLong(choice.getAdditionCount()));
 		Assert.assertEquals(1L, GetterUtil.getLong(choice.getDeletionCount()));
