@@ -172,6 +172,8 @@ public class JournalArticleFinderImpl
 
 			sql = replaceStatusJoin(sql, groupId, queryDefinition);
 
+			sql = _replaceViewableStatus(queryDefinition, sql);
+
 			if (inlineSQLHelper) {
 				sql = InlineSQLHelperUtil.replacePermissionCheck(
 					sql, JournalArticle.class.getName(),
@@ -241,6 +243,9 @@ public class JournalArticleFinderImpl
 			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			queryPos.add(groupId);
+
+			_addOwnerUserId(queryDefinition, queryPos);
+
 			queryPos.add(status);
 
 			Iterator<Long> iterator = sqlQuery.iterate();
@@ -307,13 +312,7 @@ public class JournalArticleFinderImpl
 				queryPos.add(folderId);
 			}
 
-			if (queryDefinition.getOwnerUserId() > 0) {
-				queryPos.add(queryDefinition.getOwnerUserId());
-
-				if (queryDefinition.isIncludeOwner()) {
-					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
-				}
-			}
+			_addOwnerUserId(queryDefinition, queryPos);
 
 			queryPos.add(queryDefinition.getStatus());
 
@@ -459,6 +458,9 @@ public class JournalArticleFinderImpl
 			}
 
 			queryPos.add(groupId);
+
+			_addOwnerUserId(queryDefinition, queryPos);
+
 			queryPos.add(status);
 
 			return (List<JournalArticle>)QueryUtil.list(
@@ -487,6 +489,8 @@ public class JournalArticleFinderImpl
 				getClass(), FIND_BY_G_F_L, queryDefinition, "JournalArticle");
 
 			sql = replaceStatusJoin(sql, groupId, queryDefinition);
+
+			sql = _replaceViewableStatus(queryDefinition, sql);
 
 			OrderByComparator<JournalArticle> orderByComparator =
 				queryDefinition.getOrderByComparator();
@@ -682,13 +686,7 @@ public class JournalArticleFinderImpl
 				queryPos.add(folderId);
 			}
 
-			if (queryDefinition.getOwnerUserId() > 0) {
-				queryPos.add(queryDefinition.getOwnerUserId());
-
-				if (queryDefinition.isIncludeOwner()) {
-					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
-				}
-			}
+			_addOwnerUserId(queryDefinition, queryPos);
 
 			queryPos.add(queryDefinition.getStatus());
 
@@ -770,6 +768,27 @@ public class JournalArticleFinderImpl
 		return sql;
 	}
 
+	private void _addOwnerUserId(
+		QueryDefinition<JournalArticle> queryDefinition, QueryPos queryPos) {
+
+		if (queryDefinition.getOwnerUserId() <= 0) {
+			return;
+		}
+
+		queryPos.add(queryDefinition.getOwnerUserId());
+
+		if (queryDefinition.isIncludeOwner()) {
+			queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
+		}
+	}
+
+	private String _getViewableStatusSQL(long ownerUserId, String tableName) {
+		return StringBundler.concat(
+			"((", tableName, ".status NOT IN (", WorkflowConstants.STATUS_DRAFT,
+			", ", WorkflowConstants.STATUS_SCHEDULED, ")) OR (", tableName,
+			".userId = ", ownerUserId, "))");
+	}
+
 	private boolean _isOrderByTitle(
 		OrderByComparator<JournalArticle> orderByComparator) {
 
@@ -788,6 +807,29 @@ public class JournalArticleFinderImpl
 		}
 
 		return false;
+	}
+
+	private String _replaceViewableStatus(
+		QueryDefinition<JournalArticle> queryDefinition, String sql) {
+
+		if (queryDefinition.getOwnerUserId() <= 0) {
+			return StringUtil.replace(
+				sql,
+				new String[] {
+					"[$VIEWABLE_STATUS$] AND", "[$VIEWABLE_STATUS_JOIN$] AND"
+				},
+				new String[] {StringPool.BLANK, StringPool.BLANK});
+		}
+
+		return StringUtil.replace(
+			sql,
+			new String[] {"[$VIEWABLE_STATUS$]", "[$VIEWABLE_STATUS_JOIN$]"},
+			new String[] {
+				_getViewableStatusSQL(
+					queryDefinition.getOwnerUserId(), "JournalArticle"),
+				_getViewableStatusSQL(
+					queryDefinition.getOwnerUserId(), "tempJournalArticle")
+			});
 	}
 
 	private static final String _TITLE_FIELD =
