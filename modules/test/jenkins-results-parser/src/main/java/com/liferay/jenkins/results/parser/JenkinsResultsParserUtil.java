@@ -111,7 +111,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.logging.Log;
@@ -705,7 +704,7 @@ public class JenkinsResultsParserUtil {
 					combine("http://", jenkinsMasterName, "/script"));
 			}
 
-			URL urlObject = new URL(fixURL(url));
+			URL urlObject = new URL(normalizeURL(url));
 
 			HttpURLConnection httpURLConnection =
 				(HttpURLConnection)urlObject.openConnection();
@@ -4685,7 +4684,8 @@ public class JenkinsResultsParserUtil {
 
 	public static String normalizeURL(String url) {
 		if (isNullOrEmpty(url) ||
-			(_isLegalURI(url) && !_hasRawSquareBracket(url))) {
+			(_isLegalURI(url) && !_hasNonASCIICharacter(url) &&
+			 !_hasRawSquareBracket(url))) {
 
 			return url;
 		}
@@ -7135,6 +7135,16 @@ public class JenkinsResultsParserUtil {
 		return hostName + ":" + filePath;
 	}
 
+	private static boolean _hasNonASCIICharacter(String url) {
+		for (int i = 0; i < url.length(); i++) {
+			if (url.charAt(i) > 127) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static boolean _hasRawSquareBracket(String url) {
 		int index = url.indexOf('?');
 
@@ -7186,7 +7196,11 @@ public class JenkinsResultsParserUtil {
 		}
 
 		for (int i = index + 1; i <= (index + 2); i++) {
-			if (!CharUtils.isHex(value.charAt(i))) {
+			char c = value.charAt(i);
+
+			if (((c < '0') || (c > '9')) && ((c < 'A') || (c > 'F')) &&
+				((c < 'a') || (c > 'f'))) {
+
 				return false;
 			}
 		}
