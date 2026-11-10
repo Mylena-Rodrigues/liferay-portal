@@ -1343,18 +1343,10 @@ public class PortalImpl implements Portal {
 			}
 		}
 
-		List<LayoutFriendlyURL> layoutFriendlyURLs = null;
+		if (replaceFriendlyURL &&
+			(layout instanceof VirtualLayout virtualLayout)) {
 
-		if (replaceFriendlyURL) {
-			layoutFriendlyURLs =
-				LayoutFriendlyURLLocalServiceUtil.getLayoutFriendlyURLs(
-					layout.getPlid());
-
-			if (layout instanceof VirtualLayout) {
-				VirtualLayout virtualLayout = (VirtualLayout)layout;
-
-				layout = virtualLayout.getSourceLayout();
-			}
+			layout = virtualLayout.getSourceLayout();
 		}
 
 		String canonicalURLPrefix = canonicalURL.substring(0, pos);
@@ -1376,6 +1368,8 @@ public class PortalImpl implements Portal {
 			groupFriendlyURL = canonicalURLSuffix.substring(
 				0, groupFriendlyURLIndex[1]);
 		}
+
+		List<LayoutFriendlyURL> layoutFriendlyURLs = null;
 
 		for (Locale locale : availableLocales) {
 			String alternateURL = canonicalURL;
@@ -1432,6 +1426,12 @@ public class PortalImpl implements Portal {
 
 				if (Validator.isNull(alternateURLSuffix)) {
 					alternateURLSuffix = canonicalURLSuffix;
+
+					if (layoutFriendlyURLs == null) {
+						layoutFriendlyURLs =
+							LayoutFriendlyURLLocalServiceUtil.
+								getLayoutFriendlyURLs(layout.getPlid());
+					}
 
 					String friendlyURL = null;
 
@@ -1668,18 +1668,17 @@ public class PortalImpl implements Portal {
 
 		String defaultLayoutFriendlyURL = null;
 
-		Locale siteDefaultLocale = getSiteDefaultLocale(layout.getGroupId());
+		Group layoutGroup = layout.getGroup();
+
+		Locale siteDefaultLocale = getSiteDefaultLocale(layoutGroup);
 
 		if (siteDefaultLocale.equals(themeDisplay.getLocale())) {
 			defaultLayoutFriendlyURL = themeDisplay.getLayoutFriendlyURL(
 				layout);
 		}
 		else {
-			defaultLayoutFriendlyURL = layout.getFriendlyURL(
-				getSiteDefaultLocale(layout.getGroupId()));
+			defaultLayoutFriendlyURL = layout.getFriendlyURL(siteDefaultLocale);
 		}
-
-		Group layoutGroup = layout.getGroup();
 
 		if (forceLayoutFriendlyURL ||
 			(!(layout instanceof VirtualLayout) &&
@@ -4342,7 +4341,7 @@ public class PortalImpl implements Portal {
 				WebKeys.THEME_DISPLAY);
 
 		if (layout != null) {
-			Group group = layout.getGroup();
+			Group group = _getLayoutGroup(layout, themeDisplay);
 
 			long doAsGroupId = ParamUtil.getLong(
 				httpServletRequest, "doAsGroupId");
@@ -4387,7 +4386,7 @@ public class PortalImpl implements Portal {
 			}
 
 			if ((group != null) && group.isInheritContent()) {
-				Group layoutGroup = layout.getGroup();
+				Group layoutGroup = _getLayoutGroup(layout, themeDisplay);
 
 				if (!layoutGroup.isControlPanel()) {
 					scopeGroupId = group.getParentGroupId();
@@ -4686,7 +4685,7 @@ public class PortalImpl implements Portal {
 		User guestUser = UserLocalServiceUtil.getGuestUser(
 			group.getCompanyId());
 
-		if (LanguageUtil.isInheritLocales(liveGroup.getGroupId())) {
+		if (LanguageUtil.isInheritLocales(liveGroup)) {
 			return guestUser.getLocale();
 		}
 
@@ -8067,6 +8066,16 @@ public class PortalImpl implements Portal {
 		}
 
 		return sb.toString();
+	}
+
+	private Group _getLayoutGroup(Layout layout, ThemeDisplay themeDisplay)
+		throws PortalException {
+
+		if (themeDisplay == null) {
+			return layout.getGroup();
+		}
+
+		return themeDisplay.getLayoutGroup(layout);
 	}
 
 	private String _getPortalURL(

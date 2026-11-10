@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 
 import jakarta.ws.rs.BadRequestException;
@@ -144,8 +145,24 @@ public class ParameterMapUtil {
 				"A \"DateRange\" date filter needs a start or end date");
 		}
 
+		Date date = new Date();
+
+		if ((startDate != null) &&
+			(_truncateToSecond(startDate) > date.getTime())) {
+
+			throw new BadRequestException(
+				"The start date must not be in the future");
+		}
+
+		if ((endDate != null) &&
+			(_truncateToSecond(endDate) > date.getTime())) {
+
+			throw new BadRequestException(
+				"The end date must not be in the future");
+		}
+
 		if ((endDate != null) && (startDate != null) &&
-			!startDate.before(endDate)) {
+			(_truncateToSecond(startDate) >= _truncateToSecond(endDate))) {
 
 			throw new BadRequestException(
 				"The start date must be before the end date");
@@ -168,17 +185,17 @@ public class ParameterMapUtil {
 		return parameterMap;
 	}
 
-	public static void putSiteExternalReferenceCodes(
+	public static void putGroupExternalReferenceCodes(
 		Map<String, String[]> parameterMap,
-		String[] siteExternalReferenceCodes) {
+		String[] groupExternalReferenceCodes) {
 
-		siteExternalReferenceCodes = ArrayUtil.filter(
-			siteExternalReferenceCodes, Validator::isNotNull);
+		groupExternalReferenceCodes = ArrayUtil.filter(
+			groupExternalReferenceCodes, Validator::isNotNull);
 
-		if (ArrayUtil.isNotEmpty(siteExternalReferenceCodes)) {
+		if (ArrayUtil.isNotEmpty(groupExternalReferenceCodes)) {
 			parameterMap.put(
 				PortletDataHandlerKeys.GROUP_EXTERNAL_REFERENCE_CODES,
-				ArrayUtil.unique(siteExternalReferenceCodes));
+				ArrayUtil.unique(groupExternalReferenceCodes));
 		}
 	}
 
@@ -830,6 +847,10 @@ public class ParameterMapUtil {
 				return availablePortletDataHandler;
 			},
 			PortletDataHandler.class);
+	}
+
+	private static long _truncateToSecond(Date date) {
+		return Math.floorDiv(date.getTime(), Time.SECOND) * Time.SECOND;
 	}
 
 	private static final String _TREE_SELECTION_SUFFIX_ALL = "_all";

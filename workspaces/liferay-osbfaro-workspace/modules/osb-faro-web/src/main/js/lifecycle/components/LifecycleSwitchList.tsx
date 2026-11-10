@@ -28,6 +28,7 @@ const SEARCH_DEBOUNCE_DELAY = 250;
 interface ILifecycleRowActionsProps {
 	lifecycle: ILifecycle;
 	onDefaultChange: () => void;
+	onDelete: (lifecycle: ILifecycle) => void;
 	onShowDetails: () => void;
 	onView?: () => void;
 }
@@ -35,26 +36,35 @@ interface ILifecycleRowActionsProps {
 const LifecycleRowActions: React.FC<ILifecycleRowActionsProps> = ({
 	lifecycle,
 	onDefaultChange,
+	onDelete,
 	onShowDetails,
 	onView,
 }) => {
-	const actions = useLifecycleActions({
-		lifecycle,
-		onDefaultChange,
-		onShowDetails,
-		onView,
-	});
+	const {actions, deleteLifecycleModal, manageNotificationsModal} =
+		useLifecycleActions({
+			lifecycle,
+			onDefaultChange,
+			onDelete,
+			onShowDetails,
+			onView,
+		});
 
 	return (
-		<PageActions
-			actions={actions}
-			actionsDisplayLimit={0}
-			triggerAriaLabel={
-				sub(Liferay.Language.get('actions-for-x'), [
-					lifecycle.name || lifecycle.id,
-				]) as string
-			}
-		/>
+		<>
+			<PageActions
+				actions={actions}
+				actionsDisplayLimit={0}
+				triggerAriaLabel={
+					sub(Liferay.Language.get('actions-for-x'), [
+						lifecycle.name || lifecycle.id,
+					]) as string
+				}
+			/>
+
+			{deleteLifecycleModal}
+
+			{manageNotificationsModal}
+		</>
 	);
 };
 
@@ -80,6 +90,7 @@ const getMeta = (
 interface ILifecycleSwitchListProps {
 	defaultChangeCount: number;
 	onDefaultChange: (lifecycleId: string) => void;
+	onDefaultDelete?: () => void;
 	onNavigate: () => void;
 	onShowDetails: (lifecycleId: string) => void;
 	openLifecycleERC?: string;
@@ -88,6 +99,7 @@ interface ILifecycleSwitchListProps {
 const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 	defaultChangeCount,
 	onDefaultChange,
+	onDefaultDelete,
 	onNavigate,
 	onShowDetails,
 	openLifecycleERC,
@@ -100,8 +112,6 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 
 	const [pageState, setPageState] = useState({page: 1, search: ''});
 
-	const [refreshCount, setRefreshCount] = useState(0);
-
 	const search = useDebounce(query, SEARCH_DEBOUNCE_DELAY);
 
 	const page = pageState.search === search ? pageState.page : 1;
@@ -112,18 +122,28 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 		groupId: groupId!,
 		page,
 		pageSize: LIFECYCLES_PAGE_SIZE,
-		refreshCount,
 		search,
 	};
 
-	const {data, error, loading} = useRequest({
+	const {data, error, loading, refetch} = useRequest({
 		dataSourceFn: API.lifecycle.fetchLifecyclesPage,
 		variables,
 	});
 
-	const refresh = () => setRefreshCount((count) => count + 1);
-
 	const lifecycles = data?.items ?? [];
+
+	const reloadAfterDelete = ({defaultAccountLifecycle}: ILifecycle) => {
+		if (lifecycles.length === 1 && page > 1) {
+			setPageState({page: page - 1, search});
+		}
+		else {
+			refetch();
+		}
+
+		if (defaultAccountLifecycle) {
+			onDefaultDelete?.();
+		}
+	};
 
 	const totalCount = data?.totalCount ?? 0;
 
@@ -133,7 +153,7 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 		}
 
 		if (error) {
-			return <ErrorDisplay onReload={refresh} spacer />;
+			return <ErrorDisplay onReload={refetch} spacer />;
 		}
 
 		if (!lifecycles.length) {
@@ -192,7 +212,7 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 									</ClayList.ItemText>
 								)}
 
-								{!!lifecycle.stages?.length && (
+								{!!lifecycle.accountLifecycleStages?.length && (
 									<div className="mt-2">
 										<ClayLabel
 											displayType="info"
@@ -201,7 +221,9 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 										>
 											<strong>
 												{getStageCountLabel(
-													lifecycle.stages.length
+													lifecycle
+														.accountLifecycleStages
+														.length
 												)}
 											</strong>
 										</ClayLabel>
@@ -215,6 +237,7 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 									onDefaultChange={() =>
 										onDefaultChange(lifecycle.id)
 									}
+									onDelete={reloadAfterDelete}
 									onShowDetails={() =>
 										onShowDetails(lifecycle.id)
 									}
