@@ -184,7 +184,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 					),
 					image: EMPTY_STATE_IMAGE,
 					imageReducedMotion: EMPTY_STATE_REDUCED_MOTION_IMAGE,
-					title: Liferay.Language.get('no-accounts-found'),
+					title: Liferay.Language.get('no-accounts-were-found'),
 				}}
 				filters={[
 					{
@@ -201,14 +201,13 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 					...(accountLifecycleId || allLifecycles
 						? [
 								{
+									autocompleteEnabled: true,
 									entityFieldType: 'string',
 									id: 'lifecycleStatus',
 									items: lifecycleStageItems,
-									label: allLifecycles
-										? Liferay.Language.get(
-												'lifecycle-stage'
-											)
-										: Liferay.Language.get('status'),
+									label: Liferay.Language.get(
+										'lifecycle-stage'
+									),
 									multiple: true,
 									name: 'status',
 									preloadedData: buildSelectionPreloadedData(
@@ -225,6 +224,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 						: []),
 					{
 						apiURL: `/o/faro/contacts/${groupId}/account/fds_field_values?channelId=${channelId}&fieldMappingFieldName=industry`,
+						autocompleteEnabled: true,
 						entityFieldType: 'string',
 						id: 'industry',
 						itemKey: 'name',
@@ -237,6 +237,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 					},
 					{
 						apiURL: `/o/faro/contacts/${groupId}/account/fds_field_values?channelId=${channelId}&fieldMappingFieldName=country`,
+						autocompleteEnabled: true,
 						entityFieldType: 'string',
 						id: 'country',
 						itemKey: 'name',
@@ -249,6 +250,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 					},
 					{
 						apiURL: `/o/faro/contacts/${groupId}/individual_segment/search?channelId=${channelId}`,
+						autocompleteEnabled: true,
 						entityFieldType: 'string',
 						id: 'segmentId',
 						itemKey: 'id',
