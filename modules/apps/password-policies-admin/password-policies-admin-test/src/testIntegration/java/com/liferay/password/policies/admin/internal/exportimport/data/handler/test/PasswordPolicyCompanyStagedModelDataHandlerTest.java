@@ -6,7 +6,7 @@
 package com.liferay.password.policies.admin.internal.exportimport.data.handler.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.exportimport.test.util.lar.BaseStagedModelDataHandlerTestCase;
+import com.liferay.exportimport.test.util.lar.BaseCompanyStagedModelDataHandlerTestCase;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.PasswordPolicy;
@@ -30,8 +30,8 @@ import org.junit.runner.RunWith;
  * @author Daniela Zapata Riesco
  */
 @RunWith(Arquillian.class)
-public class PasswordPolicyStagedModelDataHandlerTest
-	extends BaseStagedModelDataHandlerTestCase {
+public class PasswordPolicyCompanyStagedModelDataHandlerTest
+	extends BaseCompanyStagedModelDataHandlerTestCase {
 
 	@ClassRule
 	@Rule

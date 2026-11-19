@@ -11,7 +11,7 @@ import com.liferay.expando.kernel.service.ExpandoTableLocalServiceUtil;
 import com.liferay.expando.model.adapter.StagedExpandoTable;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryRegistryUtil;
-import com.liferay.exportimport.test.util.lar.BaseStagedModelDataHandlerTestCase;
+import com.liferay.exportimport.test.util.lar.BaseCompanyStagedModelDataHandlerTestCase;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
@@ -38,8 +38,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Sync
-public class StagedExpandoTableStagedModelDataHandlerTest
-	extends BaseStagedModelDataHandlerTestCase {
+public class StagedExpandoTableCompanyStagedModelDataHandlerTest
+	extends BaseCompanyStagedModelDataHandlerTestCase {
 
 	@ClassRule
 	@Rule

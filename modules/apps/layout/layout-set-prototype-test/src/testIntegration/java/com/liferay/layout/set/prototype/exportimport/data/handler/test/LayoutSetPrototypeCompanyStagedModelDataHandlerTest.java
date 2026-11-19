@@ -6,7 +6,7 @@
 package com.liferay.layout.set.prototype.exportimport.data.handler.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.exportimport.test.util.lar.BaseStagedModelDataHandlerTestCase;
+import com.liferay.exportimport.test.util.lar.BaseCompanyStagedModelDataHandlerTestCase;
 import com.liferay.layout.page.template.kernel.provider.util.LayoutPageTemplateEntryLayoutProviderUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -44,8 +44,8 @@ import org.junit.runner.RunWith;
  * @author Daniela Zapata Riesco
  */
 @RunWith(Arquillian.class)
-public class LayoutSetPrototypeStagedModelDataHandlerTest
-	extends BaseStagedModelDataHandlerTestCase {
+public class LayoutSetPrototypeCompanyStagedModelDataHandlerTest
+	extends BaseCompanyStagedModelDataHandlerTestCase {
 
 	@ClassRule
 	@Rule
