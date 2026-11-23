@@ -9,16 +9,16 @@ import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import ClayLink from '@clayui/link';
 import {ReactPortal, useIsMounted} from '@liferay/frontend-js-react-web';
+import {openConfirmModal as openLayoutConfirmModal} from '@liferay/layout-js-components-web';
 import classNames from 'classnames';
 import {
 	FeatureIndicator,
 	openConfirmModal,
 	openToast,
 } from 'frontend-js-components-web';
-import {fetch} from 'frontend-js-web';
-import React, {useEffect, useState} from 'react';
+import {escapeHTML, fetch, sub} from 'frontend-js-web';
+import React, {useEffect, useRef, useState} from 'react';
 
-import ExperienceToolbarSection from '../../plugins/experience/components/ExperienceToolbarSection';
 import * as Actions from '../actions/index';
 import {LAYOUT_TYPES} from '../config/constants/layoutTypes';
 import {SERVICE_NETWORK_STATUS_TYPES} from '../config/constants/serviceNetworkStatusTypes';
@@ -26,29 +26,33 @@ import {config} from '../config/index';
 import {useSelectItem} from '../contexts/ControlsContext';
 import {useEditableProcessorUniqueId} from '../contexts/EditableProcessorContext';
 import {useDispatch, useSelector} from '../contexts/StoreContext';
+import {
+	ExperienceToolbarSection,
+	ExperimentsLabel,
+	HideSidebarButton,
+	NetworkStatusBar,
+	ToolbarActionsDropdown,
+	Translation,
+	Undo,
+	ZoomAlert,
+	useDropClear,
+} from '../js-index';
 import selectCanPublish from '../selectors/selectCanPublish';
-import {useDropClear} from '../utils/drag_and_drop/useDragAndDrop';
+import {isLaunchDraft} from '../utils/isLaunchDraft';
 import DiscardDraftButton from './DiscardDraftButton';
 import EditModeSelector from './EditModeSelector';
-import ExperimentsLabel from './ExperimentsLabel';
-import HideSidebarButton from './HideSidebarButton';
-import NetworkStatusBar from './NetworkStatusBar';
 import PublishButton from './PublishButton';
 import ToggleConfigurationSidebarButton from './ToggleConfigurationSidebarButton';
-import ToolbarActionsDropdown from './ToolbarActionsDropdown';
-import Translation from './Translation';
 import ViewportSizeSelector from './ViewportSizeSelector';
-import ZoomAlert from './ZoomAlert';
-import Undo from './undo/Undo';
 
-const {useRef} = React;
+const IN_LAUNCH = false;
 
-function ToolbarBody({className}) {
-	const discardDraftFormRef = useRef();
+function ToolbarBody({className}: {className?: string}) {
+	const discardDraftFormRef = useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch();
 	const dropClearRef = useDropClear();
 	const editableProcessorUniqueId = useEditableProcessorUniqueId();
-	const formRef = useRef();
+	const formRef = useRef<HTMLFormElement>(null);
 	const selectItem = useSelectItem();
 	const store = useSelector((state) => state);
 
@@ -81,20 +85,51 @@ function ToolbarBody({className}) {
 		}
 	};
 
-	const deselectItem = (event) => {
+	const deselectItem = (event: React.MouseEvent) => {
 		if (event.target === event.currentTarget) {
 			selectItem(null);
 		}
+	};
+
+	const onAddToLaunch = () => {
+		const launch = {name: 'Launch'};
+		const page = config.layoutName;
+
+		const addToLaunch = () => {
+			openToast({
+				message: sub(
+					Liferay.Language.get('x-was-successfully-added-to-x'),
+					escapeHTML(page),
+					escapeHTML(launch.name)
+				),
+				type: 'success',
+			});
+		};
+
+		if (IN_LAUNCH) {
+			openLayoutConfirmModal({
+				buttonLabel: Liferay.Language.get('update-launch'),
+				onConfirm: async () => addToLaunch(),
+				status: 'warning',
+				text: sub(
+					Liferay.Language.get('x-launch-already-includes-x'),
+					escapeHTML(launch.name),
+					escapeHTML(page)
+				),
+				title: Liferay.Language.get('update-launch'),
+			});
+
+			return;
+		}
+
+		addToLaunch();
 	};
 
 	const isCMSFreeTier = config.isCMS && config.freeTier;
 
 	let publishButtonLabel = Liferay.Language.get('publish');
 
-	if (config.launchSetId > 0) {
-		publishButtonLabel = Liferay.Language.get('mark-as-ready-to-publish');
-	}
-	else if (config.layoutType === LAYOUT_TYPES.master) {
+	if (config.layoutType === LAYOUT_TYPES.master) {
 		publishButtonLabel = Liferay.Language.get('publish-master');
 	}
 	else if (config.singleSegmentsExperienceMode) {
@@ -102,6 +137,9 @@ function ToolbarBody({className}) {
 	}
 	else if (config.workflowEnabled) {
 		publishButtonLabel = Liferay.Language.get('submit-for-workflow');
+	}
+	else if (isLaunchDraft()) {
+		publishButtonLabel = Liferay.Language.get('ready-to-publish');
 	}
 
 	const ariaLabel = isCMSFreeTier
@@ -245,6 +283,15 @@ function ToolbarBody({className}) {
 						formRef={formRef}
 						icon={icon}
 						label={publishButtonLabel}
+						onAddToLaunch={
+							Liferay.FeatureFlags['LPD-72278'] &&
+							config.layoutType === LAYOUT_TYPES.content &&
+							!config.isCMS &&
+							!config.singleSegmentsExperienceMode &&
+							!isLaunchDraft()
+								? onAddToLaunch
+								: undefined
+						}
 						onPublish={onPublish}
 					/>
 				</li>
@@ -252,7 +299,6 @@ function ToolbarBody({className}) {
 				{config.isCMS ? (
 					<li className="nav-item">
 						<ClayDropDownWithItems
-							hasLeftSymbols
 							items={[
 								{
 									label: Liferay.Language.get(
@@ -286,7 +332,7 @@ function ToolbarBody({className}) {
 }
 
 export default function Toolbar() {
-	const container = document.getElementById(config.toolbarId);
+	const container = document.getElementById(config.toolbarId)!;
 	const isMounted = useIsMounted();
 
 	if (!isMounted()) {
@@ -305,20 +351,21 @@ export default function Toolbar() {
 	);
 }
 
-function regenerateDisplayPage() {
-	fetch(config.regenerateDisplayPageURL, {method: 'POST'}).then(
-		(response) => {
-			if (response.ok) {
-				window.location.reload();
-			}
-			else {
-				openToast({
-					message: Liferay.Language.get(
-						'an-unexpected-error-occurred-while-autogenerating-default-experience'
-					),
-					type: 'danger',
-				});
-			}
-		}
-	);
+async function regenerateDisplayPage() {
+	const response = await fetch(config.regenerateDisplayPageURL, {
+		method: 'POST',
+	});
+
+	if (response.ok) {
+		window.location.reload();
+
+		return;
+	}
+
+	openToast({
+		message: Liferay.Language.get(
+			'an-unexpected-error-occurred-while-autogenerating-default-experience'
+		),
+		type: 'danger',
+	});
 }
